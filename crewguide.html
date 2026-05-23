@@ -371,6 +371,53 @@
   .card-stars { font-size: 10px; color: #f59e0b; letter-spacing: 0.5px; }
   .card-rating-num { font-size: 10px; font-weight: 600; color: var(--text-primary); margin-left: 2px; }
 
+  /* COMMENT SYSTEM */
+  .comments-list { display:flex; flex-direction:column; gap:8px; }
+  .comment-card { background:var(--cream-dark); border-radius:var(--radius-sm); padding:12px; }
+  .comment-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }
+  .comment-user { font-size:12px; font-weight:600; color:var(--text-primary); }
+  .comment-meta { display:flex; align-items:center; gap:6px; }
+  .comment-stars { font-size:11px; color:#f59e0b; }
+  .comment-date { font-size:10px; color:var(--text-muted); }
+  .comment-text { font-size:12px; color:var(--text-secondary); line-height:1.5; }
+  .comment-empty { text-align:center; padding:20px; color:var(--text-muted); font-size:13px; }
+  .comment-loading { text-align:center; padding:16px; color:var(--text-muted); font-size:12px; }
+
+  /* COMMENT INPUT */
+  .comment-input-box {
+    background:var(--white); border:1.5px solid var(--border);
+    border-radius:var(--radius); padding:14px; margin-top:8px;
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .comment-input-header { font-family:'Syne',sans-serif; font-size:13px; font-weight:600; color:var(--text-primary); }
+  .comment-name-row { display:flex; gap:8px; align-items:center; }
+  .comment-name-input {
+    flex:1; padding:9px 12px; background:var(--cream);
+    border:1.5px solid var(--border); border-radius:var(--radius-sm);
+    font-size:13px; font-family:'DM Sans',sans-serif; outline:none; color:var(--text-primary);
+  }
+  .comment-name-input:focus { border-color:var(--navy); }
+  .comment-star-pick { display:flex; gap:3px; }
+  .comment-star-pick span { font-size:20px; cursor:pointer; filter:grayscale(1) opacity(0.4); transition:all 0.15s; }
+  .comment-star-pick span.lit { filter:none; color:#f59e0b; }
+  .comment-textarea {
+    width:100%; padding:10px 12px; background:var(--cream);
+    border:1.5px solid var(--border); border-radius:var(--radius-sm);
+    font-size:13px; font-family:'DM Sans',sans-serif; outline:none;
+    resize:none; height:72px; color:var(--text-primary); transition:border 0.2s;
+  }
+  .comment-textarea:focus { border-color:var(--navy); }
+  .comment-submit-btn {
+    width:100%; padding:12px; border-radius:var(--radius-sm);
+    background:var(--navy); color:var(--white);
+    font-family:'Syne',sans-serif; font-size:14px; font-weight:600;
+    border:none; cursor:pointer; transition:opacity 0.2s;
+    display:flex; align-items:center; justify-content:center; gap:6px;
+  }
+  .comment-submit-btn:active { opacity:0.85; }
+  .comment-submit-btn.loading { opacity:0.6; pointer-events:none; }
+
+
 
   /* ADD SCREEN */
   .add-body { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
@@ -760,25 +807,35 @@
       </div>
       <div class="detail-section">
         <div class="detail-section-title" id="reviews-title">Yorumlar</div>
-        <div class="review-card">
-          <div class="review-top">
-            <div class="review-user">CaptainSeoul</div>
-            <div class="review-stars">★★★★★</div>
-          </div>
-          <div class="review-text" id="review1-text">Et kalitesi çok iyi, garsonlar İngilizce biliyor, mutlaka gidin!</div>
+        <div id="comments-list" class="comments-list">
+          <div class="comment-loading" id="comments-loading">⏳ Yorumlar yükleniyor...</div>
         </div>
-        <div class="review-card">
-          <div class="review-top">
-            <div class="review-user">CrewMate_47</div>
-            <div class="review-stars">★★★☆☆</div>
+
+        <!-- Yorum yaz -->
+        <div class="comment-input-box" id="comment-input-box">
+          <div class="comment-input-header" id="comment-input-title">Yorum Yaz</div>
+          <div class="comment-name-row">
+            <input class="comment-name-input" type="text" id="comment-username"
+              placeholder="Görünen adın (örn. CaptainSeoul)" maxlength="30">
+            <div class="comment-star-pick" id="comment-star-pick">
+              <span onclick="setCommentStar(1)" onmouseover="hoverCommentStar(1)" onmouseout="unhoverCommentStar()">★</span>
+              <span onclick="setCommentStar(2)" onmouseover="hoverCommentStar(2)" onmouseout="unhoverCommentStar()">★</span>
+              <span onclick="setCommentStar(3)" onmouseover="hoverCommentStar(3)" onmouseout="unhoverCommentStar()">★</span>
+              <span onclick="setCommentStar(4)" onmouseover="hoverCommentStar(4)" onmouseout="unhoverCommentStar()">★</span>
+              <span onclick="setCommentStar(5)" onmouseover="hoverCommentStar(5)" onmouseout="unhoverCommentStar()">★</span>
+            </div>
           </div>
-          <div class="review-text" id="review2-text">Yemek güzeldi ama hafta sonu 1 saat beklettiler, rezervasyon şart.</div>
+          <textarea class="comment-textarea" id="comment-text"
+            placeholder="Deneyimini paylaş..." maxlength="300"></textarea>
+          <button class="comment-submit-btn" id="comment-submit-btn" onclick="submitComment()">
+            💬 <span id="comment-submit-label">Yorum Gönder</span>
+          </button>
         </div>
       </div>
       <div class="detail-actions">
         <button class="action-btn" id="btn-like" onclick="toggleLike()">♥ <span id="like-label">Beğen</span></button>
         <button class="action-btn" id="btn-save-detail" onclick="toggleSave()">🔖 <span id="save-label">Kaydet</span></button>
-        <button class="action-btn primary" id="btn-comment" onclick="showToast(lang==='tr'?'Yorum özelliği yakında!':'Comment feature coming soon!')">💬 <span id="comment-label">Yorum</span></button>
+        <button class="action-btn primary" id="btn-comment" onclick="scrollToCommentInput()">💬 <span id="comment-label">Yorum</span></button>
       </div>
     </div>
   </div>
@@ -1288,6 +1345,17 @@ function openDetail(id) {
     `${p.price} ${p.priceName[lang]} <span style="color:#92400e;font-weight:700;">· ${localAmt} ${currentCurrency.code}</span>`;
   document.getElementById('detail-desc').textContent = p.desc[lang];
   renderRatingBar(p);
+  // Yorum input başlığını ve placeholder'ı güncelle
+  commentPlaceId = p.id;
+  commentStar = 0;
+  updateCommentStars(0, true);
+  const titleEl = document.getElementById('comment-input-title');
+  const taEl = document.getElementById('comment-text');
+  const btnEl = document.getElementById('comment-submit-label');
+  if (titleEl) titleEl.textContent = lang==='tr' ? 'Yorum Yaz' : 'Write a Review';
+  if (taEl) taEl.placeholder = lang==='tr' ? 'Deneyimini paylaş...' : 'Share your experience...';
+  if (btnEl) btnEl.textContent = lang==='tr' ? 'Yorum Gönder' : 'Send Comment';
+  loadComments(p.id);
   goTo('screen-detail');
 }
 
@@ -1775,6 +1843,146 @@ function resetTheme() {
   document.getElementById('accent-picker').value = '#c9a84c';
   document.getElementById('bg-picker').value = '#f5f0e8';
   showToast(lang==='tr' ? 'Tema sıfırlandı.' : 'Theme reset.');
+}
+
+// ── SUPABASE CONFIG ──────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://nuebqtzeirpyyxtoptlp.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51ZWJxdHplaXJweXl4dG9wdGxwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NDI0NzgsImV4cCI6MjA5NTExODQ3OH0.Yw_8t-PVCDfFZPzV4F5jZjratLkAIE9X9sRdq2qme9Y';
+
+async function sbFetch(path, options = {}) {
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
+    ...options,
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': options.prefer || 'return=minimal',
+      ...(options.headers || {})
+    }
+  });
+  if (!res.ok) throw new Error(await res.text());
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+// ── YORUM SİSTEMİ ─────────────────────────────────────────────────────────────
+let commentPlaceId = null;
+let commentStar = 0;
+
+async function loadComments(placeId) {
+  const listEl = document.getElementById('comments-list');
+  listEl.innerHTML = '<div class="comment-loading">⏳ ' + (lang==='tr'?'Yorumlar yükleniyor...':'Loading comments...') + '</div>';
+  try {
+    const data = await sbFetch(
+      `comments?place_id=eq.${encodeURIComponent(placeId)}&order=created_at.desc&limit=20`,
+      { headers: { 'Prefer': '' } }
+    );
+    renderComments(data || []);
+  } catch(e) {
+    listEl.innerHTML = '<div class="comment-empty">⚠️ ' + (lang==='tr'?'Yorumlar yüklenemedi.':'Could not load comments.') + '</div>';
+    console.warn('[Comments]', e);
+  }
+}
+
+function renderComments(comments) {
+  const listEl = document.getElementById('comments-list');
+  if (!comments.length) {
+    listEl.innerHTML = '<div class="comment-empty">💬 ' + (lang==='tr'?'Henüz yorum yok. İlk yorumu sen yaz!':'No comments yet. Be the first!') + '</div>';
+    return;
+  }
+  listEl.innerHTML = comments.map(c => {
+    const stars = c.stars ? '★'.repeat(c.stars) + '☆'.repeat(5 - c.stars) : '';
+    const date = new Date(c.created_at).toLocaleDateString(lang==='tr'?'tr-TR':'en-US', {day:'numeric',month:'short',year:'numeric'});
+    return `
+      <div class="comment-card">
+        <div class="comment-top">
+          <div class="comment-user">${c.username}</div>
+          <div class="comment-meta">
+            ${stars ? `<span class="comment-stars">${stars}</span>` : ''}
+            <span class="comment-date">${date}</span>
+          </div>
+        </div>
+        <div class="comment-text">${c.text}</div>
+      </div>`;
+  }).join('');
+
+  // Yorum input box'ı listenin sonuna taşı
+  const box = document.getElementById('comment-input-box');
+  const section = listEl.parentNode;
+  if (box && section) section.appendChild(box);
+}
+
+function setCommentStar(n) {
+  commentStar = n;
+  updateCommentStars(n, false);
+}
+
+function hoverCommentStar(n) {
+  const stars = document.querySelectorAll('#comment-star-pick span');
+  stars.forEach((s, i) => {
+    s.classList.toggle('lit', i < n);
+  });
+}
+
+function unhoverCommentStar() {
+  updateCommentStars(commentStar, false);
+}
+
+function updateCommentStars(n, reset) {
+  const stars = document.querySelectorAll('#comment-star-pick span');
+  stars.forEach((s, i) => {
+    s.classList.toggle('lit', !reset && i < n);
+  });
+}
+
+async function submitComment() {
+  const username = document.getElementById('comment-username').value.trim();
+  const text = document.getElementById('comment-text').value.trim();
+  const btn = document.getElementById('comment-submit-btn');
+
+  if (!username) { showToast(lang==='tr'?'Görünen ad gerekli!':'Display name required!'); return; }
+  if (!text) { showToast(lang==='tr'?'Yorum metni gerekli!':'Comment text required!'); return; }
+  if (text.length < 3) { showToast(lang==='tr'?'Yorum çok kısa!':'Comment too short!'); return; }
+
+  btn.classList.add('loading');
+  document.getElementById('comment-submit-label').textContent = lang==='tr'?'Gönderiliyor...':'Sending...';
+
+  try {
+    await sbFetch('comments', {
+      method: 'POST',
+      prefer: 'return=minimal',
+      body: JSON.stringify({
+        place_id: commentPlaceId,
+        username: username,
+        text: text,
+        stars: commentStar || null
+      })
+    });
+
+    // Formu temizle
+    document.getElementById('comment-text').value = '';
+    commentStar = 0;
+    updateCommentStars(0, true);
+
+    showToast(lang==='tr'?'✓ Yorum eklendi!':'✓ Comment added!');
+
+    // Yorumları yenile
+    await loadComments(commentPlaceId);
+
+  } catch(e) {
+    showToast(lang==='tr'?'Yorum gönderilemedi. Tekrar dene.':'Could not send comment. Try again.');
+    console.warn('[submitComment]', e);
+  } finally {
+    btn.classList.remove('loading');
+    document.getElementById('comment-submit-label').textContent = lang==='tr'?'Yorum Gönder':'Send Comment';
+  }
+}
+
+function scrollToCommentInput() {
+  const box = document.getElementById('comment-input-box');
+  if (box) box.scrollIntoView({behavior:'smooth', block:'center'});
+  const ta = document.getElementById('comment-text');
+  if (ta) setTimeout(() => ta.focus(), 400);
 }
 
 // Init
