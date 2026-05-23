@@ -673,9 +673,19 @@
         <div class="home-logo font-display">CrewGuide</div>
         <div class="home-avatar" onclick="goTo('screen-profile-view')">✈️</div>
       </div>
-      <div class="location-pill" onclick="detectLocation()" id="location-pill">
-        <div class="location-dot" id="location-dot"></div>
-        <span id="location-text">📍 Seoul, Güney Kore</span>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+        <div class="location-pill" onclick="detectLocation()" id="location-pill" style="margin-bottom:0;flex:1;">
+          <div class="location-dot" id="location-dot"></div>
+          <span id="location-text">📍 Seoul, Güney Kore</span>
+        </div>
+        <div id="currency-badge" onclick="showCurrencyInfo()" style="
+          display:inline-flex;align-items:center;gap:5px;
+          background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.35);
+          border-radius:20px;padding:5px 11px;cursor:pointer;flex-shrink:0;
+        ">
+          <span id="currency-symbol" style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--gold);">₩</span>
+          <span id="currency-code" style="font-size:10px;color:rgba(255,255,255,0.7);font-weight:500;">KRW</span>
+        </div>
       </div>
       <div class="search-bar" style="padding:0;">
         <input
@@ -1240,7 +1250,9 @@ function renderCards() {
         <div class="place-card-name">${p.name}</div>
         <div class="place-card-meta">${p.addr}</div>
         <div class="place-card-row">
-          <span class="price-tag">${p.price} ${p.priceName[lang]}</span>
+          <span class="price-tag" title="${getPriceRangeLocal(p.price, currentCurrency)} ${currentCurrency.code}">
+            ${p.price} · <span style="color:var(--gold);font-weight:600;">${getPriceRangeLocal(p.price, currentCurrency)}</span>
+          </span>
           <span class="likes-tag">
             ${p.rating > 0 ? `<span class="card-stars">${'★'.repeat(Math.round(p.rating))}${'☆'.repeat(5-Math.round(p.rating))}</span><span class="card-rating-num">${p.rating.toFixed(1)}</span>` : `<span class="heart">♥</span> ${p.likes}`}
           </span>
@@ -1271,7 +1283,9 @@ function openDetail(id) {
   document.getElementById('detail-addr').textContent = p.addr;
   document.getElementById('detail-cat-badge').textContent = lang==='tr' ? (p.cat==='food'?'Yemek':p.cat==='shopping'?'Alışveriş':'Gezi') : (p.cat==='food'?'Food':p.cat==='shopping'?'Shopping':'Sightseeing');
   document.getElementById('detail-sub-badge').textContent = p.subcat;
-  document.getElementById('detail-price-badge').textContent = `${p.price} ${p.priceName[lang]}`;
+  const localAmt = getPriceRangeLocal(p.price, currentCurrency);
+  document.getElementById('detail-price-badge').innerHTML =
+    `${p.price} ${p.priceName[lang]} <span style="color:#92400e;font-weight:700;">· ${localAmt} ${currentCurrency.code}</span>`;
   document.getElementById('detail-desc').textContent = p.desc[lang];
   renderRatingBar(p);
   goTo('screen-detail');
@@ -1522,6 +1536,62 @@ function onSearch(val) {
 }
 
 // LOCATION
+// ── Para birimi veritabanı ──────────────────────────────────────────────────
+// Sembol · Kod · Yaklaşık USD kuru (statik, gerçek projede API'den gelir)
+const currencyDB = {
+  'İstanbul':    { symbol:'₺',  code:'TRY', rate:0.028,  name:{tr:'Türk Lirası',   en:'Turkish Lira'} },
+  'Tokyo':       { symbol:'¥',  code:'JPY', rate:0.0067, name:{tr:'Japon Yeni',    en:'Japanese Yen'} },
+  'Seoul':       { symbol:'₩',  code:'KRW', rate:0.00073,name:{tr:'Güney Kore Wonu',en:'S. Korean Won'} },
+  'Dubai':       { symbol:'د.إ',code:'AED', rate:0.272,  name:{tr:'BAE Dirhemi',   en:'UAE Dirham'} },
+  'London':      { symbol:'£',  code:'GBP', rate:1.27,   name:{tr:'İngiliz Sterlini',en:'British Pound'} },
+  'Paris':       { symbol:'€',  code:'EUR', rate:1.09,   name:{tr:'Euro',          en:'Euro'} },
+  'New York':    { symbol:'$',  code:'USD', rate:1,      name:{tr:'Amerikan Doları',en:'US Dollar'} },
+  'Amsterdam':   { symbol:'€',  code:'EUR', rate:1.09,   name:{tr:'Euro',          en:'Euro'} },
+  'Bangkok':     { symbol:'฿',  code:'THB', rate:0.028,  name:{tr:'Tayland Bahtı', en:'Thai Baht'} },
+  'Singapore':   { symbol:'S$', code:'SGD', rate:0.74,   name:{tr:'Singapur Doları',en:'Singapore Dollar'} },
+  'Hong Kong':   { symbol:'HK$',code:'HKD', rate:0.128,  name:{tr:'Hong Kong Doları',en:'HK Dollar'} },
+  'Berlin':      { symbol:'€',  code:'EUR', rate:1.09,   name:{tr:'Euro',          en:'Euro'} },
+  'Madrid':      { symbol:'€',  code:'EUR', rate:1.09,   name:{tr:'Euro',          en:'Euro'} },
+  'Rome':        { symbol:'€',  code:'EUR', rate:1.09,   name:{tr:'Euro',          en:'Euro'} },
+  'Sydney':      { symbol:'A$', code:'AUD', rate:0.64,   name:{tr:'Avustralya Doları',en:'Australian Dollar'} },
+  'Los Angeles': { symbol:'$',  code:'USD', rate:1,      name:{tr:'Amerikan Doları',en:'US Dollar'} },
+  'Toronto':     { symbol:'C$', code:'CAD', rate:0.73,   name:{tr:'Kanada Doları', en:'Canadian Dollar'} },
+  'Kuala Lumpur':{ symbol:'RM', code:'MYR', rate:0.22,   name:{tr:'Malezya Ringgiti',en:'Malaysian Ringgit'} },
+  'Mumbai':      { symbol:'₹',  code:'INR', rate:0.012,  name:{tr:'Hindistan Rupisi',en:'Indian Rupee'} },
+  'Cairo':       { symbol:'E£', code:'EGP', rate:0.02,   name:{tr:'Mısır Poundu',  en:'Egyptian Pound'} },
+  'Johannesburg':{ symbol:'R',  code:'ZAR', rate:0.054,  name:{tr:'Güney Afrika Randı',en:'South African Rand'} },
+  'São Paulo':   { symbol:'R$', code:'BRL', rate:0.18,   name:{tr:'Brezilya Reali', en:'Brazilian Real'} },
+  'Mexico City': { symbol:'$',  code:'MXN', rate:0.052,  name:{tr:'Meksika Pesosu',en:'Mexican Peso'} },
+  'Beijing':     { symbol:'¥',  code:'CNY', rate:0.138,  name:{tr:'Çin Yuanı',     en:'Chinese Yuan'} },
+  'Shanghai':    { symbol:'¥',  code:'CNY', rate:0.138,  name:{tr:'Çin Yuanı',     en:'Chinese Yuan'} },
+  'Doha':        { symbol:'﷼',  code:'QAR', rate:0.275,  name:{tr:'Katar Riyali',  en:'Qatari Riyal'} },
+  'Riyadh':      { symbol:'﷼',  code:'SAR', rate:0.267,  name:{tr:'Suudi Riyali',  en:'Saudi Riyal'} },
+  'Athens':      { symbol:'€',  code:'EUR', rate:1.09,   name:{tr:'Euro',          en:'Euro'} },
+  'Vienna':      { symbol:'€',  code:'EUR', rate:1.09,   name:{tr:'Euro',          en:'Euro'} },
+  'Zurich':      { symbol:'CHF',code:'CHF', rate:1.13,   name:{tr:'İsviçre Frangı',en:'Swiss Franc'} },
+};
+
+// Fiyat seviyelerine karşılık gelen yaklaşık USD tutarları
+const priceRangeUSD = { '$': 15, '$$': 40, '$$$': 90 };
+
+let currentCurrency = currencyDB['Seoul']; // default
+
+function getCurrencyForCity(cityName) {
+  return currencyDB[cityName] || { symbol:'$', code:'USD', rate:1, name:{tr:'Amerikan Doları',en:'US Dollar'} };
+}
+
+function formatLocalPrice(usdPrice, currency) {
+  const local = Math.round(usdPrice / currency.rate);
+  // Binlik ayraç
+  const formatted = local.toLocaleString('tr-TR');
+  return `${currency.symbol}${formatted}`;
+}
+
+function getPriceRangeLocal(priceSymbol, currency) {
+  const usd = priceRangeUSD[priceSymbol] || 15;
+  return formatLocalPrice(usd, currency);
+}
+
 const popularCities = [
   {name:'İstanbul', country:{tr:'Türkiye',en:'Turkey'}, flag:'🇹🇷'},
   {name:'Tokyo', country:{tr:'Japonya',en:'Japan'}, flag:'🇯🇵'},
@@ -1608,6 +1678,10 @@ function selectCity(name, country, flag) {
   text.textContent = flag + ' ' + name + ', ' + country;
   const addSub = document.getElementById('add-sub');
   if (addSub) addSub.textContent = name + ' · ' + (lang==='tr'?'Deneyimini paylaş':'Share your experience');
+  // Para birimini güncelle
+  currentCurrency = getCurrencyForCity(name);
+  updateCurrencyBadge(name);
+  renderCards();
   goTo('screen-home');
 }
 
@@ -1706,6 +1780,69 @@ function resetTheme() {
 // Init
 renderCards();
 renderSubCats();
+updateCurrencyBadge('Seoul');
+
+function updateCurrencyBadge(cityName) {
+  const cur = getCurrencyForCity(cityName);
+  currentCurrency = cur;
+  const symEl = document.getElementById('currency-symbol');
+  const codeEl = document.getElementById('currency-code');
+  if (symEl) symEl.textContent = cur.symbol;
+  if (codeEl) codeEl.textContent = cur.code;
+}
+
+function showCurrencyInfo() {
+  const cur = currentCurrency;
+  const usdRate = (1 / cur.rate).toFixed(2);
+  const msg = lang === 'tr'
+    ? `${cur.name.tr} (${cur.code})\n1 USD ≈ ${usdRate} ${cur.symbol}`
+    : `${cur.name.en} (${cur.code})\n1 USD ≈ ${usdRate} ${cur.symbol}`;
+  // Küçük bilgi modal
+  showCurrencyModal(cur);
+}
+
+function showCurrencyModal(cur) {
+  // Mevcut modal varsa kaldır
+  const old = document.getElementById('currency-modal');
+  if (old) old.remove();
+
+  const usdRate = (1 / cur.rate).toFixed(1);
+  const examples = [
+    { label: lang==='tr'?'Ucuz yemek':'Budget meal', usd: 15 },
+    { label: lang==='tr'?'Orta restoran':'Mid restaurant', usd: 40 },
+    { label: lang==='tr'?'Pahalı restoran':'Fine dining', usd: 90 },
+    { label: lang==='tr'?'Taksi (5 km)':'Taxi (5 km)', usd: 8 },
+    { label: lang==='tr'?'Kafe kahve':'Café coffee', usd: 5 },
+  ];
+
+  const rows = examples.map(e =>
+    `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+      <span style="font-size:13px;color:var(--text-secondary);">${e.label}</span>
+      <span style="font-size:13px;font-weight:600;color:var(--text-primary);">${formatLocalPrice(e.usd, cur)}</span>
+    </div>`
+  ).join('');
+
+  const modal = document.createElement('div');
+  modal.id = 'currency-modal';
+  modal.style.cssText = 'position:absolute;inset:0;background:rgba(0,0,0,0.5);z-index:150;display:flex;align-items:flex-end;justify-content:center;';
+  modal.innerHTML = `
+    <div style="background:var(--cream);border-radius:24px 24px 0 0;padding:20px;width:100%;max-height:80vh;overflow-y:auto;">
+      <div style="width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px;"></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+        <div style="width:42px;height:42px;border-radius:12px;background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.3);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--gold);">${cur.symbol}</div>
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text-primary);">${lang==='tr'?cur.name.tr:cur.name.en}</div>
+          <div style="font-size:11px;color:var(--text-muted);">1 USD ≈ ${usdRate} ${cur.symbol} · ${cur.code}</div>
+        </div>
+      </div>
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--text-secondary);margin:16px 0 4px;">${lang==='tr'?'Yaklaşık Fiyat Rehberi':'Approximate Price Guide'}</div>
+      ${rows}
+      <div style="font-size:10px;color:var(--text-muted);margin-top:10px;text-align:center;">${lang==='tr'?'Kurlar yaklaşık değerdir, değişebilir.':'Rates are approximate and may vary.'}</div>
+      <button onclick="document.getElementById('currency-modal').remove()" style="width:100%;margin-top:14px;padding:13px;border-radius:14px;background:var(--navy);color:var(--white);font-family:'Syne',sans-serif;font-size:14px;font-weight:600;border:none;cursor:pointer;">${lang==='tr'?'Tamam':'OK'}</button>
+    </div>`;
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  document.getElementById('app').appendChild(modal);
+}
 
 // ─── PWA: SERVICE WORKER KAYDI ────────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
