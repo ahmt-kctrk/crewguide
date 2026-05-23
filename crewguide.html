@@ -371,6 +371,72 @@
   .card-stars { font-size: 10px; color: #f59e0b; letter-spacing: 0.5px; }
   .card-rating-num { font-size: 10px; font-weight: 600; color: var(--text-primary); margin-left: 2px; }
 
+  /* PHOTO UPLOAD & GALLERY */
+  .photo-upload-area {
+    border: 2px dashed var(--border); border-radius: var(--radius-sm);
+    padding: 20px; text-align: center; cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+  }
+  .photo-upload-area:hover { border-color: var(--navy); background: #f8f9fb; }
+  .photo-upload-area.drag-over { border-color: var(--gold); background: #fef9ec; }
+  .photo-preview-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px;
+  }
+  .photo-preview-item {
+    position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden;
+    background: var(--border);
+  }
+  .photo-preview-item img { width: 100%; height: 100%; object-fit: cover; }
+  .photo-preview-remove {
+    position: absolute; top: 3px; right: 3px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: rgba(0,0,0,0.6); color: #fff;
+    font-size: 10px; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .photo-progress {
+    height: 3px; background: var(--border); border-radius: 2px;
+    margin-top: 8px; overflow: hidden; display: none;
+  }
+  .photo-progress-fill {
+    height: 100%; background: var(--gold); border-radius: 2px;
+    width: 0%; transition: width 0.3s ease;
+  }
+
+  /* DETAIL PHOTO GALLERY */
+  .detail-gallery {
+    display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;
+    margin-bottom: 16px; scrollbar-width: none;
+  }
+  .detail-gallery::-webkit-scrollbar { display: none; }
+  .detail-gallery-item {
+    flex-shrink: 0; width: 120px; height: 90px;
+    border-radius: 10px; overflow: hidden; cursor: pointer;
+    background: var(--border);
+  }
+  .detail-gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+  .detail-gallery-item:first-child { width: 200px; }
+
+  /* Lightbox */
+  .lightbox {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.92);
+    z-index: 200; display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+  }
+  .lightbox img { max-width: 100%; max-height: 80vh; border-radius: 8px; object-fit: contain; }
+  .lightbox-close {
+    position: absolute; top: 16px; right: 16px;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(255,255,255,0.15); color: #fff;
+    font-size: 18px; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .lightbox-counter {
+    color: rgba(255,255,255,0.6); font-size: 12px; margin-top: 12px;
+  }
+
+
   /* COMMENT SYSTEM */
   .comments-list { display:flex; flex-direction:column; gap:8px; }
   .comment-card { background:var(--cream-dark); border-radius:var(--radius-sm); padding:12px; }
@@ -778,6 +844,7 @@
         <span class="badge badge-sub" id="detail-sub-badge">Restoran</span>
         <span class="badge badge-price" id="detail-price-badge">$$ Orta</span>
       </div>
+      <div id="detail-gallery" class="detail-gallery" style="display:none;"></div>
       <div id="detail-rating-bar" class="star-rating-bar">
         <div class="star-rating-title" id="rating-title">Puan</div>
         <div class="star-rating-summary">
@@ -899,10 +966,18 @@
         <div class="field-label" id="label-desc">AÇIKLAMA & NOTLAR</div>
         <textarea class="field-textarea" id="input-desc" placeholder="Sınırsız et, 90 dk, akşam kalabalık..."></textarea>
       </div>
-      <div class="photo-upload" onclick="showToast(lang==='tr'?'Fotoğraf yükleme yakında!':'Photo upload coming soon!')">
-        <div class="photo-upload-icon">📷</div>
-        <div class="photo-upload-text" id="photo-text">Fotoğraf Ekle</div>
-        <div class="photo-upload-opt" id="photo-opt">Opsiyonel · En fazla 5 fotoğraf</div>
+      <div>
+        <div class="field-label" id="label-photos" style="margin-bottom:8px;">FOTOĞRAFLAR</div>
+        <input type="file" id="photo-file-input" accept="image/*" multiple style="display:none" onchange="handlePhotoSelect(this)">
+        <div class="photo-upload-area" id="photo-upload-area" onclick="document.getElementById('photo-file-input').click()">
+          <div class="photo-upload-icon">📷</div>
+          <div class="photo-upload-text" id="photo-text">Fotoğraf Ekle</div>
+          <div class="photo-upload-opt" id="photo-opt">Opsiyonel · En fazla 5 fotoğraf · 5 MB/fotoğraf</div>
+        </div>
+        <div class="photo-preview-grid" id="photo-preview-grid"></div>
+        <div class="photo-progress" id="photo-progress">
+          <div class="photo-progress-fill" id="photo-progress-fill"></div>
+        </div>
       </div>
       <button class="btn-navy" onclick="submitPlace()" id="btn-submit">Paylaş →</button>
       <div style="height:20px;"></div>
@@ -1382,6 +1457,7 @@ function openDetail(id) {
   if (taEl) taEl.placeholder = lang==='tr' ? 'Deneyimini paylaş...' : 'Share your experience...';
   if (btnEl) btnEl.textContent = lang==='tr' ? 'Yorum Gönder' : 'Send Comment';
   loadComments(p.id);
+  loadPlacePhotos(p.id);
   goTo('screen-detail');
 }
 
@@ -1576,8 +1652,21 @@ function submitPlace() {
   document.getElementById('input-place-addr').value = '';
   document.getElementById('input-desc').value = '';
 
-  showToast(lang==='tr'?'Yer başarıyla eklendi! 🎉':'Place added successfully! 🎉');
-  setTimeout(() => { goTo('screen-home'); renderCards(); }, 1000);
+  // Fotoğrafları yükle
+  if (selectedPhotos.length > 0) {
+    const btn = document.getElementById('btn-submit');
+    if (btn) { btn.textContent = lang==='tr'?'Fotoğraflar yükleniyor...':'Uploading photos...'; btn.disabled = true; }
+    uploadPhotos(newPlace.id).then(urls => {
+      selectedPhotos = [];
+      renderPhotoPreviews();
+      if (btn) { btn.textContent = lang==='tr'?'Paylaş →':'Share →'; btn.disabled = false; }
+      showToast(lang==='tr'?`Yer eklendi, ${urls.length} fotoğraf yüklendi! 🎉`:`Place added, ${urls.length} photos uploaded! 🎉`);
+      setTimeout(() => { goTo('screen-home'); renderCards(); }, 1000);
+    });
+  } else {
+    showToast(lang==='tr'?'Yer başarıyla eklendi! 🎉':'Place added successfully! 🎉');
+    setTimeout(() => { goTo('screen-home'); renderCards(); }, 1000);
+  }
 }
 
 function createAccount() {
@@ -2140,6 +2229,174 @@ function updateNotifStatus(status) {
 function checkNotifStatus() {
   if (!('Notification' in window)) return;
   updateNotifStatus(Notification.permission);
+}
+
+
+// ── FOTOĞRAF SİSTEMİ ──────────────────────────────────────────────────────────
+let selectedPhotos = []; // { file, previewUrl }
+const MAX_PHOTOS = 5;
+const MAX_SIZE_MB = 5;
+
+function handlePhotoSelect(input) {
+  const files = Array.from(input.files);
+  const remaining = MAX_PHOTOS - selectedPhotos.length;
+  const toAdd = files.slice(0, remaining);
+
+  toAdd.forEach(file => {
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+      showToast(lang==='tr' ? `${file.name} çok büyük (max 5 MB)` : `${file.name} too large (max 5 MB)`);
+      return;
+    }
+    if (!file.type.startsWith('image/')) {
+      showToast(lang==='tr' ? 'Sadece görsel dosyaları' : 'Images only');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      selectedPhotos.push({ file, previewUrl: e.target.result });
+      renderPhotoPreviews();
+    };
+    reader.readAsDataURL(file);
+  });
+
+  if (files.length > remaining) {
+    showToast(lang==='tr' ? `En fazla ${MAX_PHOTOS} fotoğraf eklenebilir` : `Max ${MAX_PHOTOS} photos allowed`);
+  }
+  input.value = '';
+}
+
+function renderPhotoPreviews() {
+  const grid = document.getElementById('photo-preview-grid');
+  const area = document.getElementById('photo-upload-area');
+  if (!grid) return;
+
+  grid.innerHTML = selectedPhotos.map((p, i) => `
+    <div class="photo-preview-item">
+      <img src="${p.previewUrl}" alt="photo ${i+1}">
+      <button class="photo-preview-remove" onclick="removePhoto(${i})">✕</button>
+    </div>
+  `).join('');
+
+  // 5'e ulaşınca upload alanını gizle
+  if (selectedPhotos.length >= MAX_PHOTOS) {
+    area.style.display = 'none';
+  } else {
+    area.style.display = '';
+    document.getElementById('photo-opt').textContent =
+      lang==='tr'
+        ? `${MAX_PHOTOS - selectedPhotos.length} fotoğraf daha ekleyebilirsin`
+        : `${MAX_PHOTOS - selectedPhotos.length} more photos allowed`;
+  }
+}
+
+function removePhoto(index) {
+  selectedPhotos.splice(index, 1);
+  renderPhotoPreviews();
+}
+
+async function uploadPhotos(placeId) {
+  if (selectedPhotos.length === 0) return [];
+  const progress = document.getElementById('photo-progress');
+  const fill = document.getElementById('photo-progress-fill');
+  if (progress) progress.style.display = 'block';
+
+  const urls = [];
+  for (let i = 0; i < selectedPhotos.length; i++) {
+    const { file } = selectedPhotos[i];
+    const ext = file.name.split('.').pop() || 'jpg';
+    const path = `${placeId}/${Date.now()}_${i}.${ext}`;
+
+    try {
+      // Supabase Storage upload
+      const res = await fetch(
+        `${SUPABASE_URL}/storage/v1/object/place-photos/${path}`,
+        {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY,
+            'Content-Type': file.type,
+            'x-upsert': 'true'
+          },
+          body: file
+        }
+      );
+      if (!res.ok) throw new Error(await res.text());
+
+      const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/place-photos/${path}`;
+      urls.push(publicUrl);
+
+      // photos tablosuna kaydet
+      await sbFetch('photos', {
+        method: 'POST',
+        body: JSON.stringify({ place_id: placeId, url: publicUrl })
+      });
+
+    } catch(e) {
+      console.warn('[Photo upload]', e);
+      showToast(lang==='tr' ? `Fotoğraf ${i+1} yüklenemedi` : `Photo ${i+1} failed`);
+    }
+
+    if (fill) fill.style.width = `${((i+1)/selectedPhotos.length)*100}%`;
+  }
+
+  if (progress) setTimeout(() => { progress.style.display = 'none'; if(fill) fill.style.width='0%'; }, 800);
+  return urls;
+}
+
+async function loadPlacePhotos(placeId) {
+  try {
+    const data = await sbFetch(
+      `photos?place_id=eq.${encodeURIComponent(placeId)}&order=created_at.asc&limit=10`,
+      { headers: { 'Prefer': '' } }
+    );
+    renderDetailGallery(data || []);
+  } catch(e) {
+    console.warn('[Photos]', e);
+  }
+}
+
+function renderDetailGallery(photos) {
+  const gallery = document.getElementById('detail-gallery');
+  if (!gallery) return;
+  if (!photos.length) { gallery.style.display = 'none'; return; }
+
+  gallery.style.display = 'flex';
+  gallery.innerHTML = photos.map((p, i) => `
+    <div class="detail-gallery-item" onclick="openLightbox(${i}, ${JSON.stringify(photos.map(x=>x.url)).replace(/"/g,'&quot;')})">
+      <img src="${p.url}" alt="photo ${i+1}" loading="lazy">
+    </div>
+  `).join('');
+}
+
+function openLightbox(index, urls) {
+  const old = document.getElementById('lightbox');
+  if (old) old.remove();
+
+  let cur = index;
+  const lb = document.createElement('div');
+  lb.id = 'lightbox';
+  lb.className = 'lightbox';
+  lb.onclick = (e) => { if (e.target === lb) lb.remove(); };
+
+  function render() {
+    lb.innerHTML = `
+      <button class="lightbox-close" onclick="document.getElementById('lightbox').remove()">✕</button>
+      <img src="${urls[cur]}" alt="photo">
+      <div class="lightbox-counter">${cur+1} / ${urls.length}</div>
+      ${urls.length > 1 ? `
+        <div style="display:flex;gap:16px;margin-top:12px;">
+          <button onclick="event.stopPropagation();lbPrev()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;padding:8px 20px;border-radius:8px;cursor:pointer;font-size:18px;">‹</button>
+          <button onclick="event.stopPropagation();lbNext()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;padding:8px 20px;border-radius:8px;cursor:pointer;font-size:18px;">›</button>
+        </div>` : ''}
+    `;
+  }
+
+  window.lbPrev = () => { cur = (cur - 1 + urls.length) % urls.length; render(); };
+  window.lbNext = () => { cur = (cur + 1) % urls.length; render(); };
+
+  render();
+  document.getElementById('app').appendChild(lb);
 }
 
 // Init
