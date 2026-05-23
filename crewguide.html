@@ -36,6 +36,9 @@
 <meta property="og:type" content="website">
 
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<!-- Leaflet.js — OpenStreetMap -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   :root {
     --navy: #0f1729;
@@ -370,6 +373,62 @@
   .star-submit-btn:active { opacity: 0.8; }
   .card-stars { font-size: 10px; color: #f59e0b; letter-spacing: 0.5px; }
   .card-rating-num { font-size: 10px; font-weight: 600; color: var(--text-primary); margin-left: 2px; }
+
+  /* MAP */
+  .map-placeholder {
+    width: 100%; height: 80px; background: #e8f4f0;
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: #2d6a4f; margin-bottom: 16px; gap: 6px;
+    border: 1px solid #b7e4c7; cursor: pointer; transition: all 0.2s;
+  }
+  .map-placeholder:hover { background: #d1f0e8; }
+  .map-placeholder.loading { color: #f59e0b; border-color: #fde68a; background: #fef9ec; }
+
+  /* Harita modal */
+  .map-modal {
+    position: absolute; inset: 0; background: var(--cream);
+    z-index: 180; display: flex; flex-direction: column;
+  }
+  .map-modal-header {
+    background: var(--navy); padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+  }
+  .map-close-btn {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(255,255,255,0.12); border: none;
+    color: #fff; font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .map-modal-title {
+    font-family: 'Syne', sans-serif; font-size: 15px;
+    font-weight: 600; color: #fff; flex: 1;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .map-modal-addr {
+    font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 1px;
+  }
+  #map-container {
+    flex: 1; min-height: 0;
+  }
+  .map-actions-bar {
+    background: var(--white); border-top: 1px solid var(--border);
+    padding: 12px 16px 24px; display: flex; gap: 8px; flex-shrink: 0;
+  }
+  .map-action-btn {
+    flex: 1; padding: 11px; border-radius: var(--radius-sm);
+    font-size: 12px; font-weight: 500; border: 1.5px solid var(--border);
+    background: var(--white); color: var(--text-secondary);
+    cursor: pointer; text-align: center; transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .map-action-btn.primary {
+    background: var(--navy); color: #fff;
+    border-color: var(--navy); font-family: 'Syne', sans-serif; font-weight: 600;
+  }
+  .map-action-btn:active { opacity: 0.8; }
+
 
   /* PHOTO UPLOAD & GALLERY */
   .photo-upload-area {
@@ -896,7 +955,7 @@
           <button class="star-submit-btn" onclick="submitRating()" id="btn-rate">Oyla</button>
         </div>
       </div>
-      <div class="map-placeholder">🗺 <span id="map-text">Haritada Göster</span></div>
+      <div class="map-placeholder" id="map-placeholder-btn" onclick="openMapModal()">🗺 <span id="map-text">Haritada Göster</span></div>
       <div class="detail-section">
         <div class="detail-section-title" id="about-title">Hakkında</div>
         <div class="detail-desc" id="detail-desc">Sınırsız Kore barbekü, 90 dk. Akşam yoğun olur, öğlen git. Ödeme nakit tercih ediyorlar.</div>
@@ -2689,6 +2748,159 @@ function updateProfileUI() {
   if (commentInput && !commentInput.value) commentInput.value = username;
 }
 
+
+
+// ── HARİTA SİSTEMİ (Leaflet + OpenStreetMap) ─────────────────────────────────
+let currentMapPlace = null;
+let leafletMap = null;
+
+async function openMapModal() {
+  const p = places.find(x => x.id === currentDetailId);
+  if (!p) return;
+  currentMapPlace = p;
+
+  const btn = document.getElementById('map-placeholder-btn');
+  if (btn) {
+    btn.classList.add('loading');
+    btn.innerHTML = '⏳ <span>' + (lang==='tr'?'Konum aranıyor...':'Finding location...') + '</span>';
+  }
+
+  try {
+    // Nominatim ile adres → koordinat
+    const query = encodeURIComponent(`${p.name}, ${p.addr}`);
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`,
+      { headers: { 'Accept-Language': lang } }
+    );
+    const data = await res.json();
+
+    let lat, lon;
+    if (data && data[0]) {
+      lat = parseFloat(data[0].lat);
+      lon = parseFloat(data[0].lon);
+    } else {
+      // Fallback: şehir merkezleri
+      const cityCoords = {
+        'Seoul': [37.5665, 126.9780], 'Tokyo': [35.6762, 139.6503],
+        'Istanbul': [41.0082, 28.9784], 'İstanbul': [41.0082, 28.9784],
+        'Paris': [48.8566, 2.3522], 'London': [51.5074, -0.1278],
+        'Dubai': [25.2048, 55.2708], 'New York': [40.7128, -74.0060],
+        'Bangkok': [13.7563, 100.5018], 'Singapore': [1.3521, 103.8198],
+      };
+      const city = Object.keys(cityCoords).find(c => p.addr.includes(c));
+      [lat, lon] = city ? cityCoords[city] : [37.5665, 126.9780];
+    }
+
+    showMapModal(p, lat, lon);
+
+  } catch(e) {
+    console.warn('[Map]', e);
+    showToast(lang==='tr'?'Harita yüklenemedi.':'Could not load map.');
+  } finally {
+    if (btn) {
+      btn.classList.remove('loading');
+      btn.innerHTML = '🗺 <span id="map-text">' + (lang==='tr'?'Haritada Göster':'View on Map') + '</span>';
+    }
+  }
+}
+
+function showMapModal(p, lat, lon) {
+  // Eski modal varsa kaldır
+  const old = document.getElementById('map-modal');
+  if (old) old.remove();
+  if (leafletMap) { leafletMap.remove(); leafletMap = null; }
+
+  const modal = document.createElement('div');
+  modal.id = 'map-modal';
+  modal.className = 'map-modal';
+  modal.innerHTML = `
+    <div class="map-modal-header">
+      <button class="map-close-btn" onclick="closeMapModal()">←</button>
+      <div>
+        <div class="map-modal-title">${p.name}</div>
+        <div class="map-modal-addr">📍 ${p.addr}</div>
+      </div>
+    </div>
+    <div id="map-container"></div>
+    <div class="map-actions-bar">
+      <button class="map-action-btn" onclick="copyAddress('${p.addr}')">📋 ${lang==='tr'?'Adresi Kopyala':'Copy Address'}</button>
+      <button class="map-action-btn primary" onclick="openDirections(${lat},${lon},'${p.name.replace(/'/g,"\'")}')">🧭 ${lang==='tr'?'Yol Tarifi':'Directions'}</button>
+    </div>
+  `;
+
+  document.getElementById('app').appendChild(modal);
+
+  // Leaflet haritayı başlat
+  setTimeout(() => {
+    leafletMap = L.map('map-container', {
+      center: [lat, lon],
+      zoom: 16,
+      zoomControl: true,
+      attributionControl: true
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(leafletMap);
+
+    // Custom marker — navy renk
+    const markerIcon = L.divIcon({
+      html: `<div style="
+        width:36px;height:36px;border-radius:50% 50% 50% 0;
+        background:var(--navy,#0f1729);border:3px solid white;
+        transform:rotate(-45deg);box-shadow:0 2px 8px rgba(0,0,0,0.3);
+        display:flex;align-items:center;justify-content:center;
+      "><span style="transform:rotate(45deg);font-size:14px;">${p.emoji}</span></div>`,
+      className: '',
+      iconSize: [36, 36],
+      iconAnchor: [18, 36],
+      popupAnchor: [0, -38]
+    });
+
+    L.marker([lat, lon], { icon: markerIcon })
+      .addTo(leafletMap)
+      .bindPopup(`<b>${p.name}</b><br><small>${p.addr}</small>`, {
+        closeButton: false, maxWidth: 200
+      })
+      .openPopup();
+
+    // Haritayı yeniden boyutlandır
+    leafletMap.invalidateSize();
+  }, 100);
+}
+
+function closeMapModal() {
+  const modal = document.getElementById('map-modal');
+  if (modal) modal.remove();
+  if (leafletMap) { leafletMap.remove(); leafletMap = null; }
+}
+
+function openDirections(lat, lon, name) {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isAndroid = /Android/.test(navigator.userAgent);
+
+  if (isIOS) {
+    // Apple Maps
+    window.open(`maps://maps.apple.com/?daddr=${lat},${lon}&q=${encodeURIComponent(name)}`);
+  } else if (isAndroid) {
+    // Google Maps
+    window.open(`geo:${lat},${lon}?q=${lat},${lon}(${encodeURIComponent(name)})`);
+  } else {
+    // Desktop — Google Maps web
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&destination_place_id=${encodeURIComponent(name)}`);
+  }
+}
+
+function copyAddress(addr) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(addr).then(() => {
+      showToast(lang==='tr'?'📋 Adres kopyalandı!':'📋 Address copied!');
+    });
+  } else {
+    showToast(addr);
+  }
+}
 
 // Init
 renderCards();
