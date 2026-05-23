@@ -374,6 +374,41 @@
   .card-stars { font-size: 10px; color: #f59e0b; letter-spacing: 0.5px; }
   .card-rating-num { font-size: 10px; font-weight: 600; color: var(--text-primary); margin-left: 2px; }
 
+  /* +18 TOGGLE & ADMIN */
+  .adult-toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px; background: #fff7ed;
+    border: 1.5px solid #fed7aa; border-radius: var(--radius-sm);
+  }
+  .adult-toggle-left { display: flex; align-items: center; gap: 8px; }
+  .adult-toggle-icon { font-size: 18px; }
+  .adult-toggle-label { font-size: 13px; font-weight: 500; color: #c2410c; }
+  .adult-toggle-sub { font-size: 11px; color: #ea580c; margin-top: 1px; }
+
+  /* Admin badge */
+  .admin-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: #fef2f2; border: 1px solid #fca5a5;
+    border-radius: 6px; padding: 2px 8px;
+    font-size: 10px; font-weight: 600; color: #ef4444;
+  }
+
+  /* +18 kart badge */
+  .card-adult-badge {
+    position: absolute; top: 10px; right: 10px;
+    background: #ef4444; color: #fff;
+    font-size: 9px; font-weight: 700; padding: 3px 7px;
+    border-radius: 8px; letter-spacing: 0.5px;
+  }
+
+  /* +18 filtre toggle ana ekranda */
+  .adult-filter-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 20px; background: var(--cream); flex-shrink: 0;
+  }
+  .adult-filter-label { font-size: 11px; color: var(--text-muted); flex: 1; }
+
+
   /* YORUM DÜZENLE / SİL */
   .comment-actions {
     display: flex; gap: 6px; margin-top: 8px;
@@ -1039,6 +1074,14 @@
     </div>
 
     <!-- Sonuç sayısı -->
+    <!-- +18 filtre satırı -->
+    <div class="adult-filter-row" id="adult-filter-row">
+      <span class="adult-filter-label" id="adult-filter-label">🔞 +18 içerikleri göster</span>
+      <div class="toggle off" id="toggle-show-adult" onclick="toggleShowAdult(this)" style="transform:scale(0.85);">
+        <div class="toggle-knob"></div>
+      </div>
+    </div>
+
     <div class="results-bar" id="results-bar">
       <span class="results-count" id="results-count"></span>
     </div>
@@ -1178,6 +1221,16 @@
         <button class="action-btn" id="btn-save-detail" onclick="toggleSave()">🔖 <span id="save-label">Kaydet</span></button>
         <button class="action-btn primary" id="btn-comment" onclick="scrollToCommentInput()">💬 <span id="comment-label">Yorum</span></button>
       </div>
+      <!-- Admin silme butonu — sadece admin görebilir -->
+      <div id="admin-actions" style="display:none;margin-top:4px;">
+        <button onclick="adminDeletePlace()" style="
+          width:100%;padding:11px;border-radius:var(--radius-sm);
+          background:#fef2f2;border:1.5px solid #fca5a5;
+          color:#ef4444;font-size:13px;font-weight:600;
+          font-family:'Syne',sans-serif;cursor:pointer;">
+          🗑 Yeri Kaldır (Admin)
+        </button>
+      </div>
     </div>
   </div>
 
@@ -1253,6 +1306,20 @@
           <div class="photo-progress-fill" id="photo-progress-fill"></div>
         </div>
       </div>
+      <!-- +18 Toggle -->
+      <div class="adult-toggle-row">
+        <div class="adult-toggle-left">
+          <div class="adult-toggle-icon">🔞</div>
+          <div>
+            <div class="adult-toggle-label" id="adult-toggle-label">Yetişkinlere Yönelik</div>
+            <div class="adult-toggle-sub" id="adult-toggle-sub">Bar, gece kulübü, casino vb.</div>
+          </div>
+        </div>
+        <div class="toggle off" id="toggle-adult" onclick="toggleAdultContent(this)">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>
+
       <button class="btn-navy" onclick="submitPlace()" id="btn-submit">Paylaş →</button>
       <div style="height:20px;"></div>
     </div>
@@ -1672,6 +1739,11 @@ function renderCards() {
     );
   }
 
+  // +18 filtresi — default gizli
+  if (!showAdultContent) {
+    filtered = filtered.filter(p => !p.isAdult);
+  }
+
   // Fiyat filtresi
   if (activeFilters && activeFilters.price && activeFilters.price.length > 0) {
     filtered = filtered.filter(p => activeFilters.price.includes(p.price));
@@ -1709,6 +1781,7 @@ function renderCards() {
     <div class="place-card" onclick="openDetail('${p.id}')">
       <div class="place-card-img ${p.cat}">
         <div class="card-badge">${p.subcat}</div>
+        ${p.isAdult ? '<div class="card-adult-badge">🔞 +18</div>' : ''}
         <span>${p.emoji}</span>
       </div>
       <div class="place-card-body">
@@ -1777,6 +1850,9 @@ function openDetail(id) {
   }
   loadComments(p.id);
   loadPlacePhotos(p.id);
+  // Admin butonunu göster/gizle
+  const adminActions = document.getElementById('admin-actions');
+  if (adminActions) adminActions.style.display = isAdmin() ? 'block' : 'none';
   goTo('screen-detail');
 }
 
@@ -1934,7 +2010,30 @@ function selectPrice(el) {
   el.classList.add('selected');
 }
 
-function submitPlace() {
+// Admin email — bunu kendi emailinle değiştir
+const ADMIN_EMAIL = 'ahmtkctrk@gmail.com';
+
+function isAdmin() {
+  return currentUser && currentUser.email === ADMIN_EMAIL;
+}
+
+let isAdultContent = false;
+let showAdultContent = false;
+
+function toggleAdultContent(el) {
+  el.classList.toggle('on');
+  el.classList.toggle('off');
+  isAdultContent = el.classList.contains('on');
+}
+
+function toggleShowAdult(el) {
+  el.classList.toggle('on');
+  el.classList.toggle('off');
+  showAdultContent = el.classList.contains('on');
+  renderCards();
+}
+
+async function submitPlace() {
   const name = document.getElementById('input-place-name').value.trim();
   const addr = document.getElementById('input-place-addr').value.trim();
   const desc = document.getElementById('input-desc').value.trim();
@@ -1946,23 +2045,49 @@ function submitPlace() {
   const subLabel = selectedSub ? selectedSub.textContent.trim() : '';
 
   const catEmojis = { food:'🍜', shopping:'🛍', sightseeing:'🗺' };
-  const catImgClass = { food:'food', shopping:'shopping', sightseeing:'sightseeing' };
   const priceName = { '$':{tr:'Uygun',en:'Budget'}, '$$':{tr:'Orta',en:'Mid-range'}, '$$$':{tr:'Pahalı',en:'Expensive'} };
 
+  const placeId = 'place_' + Date.now();
   const newPlace = {
-    id: 'place_' + Date.now(),
+    id: placeId,
     cat: selectedMainCat,
     subcat: subLabel,
     emoji: catEmojis[selectedMainCat],
     name: name,
-    addr: addr || (lang==='tr'?'Seoul':'Seoul'),
+    addr: addr || 'Seoul',
     price: priceVal,
     priceName: priceName[priceVal] || {tr:'Uygun',en:'Budget'},
     likes: 0,
     rating: 0, ratingCount: 0, ratings: {5:0,4:0,3:0,2:0,1:0},
     userRating: 0,
+    isAdult: isAdultContent,
+    userId: currentUser ? currentUser.id : null,
     desc: { tr: desc || '', en: desc || '' }
   };
+
+  // Supabase'e kaydet
+  try {
+    await sbFetch('places', {
+      method: 'POST',
+      body: JSON.stringify({
+        id: placeId,
+        cat: selectedMainCat,
+        subcat: subLabel,
+        emoji: catEmojis[selectedMainCat],
+        name, addr: addr || 'Seoul',
+        price: priceVal,
+        price_name_tr: (priceName[priceVal]||{}).tr || 'Uygun',
+        price_name_en: (priceName[priceVal]||{}).en || 'Budget',
+        desc_tr: desc || '', desc_en: desc || '',
+        is_adult: isAdultContent,
+        user_id: currentUser ? currentUser.id : null,
+        is_hidden: false
+      })
+    });
+  } catch(e) {
+    console.warn('[submitPlace Supabase]', e);
+    // DB hatası olsa bile yerel olarak ekle
+  }
 
   places.unshift(newPlace);
 
@@ -1970,6 +2095,9 @@ function submitPlace() {
   document.getElementById('input-place-name').value = '';
   document.getElementById('input-place-addr').value = '';
   document.getElementById('input-desc').value = '';
+  isAdultContent = false;
+  const adultToggle = document.getElementById('toggle-adult');
+  if (adultToggle) { adultToggle.className = 'toggle off'; }
 
   // Fotoğrafları yükle
   if (selectedPhotos.length > 0) {
@@ -1979,7 +2107,7 @@ function submitPlace() {
       selectedPhotos = [];
       renderPhotoPreviews();
       if (btn) { btn.textContent = lang==='tr'?'Paylaş →':'Share →'; btn.disabled = false; }
-      showToast(lang==='tr'?`Yer eklendi, ${urls.length} fotoğraf yüklendi! 🎉`:`Place added, ${urls.length} photos uploaded! 🎉`);
+      showToast(lang==='tr'?`Yer eklendi! 🎉`:`Place added! 🎉`);
       setTimeout(() => { goTo('screen-home'); renderCards(); }, 1000);
     });
   } else {
@@ -3413,6 +3541,53 @@ function resetFilters() {
   document.querySelectorAll('.filter-rating-btn').forEach(b => b.classList.remove('selected'));
   updateFilterChips();
   renderCards();
+}
+
+
+// ── ADMİN FONKSİYONLARI ──────────────────────────────────────────────────────
+async function adminDeletePlace() {
+  if (!isAdmin()) { showToast('Yetkisiz işlem!'); return; }
+  const p = places.find(x => x.id === currentDetailId);
+  if (!p) return;
+
+  const confirmed = confirm(
+    lang==='tr'
+      ? `"${p.name}" yerini kaldırmak istediğinden emin misin?`
+      : `Are you sure you want to remove "${p.name}"?`
+  );
+  if (!confirmed) return;
+
+  try {
+    // Supabase'de gizle (is_hidden = true)
+    await sbFetch(`places?id=eq.${p.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ is_hidden: true })
+    });
+  } catch(e) {
+    console.warn('[adminDelete Supabase]', e);
+  }
+
+  // Yerel listeden kaldır
+  const idx = places.findIndex(x => x.id === currentDetailId);
+  if (idx !== -1) places.splice(idx, 1);
+
+  showToast(lang==='tr' ? `🗑 "${p.name}" kaldırıldı.` : `🗑 "${p.name}" removed.`);
+  renderCards();
+  goTo('screen-home');
+}
+
+async function adminHideComment(commentId) {
+  if (!isAdmin()) return;
+  try {
+    await sbFetch(`comments?id=eq.${commentId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ text: '[Bu yorum kaldırılmıştır.]' })
+    });
+    await loadComments(commentPlaceId);
+    showToast(lang==='tr'?'Yorum kaldırıldı.':'Comment removed.');
+  } catch(e) {
+    console.warn('[adminHideComment]', e);
+  }
 }
 
 // Init
