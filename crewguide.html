@@ -1,0 +1,1639 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CrewGuide</title>
+
+<!-- PWA: Manifest -->
+<link rel="manifest" href="./manifest.json">
+
+<!-- PWA: Theme & Status Bar -->
+<meta name="theme-color" content="#0f1729">
+<meta name="mobile-web-app-capable" content="yes">
+
+<!-- iOS PWA -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CrewGuide">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="152x152" href="./icons/icon-152.png">
+<link rel="apple-touch-icon" sizes="144x144" href="./icons/icon-144.png">
+
+<!-- iOS Splash Screens (iPhone 14 Pro / 15) -->
+<link rel="apple-touch-startup-image"
+  href="./icons/splash-1179x2556.png"
+  media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)">
+<link rel="apple-touch-startup-image"
+  href="./icons/splash-1170x2532.png"
+  media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
+
+<!-- SEO & Sharing -->
+<meta name="description" content="Havacılık çalışanlarının dünya rehberi. Ekip arkadaşlarının tavsiyelerini keşfet.">
+<meta name="application-name" content="CrewGuide">
+<meta property="og:title" content="CrewGuide">
+<meta property="og:description" content="Havacılık çalışanlarının dünya rehberi">
+<meta property="og:type" content="website">
+
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0f1729;
+    --navy-light: #1a2640;
+    --navy-mid: #243354;
+    --gold: #c9a84c;
+    --gold-light: #e8c96a;
+    --cream: #f5f0e8;
+    --cream-dark: #ede7d9;
+    --white: #ffffff;
+    --text-primary: #0f1729;
+    --text-secondary: #6b7280;
+    --text-muted: #9ca3af;
+    --success: #10b981;
+    --danger: #ef4444;
+    --border: rgba(15,23,41,0.1);
+    --shadow: 0 4px 24px rgba(15,23,41,0.08);
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #e8e4dc;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  #app {
+    width: 100%;
+    max-width: 430px;
+    min-height: 100vh;
+    background: var(--cream);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* SCREENS */
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: var(--cream);
+    transition: opacity 0.25s ease;
+  }
+  .screen.active { display: flex; }
+
+  /* TYPOGRAPHY */
+  .font-display { font-family: 'Syne', sans-serif; }
+
+  /* STATUS BAR */
+  .status-bar {
+    background: var(--navy);
+    height: 44px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 20px 8px;
+    flex-shrink: 0;
+  }
+  .status-time { color: rgba(255,255,255,0.9); font-size: 12px; font-weight: 500; }
+  .status-icons { display: flex; gap: 5px; align-items: center; }
+  .status-icon { width: 14px; height: 10px; background: rgba(255,255,255,0.7); border-radius: 2px; }
+  .status-icon.signal { width: 12px; clip-path: polygon(0 100%, 33% 60%, 66% 30%, 100% 0, 100% 100%); }
+  .status-icon.battery { width: 18px; height: 9px; border: 1.5px solid rgba(255,255,255,0.7); border-radius: 2px; position: relative; }
+  .status-icon.battery::after { content:''; position:absolute; right:-4px; top:2px; width:3px; height:5px; background:rgba(255,255,255,0.7); border-radius:0 1px 1px 0; }
+  .status-icon.battery::before { content:''; position:absolute; inset:1px 3px 1px 1px; background:rgba(255,255,255,0.7); border-radius:1px; }
+
+  /* SPLASH SCREEN */
+  #screen-splash {
+    background: var(--navy);
+    justify-content: space-between;
+    padding-bottom: 0;
+  }
+  .splash-top { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 32px; }
+  .splash-logo {
+    width: 80px; height: 80px;
+    background: rgba(201,168,76,0.15);
+    border: 1.5px solid rgba(201,168,76,0.3);
+    border-radius: 24px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px;
+    margin-bottom: 24px;
+  }
+  .splash-title { font-family: 'Syne', sans-serif; font-size: 36px; font-weight: 700; color: var(--white); letter-spacing: -1px; }
+  .splash-tagline { font-size: 13px; color: rgba(255,255,255,0.45); margin-top: 8px; text-align: center; line-height: 1.6; letter-spacing: 0.3px; }
+  .splash-lang { display: flex; gap: 8px; margin-top: 24px; }
+  .lang-btn { padding: 6px 16px; border-radius: 20px; font-size: 11px; font-weight: 500; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.6); background: transparent; transition: all 0.2s; }
+  .lang-btn.active { background: var(--gold); border-color: var(--gold); color: var(--navy); }
+  .splash-bottom { padding: 32px; display: flex; flex-direction: column; gap: 10px; }
+  .btn-primary {
+    width: 100%; padding: 16px; border-radius: var(--radius);
+    background: var(--gold); color: var(--navy);
+    font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600;
+    border: none; cursor: pointer; transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .btn-primary:active { transform: scale(0.98); opacity: 0.9; }
+  .btn-outline {
+    width: 100%; padding: 15px; border-radius: var(--radius);
+    background: transparent; color: rgba(255,255,255,0.7);
+    font-size: 14px; font-weight: 500;
+    border: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: all 0.2s;
+  }
+  .btn-outline:active { opacity: 0.7; }
+  .splash-note { text-align: center; font-size: 10px; color: rgba(255,255,255,0.25); line-height: 1.6; padding: 0 0 16px; }
+
+  /* INVITE SCREEN */
+  .navy-header {
+    background: var(--navy);
+    padding: 16px 20px 20px;
+    flex-shrink: 0;
+  }
+  .nav-back { color: rgba(255,255,255,0.6); font-size: 13px; cursor: pointer; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .nav-back::before { content: '←'; }
+  .header-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; color: var(--white); }
+  .header-sub { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 4px; }
+  .step-indicator { display: flex; gap: 5px; margin-top: 14px; }
+  .step-dot { height: 3px; border-radius: 2px; background: rgba(255,255,255,0.2); flex: 1; }
+  .step-dot.active { background: var(--gold); }
+
+  .screen-body { flex: 1; padding: 24px 20px; display: flex; flex-direction: column; gap: 20px; }
+
+  .invite-visual { text-align: center; padding: 12px 0; }
+  .invite-icon-big { font-size: 48px; margin-bottom: 12px; }
+  .invite-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+
+  .code-entry { display: flex; flex-direction: column; gap: 8px; }
+  .field-label { font-size: 11px; font-weight: 500; color: var(--text-secondary); letter-spacing: 0.5px; text-transform: uppercase; }
+  .code-boxes { display: flex; gap: 8px; }
+  .code-box {
+    flex: 1; height: 52px;
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700;
+    color: var(--text-primary); transition: all 0.2s;
+  }
+  .code-box.filled { border-color: var(--navy); background: #f0f3f9; }
+  .code-hint { font-size: 11px; color: var(--text-muted); text-align: center; }
+
+  .btn-navy {
+    width: 100%; padding: 16px; border-radius: var(--radius);
+    background: var(--navy); color: var(--white);
+    font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600;
+    border: none; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-navy:active { transform: scale(0.98); opacity: 0.9; }
+  .btn-ghost { background: none; border: none; font-size: 12px; color: var(--text-muted); cursor: pointer; padding: 8px; text-align: center; }
+
+  /* PROFILE SETUP */
+  .avatar-picker { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 8px 0; }
+  .avatar-circle {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: var(--navy-light); border: 2px dashed rgba(201,168,76,0.4);
+    display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer;
+  }
+  .avatar-hint { font-size: 11px; color: var(--text-muted); }
+
+  .field-group { display: flex; flex-direction: column; gap: 6px; }
+  .field-input {
+    width: 100%; padding: 14px 16px;
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 14px; color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif; outline: none; transition: border 0.2s;
+  }
+  .field-input:focus { border-color: var(--navy); }
+  .field-input::placeholder { color: var(--text-muted); }
+
+  .privacy-box {
+    background: #f0fdf4; border: 1px solid #bbf7d0;
+    border-radius: var(--radius-sm); padding: 12px 14px;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .privacy-box-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+  .privacy-box-text { font-size: 11px; color: #166534; line-height: 1.6; }
+
+  /* WELCOME SCREEN */
+  #screen-welcome { background: var(--navy); }
+  .welcome-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px; text-align: center; }
+  .welcome-emoji { font-size: 56px; margin-bottom: 20px; }
+  .welcome-title { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 700; color: var(--white); margin-bottom: 8px; }
+  .welcome-sub { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.7; margin-bottom: 28px; }
+  .invite-code-display {
+    background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.3);
+    border-radius: var(--radius); padding: 20px; width: 100%; margin-bottom: 28px;
+  }
+  .invite-code-label { font-size: 10px; color: rgba(255,255,255,0.4); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+  .invite-code-value { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 700; color: var(--gold); letter-spacing: 4px; }
+  .invite-code-quota { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 6px; }
+
+  /* HOME SCREEN */
+  .home-header { background: var(--navy); padding: 16px 20px 0; flex-shrink: 0; }
+  .home-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .home-logo { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; color: var(--white); }
+  .home-avatar { width: 34px; height: 34px; border-radius: 50%; background: rgba(201,168,76,0.2); border: 1.5px solid rgba(201,168,76,0.4); display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; }
+  .location-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px; padding: 5px 12px; font-size: 12px; color: rgba(255,255,255,0.8);
+    margin-bottom: 14px; cursor: pointer;
+  }
+  .location-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
+  .search-bar {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 16px; cursor: pointer;
+  }
+  .search-icon { font-size: 14px; }
+  .search-placeholder { font-size: 13px; color: rgba(255,255,255,0.4); }
+  #search-input::placeholder { color: rgba(255,255,255,0.4); }
+  #search-input { caret-color: rgba(255,255,255,0.8); }
+
+  .cat-tabs { display: flex; gap: 8px; padding-bottom: 1px; overflow-x: auto; scrollbar-width: none; }
+  .cat-tabs::-webkit-scrollbar { display: none; }
+  .cat-tab {
+    flex-shrink: 0; padding: 8px 16px;
+    border-radius: 20px 20px 0 0; font-size: 12px; font-weight: 500;
+    cursor: pointer; border: none; transition: all 0.2s;
+    color: rgba(255,255,255,0.5); background: transparent;
+  }
+  .cat-tab.active { background: var(--cream); color: var(--navy); font-weight: 600; }
+
+  .home-content { flex: 1; padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
+
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .section-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600; color: var(--text-primary); }
+  .section-more { font-size: 12px; color: var(--gold); cursor: pointer; }
+
+  .place-card {
+    background: var(--white); border-radius: var(--radius);
+    border: 1px solid var(--border); overflow: hidden;
+    box-shadow: var(--shadow); cursor: pointer; transition: transform 0.2s;
+  }
+  .place-card:active { transform: scale(0.99); }
+  .place-card-img {
+    height: 130px; display: flex; align-items: center; justify-content: center;
+    font-size: 40px; position: relative;
+  }
+  .place-card-img.food { background: linear-gradient(135deg, #fef3c7, #fde68a); }
+  .place-card-img.shopping { background: linear-gradient(135deg, #e0e7ff, #c7d2fe); }
+  .place-card-img.sightseeing { background: linear-gradient(135deg, #d1fae5, #a7f3d0); }
+  .card-badge {
+    position: absolute; top: 10px; left: 10px;
+    background: var(--navy); color: var(--white);
+    font-size: 9px; font-weight: 600; padding: 3px 8px; border-radius: 10px;
+    letter-spacing: 0.5px;
+  }
+  .place-card-body { padding: 12px 14px; }
+  .place-card-name { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px; }
+  .place-card-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
+  .place-card-row { display: flex; align-items: center; justify-content: space-between; }
+  .price-tag { font-size: 11px; font-weight: 500; color: var(--navy); background: #f0f3f9; padding: 3px 8px; border-radius: 6px; }
+  .likes-tag { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+  .heart { color: #f87171; }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    background: var(--white); border-top: 1px solid var(--border);
+    display: flex; padding: 8px 0 20px; flex-shrink: 0;
+    position: sticky; bottom: 0;
+  }
+  .bnav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 0; }
+  .bnav-icon { font-size: 20px; }
+  .bnav-label { font-size: 9px; color: var(--text-muted); font-weight: 500; }
+  .bnav-item.active .bnav-label { color: var(--navy); font-weight: 600; }
+  .bnav-add { width: 48px; height: 48px; border-radius: 50%; background: var(--navy); display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--white); margin-top: -20px; box-shadow: 0 4px 16px rgba(15,23,41,0.3); }
+
+  /* DETAIL SCREEN */
+  .detail-hero { height: 200px; display: flex; align-items: center; justify-content: center; font-size: 64px; position: relative; flex-shrink: 0; }
+  .detail-hero.food { background: linear-gradient(135deg, #fef3c7, #fde68a); }
+  .detail-hero.shopping { background: linear-gradient(135deg, #e0e7ff, #c7d2fe); }
+  .detail-hero.sightseeing { background: linear-gradient(135deg, #d1fae5, #a7f3d0); }
+  .detail-back { position: absolute; top: 16px; left: 16px; width: 36px; height: 36px; background: rgba(255,255,255,0.9); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; }
+  .detail-save { position: absolute; top: 16px; right: 16px; width: 36px; height: 36px; background: rgba(255,255,255,0.9); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; }
+  .detail-body { flex: 1; padding: 20px; }
+  .detail-name { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+  .detail-addr { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 4px; }
+  .detail-badges { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+  .badge { font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 8px; }
+  .badge-cat { background: #f0f3f9; color: var(--navy); }
+  .badge-price { background: #fef3c7; color: #92400e; }
+  .badge-sub { background: var(--cream-dark); color: var(--text-secondary); }
+  .map-placeholder { width: 100%; height: 80px; background: #e8f4f0; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 13px; color: #2d6a4f; margin-bottom: 16px; gap: 6px; border: 1px solid #b7e4c7; cursor: pointer; }
+  .detail-section { margin-bottom: 16px; }
+  .detail-section-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
+  .detail-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+  .review-card { background: var(--cream-dark); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 8px; }
+  .review-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+  .review-user { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+  .review-stars { font-size: 11px; color: #f59e0b; letter-spacing: 1px; }
+  .review-text { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+  .detail-actions { display: flex; gap: 8px; margin-top: 8px; padding-bottom: 24px; }
+  .action-btn { flex: 1; padding: 12px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 500; border: 1.5px solid var(--border); background: var(--white); color: var(--text-secondary); cursor: pointer; text-align: center; transition: all 0.2s; }
+  .action-btn:active { background: var(--cream-dark); }
+  .action-btn.primary { background: var(--navy); color: var(--white); border-color: var(--navy); font-family: 'Syne', sans-serif; }
+
+  /* ADD SCREEN */
+  .add-body { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+  .main-cat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+  .main-cat-btn {
+    padding: 14px 8px; border-radius: var(--radius-sm); text-align: center;
+    border: 1.5px solid var(--border); background: var(--white);
+    font-size: 11px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: all 0.2s;
+  }
+  .main-cat-btn .cat-emoji { font-size: 22px; display: block; margin-bottom: 4px; }
+  .main-cat-btn.selected { border-color: var(--navy); background: #f0f3f9; color: var(--navy); font-weight: 600; }
+  .sub-cat-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+  .sub-cat-btn {
+    padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 500;
+    border: 1.5px solid var(--border); background: var(--white); color: var(--text-secondary); cursor: pointer; transition: all 0.2s;
+  }
+  .sub-cat-btn.selected { border-color: var(--navy); background: var(--navy); color: var(--white); }
+  .price-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+  .price-opt { padding: 12px; border-radius: var(--radius-sm); text-align: center; border: 1.5px solid var(--border); background: var(--white); cursor: pointer; transition: all 0.2s; }
+  .price-opt .price-sym { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: var(--text-primary); display: block; }
+  .price-opt .price-name { font-size: 9px; color: var(--text-muted); margin-top: 2px; }
+  .price-opt.selected { border-color: var(--gold); background: #fef9ec; }
+  .photo-upload { border: 2px dashed var(--border); border-radius: var(--radius-sm); padding: 24px; text-align: center; cursor: pointer; }
+  .photo-upload-icon { font-size: 28px; margin-bottom: 6px; }
+  .photo-upload-text { font-size: 12px; color: var(--text-muted); }
+  .photo-upload-opt { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
+  .field-textarea { width: 100%; padding: 12px 14px; background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; color: var(--text-primary); font-family: 'DM Sans', sans-serif; outline: none; resize: none; height: 80px; transition: border 0.2s; }
+  .field-textarea:focus { border-color: var(--navy); }
+  .field-textarea::placeholder { color: var(--text-muted); }
+
+  /* PROFILE SCREEN */
+  .profile-hero-section { background: var(--navy); padding: 20px; text-align: center; }
+  .profile-avatar { width: 64px; height: 64px; border-radius: 50%; background: rgba(201,168,76,0.2); border: 2px solid rgba(201,168,76,0.4); display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 10px; }
+  .profile-name { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; color: var(--white); }
+  .profile-since { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 3px; }
+  .profile-stats { display: flex; justify-content: center; gap: 28px; margin-top: 16px; }
+  .p-stat { text-align: center; }
+  .p-stat-num { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; color: var(--white); }
+  .p-stat-label { font-size: 9px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+  .profile-body { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+  .profile-section { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
+  .profile-section-header { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .profile-section-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  .invite-display { padding: 16px; }
+  .invite-code-big { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .invite-code-text { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 700; letter-spacing: 3px; color: var(--navy); }
+  .copy-btn-small { font-size: 11px; background: var(--navy); color: var(--white); border: none; border-radius: 6px; padding: 5px 12px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .quota-text { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
+  .quota-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .quota-fill { height: 100%; background: var(--gold); border-radius: 2px; width: 33%; }
+  .place-row-profile { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); cursor: pointer; }
+  .place-row-profile:last-child { border-bottom: none; }
+  .place-icon-profile { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .place-row-info { flex: 1; }
+  .place-row-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+  .place-row-meta { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .place-row-likes { font-size: 12px; color: var(--text-muted); }
+  .city-row-profile { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .city-row-profile:last-child { border-bottom: none; }
+  .city-flag-big { font-size: 22px; }
+  .city-info { flex: 1; }
+  .city-name-text { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+  .city-meta-text { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .city-right-profile { display: flex; align-items: center; gap: 8px; }
+  .city-size-text { font-size: 10px; color: var(--text-muted); }
+  .city-delete { background: none; border: none; color: #fca5a5; font-size: 14px; cursor: pointer; }
+
+  /* DOWNLOAD MODAL */
+  .modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; display: none; align-items: flex-end; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal-sheet { background: var(--cream); border-radius: 24px 24px 0 0; padding: 20px; width: 100%; }
+  .sheet-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 16px; }
+  .modal-title { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+  .modal-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5; }
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .toggle-row:last-of-type { border-bottom: none; }
+  .toggle-label { font-size: 13px; color: var(--text-primary); }
+  .toggle-sublabel { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .toggle { width: 40px; height: 22px; border-radius: 11px; position: relative; cursor: pointer; flex-shrink: 0; transition: background 0.2s; }
+  .toggle.on { background: var(--navy); }
+  .toggle.off { background: #d1d5db; }
+  .toggle-knob { width: 18px; height: 18px; background: var(--white); border-radius: 50%; position: absolute; top: 2px; transition: left 0.2s; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+  .toggle.on .toggle-knob { left: 20px; }
+  .toggle.off .toggle-knob { left: 2px; }
+  .modal-size { font-size: 12px; color: var(--text-muted); text-align: center; margin-top: 10px; }
+
+  /* SUCCESS TOAST */
+  .toast {
+    position: fixed; top: 60px; left: 50%; transform: translateX(-50%) translateY(-100px);
+    background: var(--navy); color: var(--white);
+    padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 500;
+    z-index: 200; transition: transform 0.3s ease; white-space: nowrap;
+    max-width: 300px;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* UTILS */
+  .divider { height: 1px; background: var(--border); }
+  .spacer { flex: 1; }
+  .hidden { display: none !important; }
+  .text-center { text-align: center; }
+  .mt-8 { margin-top: 8px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <!-- DOWNLOAD MODAL -->
+  <div class="modal-overlay" id="downloadModal">
+    <div class="modal-sheet">
+      <div class="sheet-handle"></div>
+      <div class="modal-title" id="downloadCityName">Seoul İndir</div>
+      <div class="modal-sub" id="downloadCitySub">İnternetsiz kaldığında bu şehrin verilerine ulaşabilirsin.</div>
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label" id="dl-t1">Yer bilgileri & adresler</div>
+          <div class="toggle-sublabel" id="dl-s1">Her zaman dahil · ~2.1 MB</div>
+        </div>
+        <div class="toggle on"><div class="toggle-knob"></div></div>
+      </div>
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label" id="dl-t2">Fotoğraflar</div>
+          <div class="toggle-sublabel" id="dl-s2">Opsiyonel · ~16 MB ekstra</div>
+        </div>
+        <div class="toggle off" id="togglePhotos" onclick="toggleDownloadOption(this)"><div class="toggle-knob"></div></div>
+      </div>
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label" id="dl-t3">Yorumlar</div>
+          <div class="toggle-sublabel" id="dl-s3">Opsiyonel · ~0.4 MB ekstra</div>
+        </div>
+        <div class="toggle on" id="toggleReviews" onclick="toggleDownloadOption(this)"><div class="toggle-knob"></div></div>
+      </div>
+      <button class="btn-navy mt-8" onclick="confirmDownload()" id="downloadBtn">⬇ İndir</button>
+      <div class="modal-size" id="downloadSize">Toplam: ~2.5 MB indirilecek</div>
+      <button class="btn-ghost" onclick="closeModal()" style="width:100%;margin-top:6px;" id="dl-cancel">İptal</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: CITY SELECT -->
+  <div class="screen" id="screen-city">
+    <div class="status-bar">
+      <span class="status-time">09:41</span>
+      <div class="status-icons"><div class="status-icon signal"></div><div class="status-icon battery"></div></div>
+    </div>
+    <div class="navy-header">
+      <div class="nav-back" onclick="goTo('screen-home')" id="back-city">← </div>
+      <div class="header-title font-display" id="city-modal-title">Şehir Seç</div>
+      <div class="header-sub" id="city-modal-sub">Mevcut konumun veya başka bir şehir ara</div>
+    </div>
+    <div style="padding:12px 16px;flex:1;display:flex;flex-direction:column;gap:8px;overflow:hidden;">
+      <div style="position:relative;flex-shrink:0;">
+        <input type="text" id="city-search-input" autocomplete="off"
+          style="width:100%;padding:12px 44px 12px 14px;background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;"
+          oninput="filterCities(this.value)"
+          placeholder="Şehir ara..."
+        >
+        <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:16px;">🔍</span>
+      </div>
+      <div id="city-list" style="display:flex;flex-direction:column;gap:2px;overflow-y:auto;flex:1;padding-bottom:20px;"></div>
+    </div>
+  </div>
+
+  <!-- SCREEN: SPLASH -->
+  <div class="screen active" id="screen-splash">
+    <div class="status-bar">
+      <span class="status-time">09:41</span>
+      <div class="status-icons">
+        <div class="status-icon signal"></div>
+        <div class="status-icon battery"></div>
+      </div>
+    </div>
+    <div class="splash-top">
+      <div class="splash-logo">✈️</div>
+      <div class="splash-title font-display">CrewGuide</div>
+      <div class="splash-tagline" id="splash-tagline">Havacılık çalışanlarının<br>dünya rehberi</div>
+      <div class="splash-lang">
+        <button class="lang-btn active" onclick="setLang('tr', this)">🇹🇷 Türkçe</button>
+        <button class="lang-btn" onclick="setLang('en', this)">🇬🇧 English</button>
+      </div>
+    </div>
+    <div class="splash-bottom">
+      <button class="btn-primary" onclick="goTo('screen-invite')" id="btn-have-code">Davet Kodum Var →</button>
+      <button class="btn-outline" onclick="goTo('screen-home')" id="btn-login">Giriş Yap</button>
+      <div class="splash-note" id="splash-note">Sadece davet ile üye olunabilir.<br>Tüm kişisel bilgiler gizli tutulur.</div>
+    </div>
+  </div>
+
+  <!-- SCREEN: INVITE -->
+  <div class="screen" id="screen-invite">
+    <div class="status-bar">
+      <span class="status-time">09:41</span>
+      <div class="status-icons"><div class="status-icon signal"></div><div class="status-icon battery"></div></div>
+    </div>
+    <div class="navy-header">
+      <div class="nav-back" onclick="goTo('screen-splash')" id="back-splash"></div>
+      <div class="header-title font-display" id="invite-title">Davet Kodu</div>
+      <div class="header-sub" id="invite-sub">Adım 1/3</div>
+      <div class="step-indicator">
+        <div class="step-dot active"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+      </div>
+    </div>
+    <div class="screen-body">
+      <div class="invite-visual">
+        <div class="invite-icon-big">🔐</div>
+        <div class="invite-desc" id="invite-desc">CrewGuide yalnızca davet ile kullanılabilir. Bir ekip arkadaşından kod al.</div>
+      </div>
+      <div class="code-entry">
+        <div class="field-label" id="invite-code-label">DAVET KODU</div>
+        <div class="code-boxes">
+          <div class="code-box filled">C</div>
+          <div class="code-box filled">R</div>
+          <div class="code-box filled">W</div>
+          <div class="code-box filled">-</div>
+          <div class="code-box filled">X</div>
+          <div class="code-box filled">7</div>
+          <div class="code-box filled">K</div>
+        </div>
+        <div class="code-hint" id="invite-hint">7 haneli davet kodu · Büyük/küçük harf duyarsız</div>
+      </div>
+      <button class="btn-navy" onclick="goTo('screen-profile')" id="btn-continue">Devam Et →</button>
+      <button class="btn-ghost" id="btn-no-code">Kodum yok, nasıl alabilirim?</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: PROFILE SETUP -->
+  <div class="screen" id="screen-profile">
+    <div class="status-bar">
+      <span class="status-time">09:41</span>
+      <div class="status-icons"><div class="status-icon signal"></div><div class="status-icon battery"></div></div>
+    </div>
+    <div class="navy-header">
+      <div class="nav-back" onclick="goTo('screen-invite')" id="back-invite"></div>
+      <div class="header-title font-display" id="profile-setup-title">Profil Oluştur</div>
+      <div class="header-sub" id="profile-setup-sub">Adım 2/3</div>
+      <div class="step-indicator">
+        <div class="step-dot"></div>
+        <div class="step-dot active"></div>
+        <div class="step-dot"></div>
+      </div>
+    </div>
+    <div class="screen-body">
+      <div class="avatar-picker">
+        <div class="avatar-circle">✈️</div>
+        <div class="avatar-hint" id="avatar-hint">Fotoğraf ekle (opsiyonel)</div>
+      </div>
+      <div class="field-group">
+        <div class="field-label" id="label-displayname">GÖRÜNEN AD — HERKESE AÇIK</div>
+        <input class="field-input" type="text" placeholder="CaptainSeoul" id="input-displayname">
+      </div>
+      <div class="field-group">
+        <div class="field-label" id="label-email">E-POSTA — SADECE GİRİŞ İÇİN</div>
+        <input class="field-input" type="email" placeholder="email@gmail.com" id="input-email">
+      </div>
+      <div class="field-group">
+        <div class="field-label" id="label-password">ŞİFRE</div>
+        <input class="field-input" type="password" placeholder="••••••••" id="input-password">
+      </div>
+      <div class="privacy-box">
+        <div class="privacy-box-icon">🔒</div>
+        <div class="privacy-box-text" id="privacy-text">E-posta ve şifren hiçbir zaman başkalarıyla paylaşılmaz. Diğer kullanıcılar yalnızca görünen adını görebilir.</div>
+      </div>
+      <button class="btn-navy" onclick="createAccount()" id="btn-create-account">Hesap Oluştur →</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: WELCOME -->
+  <div class="screen" id="screen-welcome" style="background:var(--navy);">
+    <div class="status-bar">
+      <span class="status-time">09:41</span>
+      <div class="status-icons"><div class="status-icon signal"></div><div class="status-icon battery"></div></div>
+    </div>
+    <div class="welcome-body">
+      <div class="welcome-emoji">🎉</div>
+      <div class="welcome-title font-display" id="welcome-title">Hoş geldin!</div>
+      <div class="welcome-sub" id="welcome-sub">Artık dünya genelinde ekip arkadaşlarının tavsiyelerine ulaşabilirsin.</div>
+      <div class="invite-code-display">
+        <div class="invite-code-label" id="your-code-label">SENİN DAVET KODUN</div>
+        <div class="invite-code-value">CRW-X7K</div>
+        <div class="invite-code-quota" id="invite-quota-text">3 arkadaşını davet edebilirsin</div>
+      </div>
+      <button class="btn-primary" onclick="goTo('screen-home')" id="btn-explore">Keşfetmeye Başla →</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: HOME -->
+  <div class="screen" id="screen-home">
+    <div class="status-bar">
+      <span class="status-time">09:41</span>
+      <div class="status-icons"><div class="status-icon signal"></div><div class="status-icon battery"></div></div>
+    </div>
+    <div class="home-header">
+      <div class="home-top">
+        <div class="home-logo font-display">CrewGuide</div>
+        <div class="home-avatar" onclick="goTo('screen-profile-view')">✈️</div>
+      </div>
+      <div class="location-pill" onclick="detectLocation()" id="location-pill">
+        <div class="location-dot" id="location-dot"></div>
+        <span id="location-text">📍 Seoul, Güney Kore</span>
+      </div>
+      <div class="search-bar" style="padding:0;">
+        <input
+          type="text"
+          id="search-input"
+          autocomplete="off"
+          placeholder=""
+          style="flex:1;background:transparent;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;color:rgba(255,255,255,0.85);padding:10px 0 10px 14px;"
+          oninput="onSearch(this.value)"
+        >
+        <div class="search-icon" style="padding:0 12px 0 0;">🔍</div>
+      </div>
+      <div class="cat-tabs">
+        <button class="cat-tab active" onclick="filterCat('all', this)" id="tab-all">Tümü</button>
+        <button class="cat-tab" onclick="filterCat('food', this)" id="tab-food">🍜 Yemek</button>
+        <button class="cat-tab" onclick="filterCat('shopping', this)" id="tab-shopping">🛍 Alışveriş</button>
+        <button class="cat-tab" onclick="filterCat('sightseeing', this)" id="tab-sight">🗺 Gezi</button>
+      </div>
+    </div>
+    <div class="home-content" id="home-content">
+      <!-- Cards injected by JS -->
+    </div>
+    <div class="bottom-nav">
+      <div class="bnav-item active"><div class="bnav-icon">🏠</div><div class="bnav-label" id="bnav-home">Keşfet</div></div>
+      <div class="bnav-item" onclick="goTo('screen-saved')"><div class="bnav-icon">🔖</div><div class="bnav-label" id="bnav-saved">Kayıtlı</div></div>
+      <div class="bnav-item" onclick="goTo('screen-add')"><div class="bnav-add">＋</div></div>
+      <div class="bnav-item" onclick="goTo('screen-profile-view')"><div class="bnav-icon">👤</div><div class="bnav-label" id="bnav-profile">Profil</div></div>
+    </div>
+  </div>
+
+  <!-- SCREEN: DETAIL -->
+  <div class="screen" id="screen-detail">
+    <div class="detail-hero food" id="detail-hero">
+      <div class="detail-back" onclick="goTo('screen-home')">←</div>
+      <div class="detail-save" id="detail-save-btn" onclick="toggleSave()">🔖</div>
+      <span id="detail-emoji" style="font-size:64px;">🥩</span>
+    </div>
+    <div class="detail-body">
+      <div class="detail-name font-display" id="detail-name">Mukbang BBQ</div>
+      <div class="detail-addr">📍 <span id="detail-addr">Mapo-gu, Seoul</span></div>
+      <div class="detail-badges">
+        <span class="badge badge-cat" id="detail-cat-badge">Yemek</span>
+        <span class="badge badge-sub" id="detail-sub-badge">Restoran</span>
+        <span class="badge badge-price" id="detail-price-badge">$$ Orta</span>
+      </div>
+      <div class="map-placeholder">🗺 <span id="map-text">Haritada Göster</span></div>
+      <div class="detail-section">
+        <div class="detail-section-title" id="about-title">Hakkında</div>
+        <div class="detail-desc" id="detail-desc">Sınırsız Kore barbekü, 90 dk. Akşam yoğun olur, öğlen git. Ödeme nakit tercih ediyorlar.</div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-section-title" id="reviews-title">Yorumlar</div>
+        <div class="review-card">
+          <div class="review-top">
+            <div class="review-user">CaptainSeoul</div>
+            <div class="review-stars">★★★★★</div>
+          </div>
+          <div class="review-text" id="review1-text">Et kalitesi çok iyi, garsonlar İngilizce biliyor, mutlaka gidin!</div>
+        </div>
+        <div class="review-card">
+          <div class="review-top">
+            <div class="review-user">CrewMate_47</div>
+            <div class="review-stars">★★★☆☆</div>
+          </div>
+          <div class="review-text" id="review2-text">Yemek güzeldi ama hafta sonu 1 saat beklettiler, rezervasyon şart.</div>
+        </div>
+      </div>
+      <div class="detail-actions">
+        <button class="action-btn" id="btn-like" onclick="toggleLike()">♥ <span id="like-label">Beğen</span></button>
+        <button class="action-btn" id="btn-save-detail" onclick="toggleSave()">🔖 <span id="save-label">Kaydet</span></button>
+        <button class="action-btn primary" id="btn-comment" onclick="showToast(lang==='tr'?'Yorum özelliği yakında!':'Comment feature coming soon!')">💬 <span id="comment-label">Yorum</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN: ADD PLACE -->
+  <div class="screen" id="screen-add">
+    <div class="status-bar">
+      <span class="status-time">09:41</span>
+      <div class="status-icons"><div class="status-icon signal"></div><div class="status-icon battery"></div></div>
+    </div>
+    <div class="navy-header">
+      <div class="nav-back" onclick="goTo('screen-home')" id="back-home-add"></div>
+      <div class="header-title font-display" id="add-title">Yeni Yer Ekle</div>
+      <div class="header-sub" id="add-sub">Seoul · Deneyimini paylaş</div>
+    </div>
+    <div class="add-body">
+      <div>
+        <div class="field-label" id="label-main-cat" style="margin-bottom:8px;">ANA KATEGORİ</div>
+        <div class="main-cat-grid">
+          <div class="main-cat-btn selected" onclick="selectMainCat('food', this)" id="cat-food">
+            <span class="cat-emoji">🍜</span><span id="cat-food-label">Yemek</span>
+          </div>
+          <div class="main-cat-btn" onclick="selectMainCat('shopping', this)" id="cat-shopping">
+            <span class="cat-emoji">🛍</span><span id="cat-shopping-label">Alışveriş</span>
+          </div>
+          <div class="main-cat-btn" onclick="selectMainCat('sightseeing', this)" id="cat-sight-btn">
+            <span class="cat-emoji">🗺</span><span id="cat-sight-label">Gezi</span>
+          </div>
+        </div>
+      </div>
+      <div id="sub-cat-section">
+        <div class="field-label" id="label-sub-cat" style="margin-bottom:8px;">ALT KATEGORİ</div>
+        <div class="sub-cat-wrap" id="sub-cats"></div>
+      </div>
+      <div class="field-group">
+        <div class="field-label" id="label-place-name">YER ADI</div>
+        <input class="field-input" type="text" id="input-place-name" placeholder="Mukbang BBQ">
+      </div>
+      <div class="field-group">
+        <div class="field-label" id="label-place-addr">ADRES / KONUM</div>
+        <input class="field-input" type="text" id="input-place-addr" placeholder="Mapo-gu, Seoul">
+      </div>
+      <div>
+        <div class="field-label" id="label-price" style="margin-bottom:8px;">FİYAT ARALIĞI</div>
+        <div class="price-grid">
+          <div class="price-opt selected" onclick="selectPrice(this)">
+            <span class="price-sym">$</span>
+            <span class="price-name" id="price-cheap">Uygun</span>
+          </div>
+          <div class="price-opt" onclick="selectPrice(this)">
+            <span class="price-sym">$$</span>
+            <span class="price-name" id="price-mid">Orta</span>
+          </div>
+          <div class="price-opt" onclick="selectPrice(this)">
+            <span class="price-sym">$$$</span>
+            <span class="price-name" id="price-high">Pahalı</span>
+          </div>
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field-label" id="label-desc">AÇIKLAMA & NOTLAR</div>
+        <textarea class="field-textarea" id="input-desc" placeholder="Sınırsız et, 90 dk, akşam kalabalık..."></textarea>
+      </div>
+      <div class="photo-upload" onclick="showToast(lang==='tr'?'Fotoğraf yükleme yakında!':'Photo upload coming soon!')">
+        <div class="photo-upload-icon">📷</div>
+        <div class="photo-upload-text" id="photo-text">Fotoğraf Ekle</div>
+        <div class="photo-upload-opt" id="photo-opt">Opsiyonel · En fazla 5 fotoğraf</div>
+      </div>
+      <button class="btn-navy" onclick="submitPlace()" id="btn-submit">Paylaş →</button>
+      <div style="height:20px;"></div>
+    </div>
+  </div>
+
+  <!-- SCREEN: SAVED -->
+  <div class="screen" id="screen-saved">
+    <div class="status-bar">
+      <span class="status-time">09:41</span>
+      <div class="status-icons"><div class="status-icon signal"></div><div class="status-icon battery"></div></div>
+    </div>
+    <div class="navy-header">
+      <div class="nav-back" onclick="goTo('screen-home')" id="back-saved"></div>
+      <div class="header-title font-display" id="saved-title">Kayıtlı Yerler</div>
+      <div class="header-sub" id="saved-sub">Beğendiklerini kaydet</div>
+    </div>
+    <div style="flex:1;padding:20px;display:flex;flex-direction:column;gap:12px;" id="saved-content">
+      <div style="text-align:center;padding:40px 20px;color:var(--text-muted);">
+        <div style="font-size:40px;margin-bottom:12px;">🔖</div>
+        <div style="font-size:14px;" id="saved-empty">Henüz kayıtlı yer yok. Beğendiğin yerleri kaydet!</div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <div class="bnav-item" onclick="goTo('screen-home')"><div class="bnav-icon">🏠</div><div class="bnav-label">Keşfet</div></div>
+      <div class="bnav-item active"><div class="bnav-icon">🔖</div><div class="bnav-label">Kayıtlı</div></div>
+      <div class="bnav-item" onclick="goTo('screen-add')"><div class="bnav-add">＋</div></div>
+      <div class="bnav-item" onclick="goTo('screen-profile-view')"><div class="bnav-icon">👤</div><div class="bnav-label">Profil</div></div>
+    </div>
+  </div>
+
+  <!-- SCREEN: PROFILE VIEW -->
+  <div class="screen" id="screen-profile-view">
+    <div class="status-bar">
+      <span class="status-time">09:41</span>
+      <div class="status-icons"><div class="status-icon signal"></div><div class="status-icon battery"></div></div>
+    </div>
+    <div class="profile-hero-section" style="position:relative;">
+      <button onclick="goTo('screen-settings')" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.12);border:none;border-radius:50%;width:34px;height:34px;font-size:16px;cursor:pointer;">⚙️</button>
+      <div class="profile-avatar">✈️</div>
+      <div class="profile-name font-display">CaptainSeoul</div>
+      <div class="profile-since" id="profile-since">Üye · Mart 2025</div>
+      <div class="profile-stats">
+        <div class="p-stat"><div class="p-stat-num" id="stat-places">12</div><div class="p-stat-label" id="stat-places-label">Eklenen yer</div></div>
+        <div class="p-stat"><div class="p-stat-num">38</div><div class="p-stat-label" id="stat-likes-label">Beğeni aldı</div></div>
+        <div class="p-stat"><div class="p-stat-num">1/3</div><div class="p-stat-label" id="stat-invite-label">Davet</div></div>
+      </div>
+    </div>
+    <div class="profile-body">
+      <div class="profile-section">
+        <div class="profile-section-header">
+          <div class="profile-section-title" id="section-invite">Davet Kodum</div>
+        </div>
+        <div class="invite-display">
+          <div class="invite-code-big">
+            <div class="invite-code-text">CRW-X7K</div>
+            <button class="copy-btn-small" onclick="showToast(lang==='tr'?'Kod kopyalandı!':'Code copied!')" id="btn-copy">Kopyala</button>
+          </div>
+          <div class="quota-text" id="quota-text">1 kişiyi davet ettin · 2 hakkın kaldı</div>
+          <div class="quota-bar"><div class="quota-fill"></div></div>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <div class="profile-section-header">
+          <div class="profile-section-title" id="section-my-places">Eklediğim Yerler</div>
+        </div>
+        <div class="place-row-profile" onclick="openDetail('mukbang')">
+          <div class="place-icon-profile" style="background:#fef3c7;">🥩</div>
+          <div class="place-row-info">
+            <div class="place-row-name">Mukbang BBQ</div>
+            <div class="place-row-meta">Seoul · <span id="cat-food-badge">Yemek</span></div>
+          </div>
+          <div class="place-row-likes">♥ 21</div>
+        </div>
+        <div class="place-row-profile" onclick="openDetail('dongdaemun')">
+          <div class="place-icon-profile" style="background:#e0e7ff;">👜</div>
+          <div class="place-row-info">
+            <div class="place-row-name">Dongdaemun Market</div>
+            <div class="place-row-meta">Seoul · <span id="cat-shop-badge">Alışveriş</span></div>
+          </div>
+          <div class="place-row-likes">♥ 17</div>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <div class="profile-section-header">
+          <div class="profile-section-title" id="section-offline">Çevrimdışı Şehirler</div>
+        </div>
+        <div class="city-row-profile">
+          <div class="city-flag-big">🇰🇷</div>
+          <div class="city-info">
+            <div class="city-name-text">Seoul</div>
+            <div class="city-meta-text" id="city1-meta">47 yer · 2.3 MB · Fotoğrafsız</div>
+          </div>
+          <div class="city-right-profile">
+            <button class="city-delete" onclick="showToast(lang==='tr'?'Seoul silindi.':'Seoul removed.')">✕</button>
+          </div>
+        </div>
+        <div class="city-row-profile">
+          <div class="city-flag-big">🇯🇵</div>
+          <div class="city-info">
+            <div class="city-name-text">Tokyo</div>
+            <div class="city-meta-text" id="city2-meta">61 yer · 18 MB · Fotoğraflı</div>
+          </div>
+          <div class="city-right-profile">
+            <button class="city-delete" onclick="showToast(lang==='tr'?'Tokyo silindi.':'Tokyo removed.')">✕</button>
+          </div>
+        </div>
+        <div class="city-row-profile" style="cursor:pointer;" onclick="openDownloadModal('Paris', 'FR')">
+          <div class="city-flag-big">🇫🇷</div>
+          <div class="city-info">
+            <div class="city-name-text">Paris</div>
+            <div class="city-meta-text" id="city3-meta">34 yer · Henüz indirilmedi</div>
+          </div>
+          <div class="city-right-profile">
+            <button class="copy-btn-small" style="background:var(--gold);color:var(--navy);" onclick="event.stopPropagation();openDownloadModal('Paris','FR')" id="btn-download-paris">⬇ İndir</button>
+          </div>
+        </div>
+      </div>
+      <div style="height:20px;"></div>
+    </div>
+    <div class="bottom-nav">
+      <div class="bnav-item" onclick="goTo('screen-home')"><div class="bnav-icon">🏠</div><div class="bnav-label">Keşfet</div></div>
+      <div class="bnav-item" onclick="goTo('screen-saved')"><div class="bnav-icon">🔖</div><div class="bnav-label">Kayıtlı</div></div>
+      <div class="bnav-item" onclick="goTo('screen-add')"><div class="bnav-add">＋</div></div>
+      <div class="bnav-item active"><div class="bnav-icon">👤</div><div class="bnav-label">Profil</div></div>
+    </div>
+  </div>
+
+
+  <!-- SCREEN: SETTINGS -->
+  <div class="screen" id="screen-settings">
+    <div class="status-bar">
+      <span class="status-time">09:41</span>
+      <div class="status-icons"><div class="status-icon signal"></div><div class="status-icon battery"></div></div>
+    </div>
+    <div class="navy-header" id="settings-header">
+      <div class="nav-back" onclick="goTo('screen-profile-view')">← </div>
+      <div class="header-title font-display" id="settings-title">Ayarlar</div>
+      <div class="header-sub" id="settings-sub">Görünümü kişiselleştir</div>
+    </div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:20px;">
+
+      <!-- DARK/LIGHT MODE -->
+      <div style="background:var(--white);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border);">
+          <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--text-primary);" id="settings-mode-title">Mod</div>
+        </div>
+        <div style="padding:12px 16px;display:flex;gap:10px;">
+          <div id="btn-light" onclick="setMode('light')" style="flex:1;padding:14px;border-radius:var(--radius-sm);border:2px solid var(--navy);background:var(--cream);text-align:center;cursor:pointer;transition:all 0.2s;">
+            <div style="font-size:22px;margin-bottom:4px;">☀️</div>
+            <div style="font-size:12px;font-weight:500;color:var(--text-primary);" id="label-light">Açık</div>
+          </div>
+          <div id="btn-dark" onclick="setMode('dark')" style="flex:1;padding:14px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--white);text-align:center;cursor:pointer;transition:all 0.2s;">
+            <div style="font-size:22px;margin-bottom:4px;">🌙</div>
+            <div style="font-size:12px;font-weight:500;color:var(--text-primary);" id="label-dark">Koyu</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACCENT COLOR -->
+      <div style="background:var(--white);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border);">
+          <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--text-primary);" id="settings-accent-title">Vurgu Rengi</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;" id="settings-accent-sub">Butonlar ve başlıklarda kullanılır</div>
+        </div>
+        <div style="padding:16px;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+            <div id="accent-preview" style="width:48px;height:48px;border-radius:12px;background:var(--gold);flex-shrink:0;"></div>
+            <div style="flex:1;">
+              <input type="color" id="accent-picker" value="#c9a84c"
+                style="width:100%;height:36px;border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;background:none;padding:2px;"
+                oninput="applyAccent(this.value)">
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;" id="label-presets">Hazır renkler</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div onclick="applyAccent('#c9a84c');document.getElementById('accent-picker').value='#c9a84c'" style="width:32px;height:32px;border-radius:8px;background:#c9a84c;cursor:pointer;border:2px solid transparent;" class="preset-dot"></div>
+            <div onclick="applyAccent('#0f1729');document.getElementById('accent-picker').value='#0f1729'" style="width:32px;height:32px;border-radius:8px;background:#0f1729;cursor:pointer;border:2px solid transparent;" class="preset-dot"></div>
+            <div onclick="applyAccent('#2563eb');document.getElementById('accent-picker').value='#2563eb'" style="width:32px;height:32px;border-radius:8px;background:#2563eb;cursor:pointer;border:2px solid transparent;" class="preset-dot"></div>
+            <div onclick="applyAccent('#16a34a');document.getElementById('accent-picker').value='#16a34a'" style="width:32px;height:32px;border-radius:8px;background:#16a34a;cursor:pointer;border:2px solid transparent;" class="preset-dot"></div>
+            <div onclick="applyAccent('#dc2626');document.getElementById('accent-picker').value='#dc2626'" style="width:32px;height:32px;border-radius:8px;background:#dc2626;cursor:pointer;border:2px solid transparent;" class="preset-dot"></div>
+            <div onclick="applyAccent('#9333ea');document.getElementById('accent-picker').value='#9333ea'" style="width:32px;height:32px;border-radius:8px;background:#9333ea;cursor:pointer;border:2px solid transparent;" class="preset-dot"></div>
+            <div onclick="applyAccent('#0891b2');document.getElementById('accent-picker').value='#0891b2'" style="width:32px;height:32px;border-radius:8px;background:#0891b2;cursor:pointer;border:2px solid transparent;" class="preset-dot"></div>
+            <div onclick="applyAccent('#ea580c');document.getElementById('accent-picker').value='#ea580c'" style="width:32px;height:32px;border-radius:8px;background:#ea580c;cursor:pointer;border:2px solid transparent;" class="preset-dot"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BG COLOR -->
+      <div style="background:var(--white);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border);">
+          <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--text-primary);" id="settings-bg-title">Arka Plan Rengi</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;" id="settings-bg-sub">Genel sayfa arka planı</div>
+        </div>
+        <div style="padding:16px;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+            <div id="bg-preview" style="width:48px;height:48px;border-radius:12px;background:var(--cream);flex-shrink:0;border:1px solid var(--border);"></div>
+            <div style="flex:1;">
+              <input type="color" id="bg-picker" value="#f5f0e8"
+                style="width:100%;height:36px;border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;background:none;padding:2px;"
+                oninput="applyBg(this.value)">
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;" id="label-bg-presets">Hazır renkler</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div onclick="applyBg('#f5f0e8');document.getElementById('bg-picker').value='#f5f0e8'" style="width:32px;height:32px;border-radius:8px;background:#f5f0e8;cursor:pointer;border:1px solid #ccc;" class="preset-dot"></div>
+            <div onclick="applyBg('#ffffff');document.getElementById('bg-picker').value='#ffffff'" style="width:32px;height:32px;border-radius:8px;background:#ffffff;cursor:pointer;border:1px solid #ccc;" class="preset-dot"></div>
+            <div onclick="applyBg('#f0f4ff');document.getElementById('bg-picker').value='#f0f4ff'" style="width:32px;height:32px;border-radius:8px;background:#f0f4ff;cursor:pointer;border:1px solid #ccc;" class="preset-dot"></div>
+            <div onclick="applyBg('#f0fdf4');document.getElementById('bg-picker').value='#f0fdf4'" style="width:32px;height:32px;border-radius:8px;background:#f0fdf4;cursor:pointer;border:1px solid #ccc;" class="preset-dot"></div>
+            <div onclick="applyBg('#fdf4ff');document.getElementById('bg-picker').value='#fdf4ff'" style="width:32px;height:32px;border-radius:8px;background:#fdf4ff;cursor:pointer;border:1px solid #ccc;" class="preset-dot"></div>
+            <div onclick="applyBg('#fff7ed');document.getElementById('bg-picker').value='#fff7ed'" style="width:32px;height:32px;border-radius:8px;background:#fff7ed;cursor:pointer;border:1px solid #ccc;" class="preset-dot"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESET -->
+      <button onclick="resetTheme()" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid var(--border);background:transparent;font-size:13px;color:var(--text-muted);cursor:pointer;font-family:'DM Sans',sans-serif;" id="btn-reset-theme">↺ Varsayılana Sıfırla</button>
+      <div style="height:20px;"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let lang = 'tr';
+let currentCat = 'all';
+let selectedMainCat = 'food';
+let liked = false;
+let saved = false;
+
+const places = [
+  { id:'mukbang', cat:'food', subcat:'Restoran', emoji:'🥩', name:'Mukbang BBQ', addr:'Mapo-gu, Seoul', price:'$$', priceName:{tr:'Orta',en:'Mid-range'}, likes:47, desc:{tr:'Sınırsız Kore barbekü, 90 dk. Akşam yoğun olur, öğlen git. Ödeme nakit tercih ediyorlar.',en:'Unlimited Korean BBQ, 90 min. Gets crowded in evenings, go for lunch. Cash payment preferred.'} },
+  { id:'dongdaemun', cat:'shopping', subcat:'Çanta & Valiz', emoji:'👜', name:'Dongdaemun Market', addr:'Jung-gu, Seoul', price:'$', priceName:{tr:'Uygun',en:'Budget'}, likes:31, desc:{tr:'Tekstil ve aksesuar için harika. Toplu alımda fiyat pazarlığı yapılabilir. Gece de açık.',en:'Great for textiles and accessories. Bargain for bulk purchases. Open at night too.'} },
+  { id:'gyeongbok', cat:'sightseeing', subcat:'Tarihi Yerler', emoji:'🏯', name:'Gyeongbokgung Palace', addr:'Jongno-gu, Seoul', price:'$', priceName:{tr:'Uygun',en:'Budget'}, likes:89, desc:{tr:'Seoul\'ün en büyük sarayı. Nöbet değişimi sabah 10\'da. Hanbok kiralayıp gir, ücretsiz!',en:'Seoul\'s largest palace. Guard changing at 10am. Rent a Hanbok to enter for free!'} },
+  { id:'cafe', cat:'food', subcat:'Kafe', emoji:'☕', name:'Cafe Bora', addr:'Insadong, Seoul', price:'$', priceName:{tr:'Uygun',en:'Budget'}, likes:55, desc:{tr:'Mor renkli dondurma ve latte\'siyle ünlü. Instagram için mükemmel. Erken git!',en:'Famous for purple-colored ice cream and lattes. Perfect for Instagram. Go early!'} },
+];
+
+const subcats = {
+  food: [{tr:'🍳 Kahvaltı',en:'🍳 Breakfast'},{tr:'🥡 Sokak Yemeği',en:'🥡 Street Food'},{tr:'🍽 Restoran',en:'🍽 Restaurant'},{tr:'☕ Kafe',en:'☕ Café'},{tr:'🍺 Bar & Pub',en:'🍺 Bar & Pub'},{tr:'🍰 Tatlı',en:'🍰 Dessert'}],
+  shopping: [{tr:'👕 Kıyafet',en:'👕 Clothing'},{tr:'📱 Elektronik',en:'📱 Electronics'},{tr:'💄 Kozmetik',en:'💄 Cosmetics'},{tr:'👜 Çanta & Valiz',en:'👜 Bags & Luggage'},{tr:'💍 Takı & Aksesuar',en:'💍 Jewelry & Accessories'},{tr:'🏪 Market',en:'🏪 General Store'}],
+  sightseeing: [{tr:'🏛 Müze',en:'🏛 Museum'},{tr:'🌿 Doğa & Park',en:'🌿 Nature & Park'},{tr:'🏰 Tarihi Yerler',en:'🏰 Historical Sites'},{tr:'🎡 Eğlence',en:'🎡 Entertainment'},{tr:'🌙 Gece Hayatı',en:'🌙 Nightlife'},{tr:'🛕 Dini Yapılar',en:'🛕 Religious Sites'}]
+};
+
+const translations = {
+  tr: {
+    'splash-tagline': 'Havacılık çalışanlarının<br>dünya rehberi',
+    'btn-have-code': 'Davet Kodum Var →',
+    'btn-login': 'Giriş Yap',
+    'splash-note': 'Sadece davet ile üye olunabilir.<br>Tüm kişisel bilgiler gizli tutulur.',
+    'back-splash': '', 'invite-title': 'Davet Kodu', 'invite-sub': 'Adım 1/3',
+    'invite-desc': 'CrewGuide yalnızca davet ile kullanılabilir. Bir ekip arkadaşından kod al.',
+    'invite-code-label': 'DAVET KODU',
+    'invite-hint': '7 haneli davet kodu · Büyük/küçük harf duyarsız',
+    'btn-continue': 'Devam Et →', 'btn-no-code': 'Kodum yok, nasıl alabilirim?',
+    'back-invite': '', 'profile-setup-title': 'Profil Oluştur', 'profile-setup-sub': 'Adım 2/3',
+    'avatar-hint': 'Fotoğraf ekle (opsiyonel)',
+    'label-displayname': 'GÖRÜNEN AD — HERKESE AÇIK',
+    'label-email': 'E-POSTA — SADECE GİRİŞ İÇİN',
+    'label-password': 'ŞİFRE',
+    'privacy-text': 'E-posta ve şifren hiçbir zaman başkalarıyla paylaşılmaz. Diğer kullanıcılar yalnızca görünen adını görebilir.',
+    'btn-create-account': 'Hesap Oluştur →',
+    'welcome-title': 'Hoş geldin!',
+    'welcome-sub': 'Artık dünya genelinde ekip arkadaşlarının tavsiyelerine ulaşabilirsin.',
+    'your-code-label': 'SENİN DAVET KODUN', 'invite-quota-text': '3 arkadaşını davet edebilirsin',
+    'btn-explore': 'Keşfetmeye Başla →',
+    'location-text': '📍 Seoul, Güney Kore', 'search-placeholder': 'Yer, yemek, mağaza ara...',
+    'tab-all': 'Tümü', 'tab-food': '🍜 Yemek', 'tab-shopping': '🛍 Alışveriş', 'tab-sight': '🗺 Gezi',
+    'bnav-home': 'Keşfet', 'bnav-saved': 'Kayıtlı', 'bnav-profile': 'Profil',
+    'about-title': 'Hakkında', 'reviews-title': 'Yorumlar',
+    'review1-text': 'Et kalitesi çok iyi, garsonlar İngilizce biliyor, mutlaka gidin!',
+    'review2-text': 'Yemek güzeldi ama hafta sonu 1 saat beklettiler, rezervasyon şart.',
+    'like-label': 'Beğen', 'save-label': 'Kaydet', 'comment-label': 'Yorum',
+    'map-text': 'Haritada Göster',
+    'back-home-add': '', 'add-title': 'Yeni Yer Ekle', 'add-sub': 'Seoul · Deneyimini paylaş',
+    'label-main-cat': 'ANA KATEGORİ', 'label-sub-cat': 'ALT KATEGORİ',
+    'cat-food-label': 'Yemek', 'cat-shopping-label': 'Alışveriş', 'cat-sight-label': 'Gezi',
+    'label-place-name': 'YER ADI', 'label-place-addr': 'ADRES / KONUM',
+    'label-price': 'FİYAT ARALIĞI', 'price-cheap': 'Uygun', 'price-mid': 'Orta', 'price-high': 'Pahalı',
+    'label-desc': 'AÇIKLAMA & NOTLAR', 'photo-text': 'Fotoğraf Ekle',
+    'photo-opt': 'Opsiyonel · En fazla 5 fotoğraf', 'btn-submit': 'Paylaş →',
+    'back-saved': '', 'saved-title': 'Kayıtlı Yerler', 'saved-sub': 'Beğendiklerini kaydet',
+    'saved-empty': 'Henüz kayıtlı yer yok. Beğendiğin yerleri kaydet!',
+    'profile-since': 'Üye · Mart 2025',
+    'stat-places-label': 'Eklenen yer', 'stat-likes-label': 'Beğeni aldı', 'stat-invite-label': 'Davet',
+    'section-invite': 'Davet Kodum', 'quota-text': '1 kişiyi davet ettin · 2 hakkın kaldı',
+    'btn-copy': 'Kopyala', 'section-my-places': 'Eklediğim Yerler',
+    'cat-food-badge': 'Yemek', 'cat-shop-badge': 'Alışveriş',
+    'section-offline': 'Çevrimdışı Şehirler',
+    'city1-meta': '47 yer · 2.3 MB · Fotoğrafsız', 'city2-meta': '61 yer · 18 MB · Fotoğraflı',
+    'city3-meta': '34 yer · Henüz indirilmedi', 'btn-download-paris': '⬇ İndir',
+    'dl-t1': 'Yer bilgileri & adresler', 'dl-s1': 'Her zaman dahil · ~2.1 MB',
+    'dl-t2': 'Fotoğraflar', 'dl-s2': 'Opsiyonel · ~16 MB ekstra',
+    'dl-t3': 'Yorumlar', 'dl-s3': 'Opsiyonel · ~0.4 MB ekstra',
+    'dl-cancel': 'İptal',
+  },
+  en: {
+    'splash-tagline': 'The world guide for<br>aviation crew',
+    'btn-have-code': 'I Have an Invite Code →',
+    'btn-login': 'Log In',
+    'splash-note': 'Invite-only membership.<br>All personal data is kept private.',
+    'back-splash': '', 'invite-title': 'Invite Code', 'invite-sub': 'Step 1/3',
+    'invite-desc': 'CrewGuide is invite-only. Ask a colleague for a code.',
+    'invite-code-label': 'INVITE CODE',
+    'invite-hint': '7-character invite code · Case insensitive',
+    'btn-continue': 'Continue →', 'btn-no-code': 'No code? How do I get one?',
+    'back-invite': '', 'profile-setup-title': 'Create Profile', 'profile-setup-sub': 'Step 2/3',
+    'avatar-hint': 'Add photo (optional)',
+    'label-displayname': 'DISPLAY NAME — PUBLIC',
+    'label-email': 'EMAIL — FOR LOGIN ONLY',
+    'label-password': 'PASSWORD',
+    'privacy-text': 'Your email and password are never shared. Other users can only see your display name.',
+    'btn-create-account': 'Create Account →',
+    'welcome-title': 'Welcome!',
+    'welcome-sub': 'You can now access recommendations from crew around the world.',
+    'your-code-label': 'YOUR INVITE CODE', 'invite-quota-text': 'You can invite 3 friends',
+    'btn-explore': 'Start Exploring →',
+    'location-text': '📍 Seoul, South Korea', 'search-placeholder': 'Search places, food, shops...',
+    'tab-all': 'All', 'tab-food': '🍜 Food', 'tab-shopping': '🛍 Shopping', 'tab-sight': '🗺 Sightseeing',
+    'bnav-home': 'Explore', 'bnav-saved': 'Saved', 'bnav-profile': 'Profile',
+    'about-title': 'About', 'reviews-title': 'Reviews',
+    'review1-text': 'Meat quality is excellent, staff speaks English, highly recommend!',
+    'review2-text': 'Food was great but waited 1 hour on weekends, reservations essential.',
+    'like-label': 'Like', 'save-label': 'Save', 'comment-label': 'Review',
+    'map-text': 'View on Map',
+    'back-home-add': '', 'add-title': 'Add New Place', 'add-sub': 'Seoul · Share your experience',
+    'label-main-cat': 'MAIN CATEGORY', 'label-sub-cat': 'SUBCATEGORY',
+    'cat-food-label': 'Food', 'cat-shopping-label': 'Shopping', 'cat-sight-label': 'Sightseeing',
+    'label-place-name': 'PLACE NAME', 'label-place-addr': 'ADDRESS / LOCATION',
+    'label-price': 'PRICE RANGE', 'price-cheap': 'Budget', 'price-mid': 'Mid-range', 'price-high': 'Expensive',
+    'label-desc': 'DESCRIPTION & NOTES', 'photo-text': 'Add Photo',
+    'photo-opt': 'Optional · Up to 5 photos', 'btn-submit': 'Share →',
+    'back-saved': '', 'saved-title': 'Saved Places', 'saved-sub': 'Your bookmarked places',
+    'saved-empty': 'No saved places yet. Save the places you like!',
+    'profile-since': 'Member · March 2025',
+    'stat-places-label': 'Places added', 'stat-likes-label': 'Likes received', 'stat-invite-label': 'Invites',
+    'section-invite': 'My Invite Code', 'quota-text': 'You invited 1 person · 2 remaining',
+    'btn-copy': 'Copy', 'section-my-places': 'My Added Places',
+    'cat-food-badge': 'Food', 'cat-shop-badge': 'Shopping',
+    'section-offline': 'Offline Cities',
+    'city1-meta': '47 places · 2.3 MB · No photos', 'city2-meta': '61 places · 18 MB · With photos',
+    'city3-meta': '34 places · Not downloaded yet', 'btn-download-paris': '⬇ Download',
+    'dl-t1': 'Place info & addresses', 'dl-s1': 'Always included · ~2.1 MB',
+    'dl-t2': 'Photos', 'dl-s2': 'Optional · ~16 MB extra',
+    'dl-t3': 'Reviews', 'dl-s3': 'Optional · ~0.4 MB extra',
+    'dl-cancel': 'Cancel',
+  }
+};
+
+function setLang(l, btn) {
+  lang = l;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyTranslations();
+}
+
+function applyTranslations() {
+  const t = translations[lang];
+  for (const [id, val] of Object.entries(t)) {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = val;
+  }
+  renderCards();
+  renderSubCats();
+}
+
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById(id).scrollTop = 0;
+  if (id === 'screen-home' && !locationDetected) {
+    locationDetected = true;
+    useCurrentLocation();
+  }
+}
+let locationDetected = false;
+
+function renderCards() {
+  const container = document.getElementById('home-content');
+  let filtered = currentCat === 'all' ? places : places.filter(p => p.cat === currentCat);
+  const q = (document.getElementById('search-input') ? document.getElementById('search-input').value : '').trim().toLowerCase();
+  if (q) {
+    filtered = filtered.filter(p =>
+      p.name.toLowerCase().includes(q) ||
+      p.addr.toLowerCase().includes(q) ||
+      p.subcat.toLowerCase().includes(q) ||
+      (p.desc[lang] && p.desc[lang].toLowerCase().includes(q))
+    );
+  }
+  if (filtered.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text-muted);"><div style="font-size:36px;margin-bottom:10px;">🔍</div><div style="font-size:14px;">' + (lang==='tr'?'Sonuç bulunamadı.':'No results found.') + '</div></div>';
+    return;
+  }
+  container.innerHTML = filtered.map(p => `
+    <div class="place-card" onclick="openDetail('${p.id}')">
+      <div class="place-card-img ${p.cat}">
+        <div class="card-badge">${p.subcat}</div>
+        <span>${p.emoji}</span>
+      </div>
+      <div class="place-card-body">
+        <div class="place-card-name">${p.name}</div>
+        <div class="place-card-meta">${p.addr}</div>
+        <div class="place-card-row">
+          <span class="price-tag">${p.price} ${p.priceName[lang]}</span>
+          <span class="likes-tag"><span class="heart">♥</span> ${p.likes} ${lang==='tr'?'beğeni':'likes'}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterCat(cat, btn) {
+  currentCat = cat;
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderCards();
+}
+
+function openDetail(id) {
+  const p = places.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('detail-hero').className = `detail-hero ${p.cat}`;
+  document.getElementById('detail-emoji').textContent = p.emoji;
+  document.getElementById('detail-name').textContent = p.name;
+  document.getElementById('detail-addr').textContent = p.addr;
+  document.getElementById('detail-cat-badge').textContent = lang==='tr' ? (p.cat==='food'?'Yemek':p.cat==='shopping'?'Alışveriş':'Gezi') : (p.cat==='food'?'Food':p.cat==='shopping'?'Shopping':'Sightseeing');
+  document.getElementById('detail-sub-badge').textContent = p.subcat;
+  document.getElementById('detail-price-badge').textContent = `${p.price} ${p.priceName[lang]}`;
+  document.getElementById('detail-desc').textContent = p.desc[lang];
+  goTo('screen-detail');
+}
+
+function toggleLike() {
+  liked = !liked;
+  const btn = document.getElementById('btn-like');
+  btn.style.color = liked ? '#ef4444' : '';
+  btn.style.borderColor = liked ? '#fca5a5' : '';
+  document.getElementById('like-label').textContent = liked ? (lang==='tr'?'Beğenildi':'Liked') : (lang==='tr'?'Beğen':'Like');
+}
+
+function toggleSave() {
+  saved = !saved;
+  const btn = document.getElementById('detail-save-btn');
+  const btn2 = document.getElementById('btn-save-detail');
+  btn.textContent = saved ? '🔖' : '🔖';
+  btn.style.background = saved ? '#fef3c7' : 'rgba(255,255,255,0.9)';
+  document.getElementById('save-label').textContent = saved ? (lang==='tr'?'Kaydedildi':'Saved') : (lang==='tr'?'Kaydet':'Save');
+  showToast(saved ? (lang==='tr'?'Kayıtlılara eklendi!':'Added to saved!') : (lang==='tr'?'Kaydedilenlerden çıkarıldı.':'Removed from saved.'));
+}
+
+function selectMainCat(cat, el) {
+  selectedMainCat = cat;
+  document.querySelectorAll('.main-cat-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  renderSubCats();
+}
+
+function renderSubCats() {
+  const wrap = document.getElementById('sub-cats');
+  const cats = subcats[selectedMainCat];
+  wrap.innerHTML = cats.map((c,i) => `<div class="sub-cat-btn${i===0?' selected':''}" onclick="this.parentNode.querySelectorAll('.sub-cat-btn').forEach(b=>b.classList.remove('selected'));this.classList.add('selected')">${c[lang]}</div>`).join('');
+}
+
+function selectPrice(el) {
+  document.querySelectorAll('.price-opt').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function submitPlace() {
+  const name = document.getElementById('input-place-name').value.trim();
+  const addr = document.getElementById('input-place-addr').value.trim();
+  const desc = document.getElementById('input-desc').value.trim();
+  if (!name) { showToast(lang==='tr'?'Yer adı gerekli!':'Place name is required!'); return; }
+
+  const selectedPrice = document.querySelector('.price-opt.selected .price-sym');
+  const priceVal = selectedPrice ? selectedPrice.textContent : '$';
+  const selectedSub = document.querySelector('.sub-cat-btn.selected');
+  const subLabel = selectedSub ? selectedSub.textContent.trim() : '';
+
+  const catEmojis = { food:'🍜', shopping:'🛍', sightseeing:'🗺' };
+  const catImgClass = { food:'food', shopping:'shopping', sightseeing:'sightseeing' };
+  const priceName = { '$':{tr:'Uygun',en:'Budget'}, '$$':{tr:'Orta',en:'Mid-range'}, '$$$':{tr:'Pahalı',en:'Expensive'} };
+
+  const newPlace = {
+    id: 'place_' + Date.now(),
+    cat: selectedMainCat,
+    subcat: subLabel,
+    emoji: catEmojis[selectedMainCat],
+    name: name,
+    addr: addr || (lang==='tr'?'Seoul':'Seoul'),
+    price: priceVal,
+    priceName: priceName[priceVal] || {tr:'Uygun',en:'Budget'},
+    likes: 0,
+    desc: { tr: desc || '', en: desc || '' }
+  };
+
+  places.unshift(newPlace);
+
+  // Reset form
+  document.getElementById('input-place-name').value = '';
+  document.getElementById('input-place-addr').value = '';
+  document.getElementById('input-desc').value = '';
+
+  showToast(lang==='tr'?'Yer başarıyla eklendi! 🎉':'Place added successfully! 🎉');
+  setTimeout(() => { goTo('screen-home'); renderCards(); }, 1000);
+}
+
+function createAccount() {
+  const name = document.getElementById('input-displayname').value.trim();
+  if (!name) { showToast(lang==='tr'?'Görünen ad gerekli!':'Display name is required!'); return; }
+  goTo('screen-welcome');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function openDownloadModal(city, flag) {
+  const modal = document.getElementById('downloadModal');
+  document.getElementById('downloadCityName').textContent = lang==='tr' ? `${city} İndir` : `Download ${city}`;
+  document.getElementById('downloadCitySub').textContent = lang==='tr' ? `İnternetsiz kaldığında ${city} verilerine ulaşabilirsin.` : `Access ${city} data when you're offline.`;
+  modal.classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('downloadModal').classList.remove('open');
+}
+
+function toggleDownloadOption(el) {
+  el.classList.toggle('on');
+  el.classList.toggle('off');
+  updateDownloadSize();
+}
+
+function updateDownloadSize() {
+  const photosOn = document.getElementById('togglePhotos').classList.contains('on');
+  const reviewsOn = document.getElementById('toggleReviews').classList.contains('on');
+  let size = 2.1 + (reviewsOn ? 0.4 : 0) + (photosOn ? 16 : 0);
+  document.getElementById('downloadSize').textContent = lang==='tr' ? `Toplam: ~${size.toFixed(1)} MB indirilecek` : `Total: ~${size.toFixed(1)} MB to download`;
+}
+
+function confirmDownload() {
+  closeModal();
+  showToast(lang==='tr'?'Paris indiriliyor... ✓':'Downloading Paris... ✓');
+}
+
+// SEARCH
+let searchQuery = '';
+function onSearch(val) {
+  searchQuery = val.trim().toLowerCase();
+  renderCards();
+}
+
+// LOCATION
+const popularCities = [
+  {name:'İstanbul', country:{tr:'Türkiye',en:'Turkey'}, flag:'🇹🇷'},
+  {name:'Tokyo', country:{tr:'Japonya',en:'Japan'}, flag:'🇯🇵'},
+  {name:'Seoul', country:{tr:'Güney Kore',en:'South Korea'}, flag:'🇰🇷'},
+  {name:'Dubai', country:{tr:'BAE',en:'UAE'}, flag:'🇦🇪'},
+  {name:'London', country:{tr:'İngiltere',en:'UK'}, flag:'🇬🇧'},
+  {name:'Paris', country:{tr:'Fransa',en:'France'}, flag:'🇫🇷'},
+  {name:'New York', country:{tr:'ABD',en:'USA'}, flag:'🇺🇸'},
+  {name:'Amsterdam', country:{tr:'Hollanda',en:'Netherlands'}, flag:'🇳🇱'},
+  {name:'Bangkok', country:{tr:'Tayland',en:'Thailand'}, flag:'🇹🇭'},
+  {name:'Singapore', country:{tr:'Singapur',en:'Singapore'}, flag:'🇸🇬'},
+  {name:'Hong Kong', country:{tr:'Hong Kong',en:'Hong Kong'}, flag:'🇭🇰'},
+  {name:'Berlin', country:{tr:'Almanya',en:'Germany'}, flag:'🇩🇪'},
+  {name:'Madrid', country:{tr:'İspanya',en:'Spain'}, flag:'🇪🇸'},
+  {name:'Rome', country:{tr:'İtalya',en:'Italy'}, flag:'🇮🇹'},
+  {name:'Sydney', country:{tr:'Avustralya',en:'Australia'}, flag:'🇦🇺'},
+  {name:'Los Angeles', country:{tr:'ABD',en:'USA'}, flag:'🇺🇸'},
+  {name:'Toronto', country:{tr:'Kanada',en:'Canada'}, flag:'🇨🇦'},
+  {name:'Kuala Lumpur', country:{tr:'Malezya',en:'Malaysia'}, flag:'🇲🇾'},
+  {name:'Mumbai', country:{tr:'Hindistan',en:'India'}, flag:'🇮🇳'},
+  {name:'Cairo', country:{tr:'Mısır',en:'Egypt'}, flag:'🇪🇬'},
+  {name:'Johannesburg', country:{tr:'G. Afrika',en:'S. Africa'}, flag:'🇿🇦'},
+  {name:'São Paulo', country:{tr:'Brezilya',en:'Brazil'}, flag:'🇧🇷'},
+  {name:'Mexico City', country:{tr:'Meksika',en:'Mexico'}, flag:'🇲🇽'},
+  {name:'Beijing', country:{tr:'Çin',en:'China'}, flag:'🇨🇳'},
+  {name:'Shanghai', country:{tr:'Çin',en:'China'}, flag:'🇨🇳'},
+  {name:'Doha', country:{tr:'Katar',en:'Qatar'}, flag:'🇶🇦'},
+  {name:'Riyadh', country:{tr:'S. Arabistan',en:'Saudi Arabia'}, flag:'🇸🇦'},
+  {name:'Athens', country:{tr:'Yunanistan',en:'Greece'}, flag:'🇬🇷'},
+  {name:'Vienna', country:{tr:'Avusturya',en:'Austria'}, flag:'🇦🇹'},
+  {name:'Zurich', country:{tr:'İsviçre',en:'Switzerland'}, flag:'🇨🇭'},
+];
+
+function detectLocation() {
+  openCityModal();
+}
+
+function openCityModal() {
+  document.getElementById('city-modal-title').textContent = lang==='tr' ? 'Şehir Seç' : 'Select City';
+  document.getElementById('city-modal-sub').textContent = lang==='tr' ? 'Mevcut konumun veya başka bir şehir ara' : 'Use current location or search a city';
+  document.getElementById('city-search-input').value = '';
+  document.getElementById('city-search-input').placeholder = lang==='tr' ? 'Şehir ara...' : 'Search city...';
+  filterCities('');
+  goTo('screen-city');
+}
+
+function filterCities(q) {
+  const list = document.getElementById('city-list');
+  const query = q.trim().toLowerCase();
+  const filtered = query
+    ? popularCities.filter(c => c.name.toLowerCase().includes(query) || c.country[lang].toLowerCase().includes(query))
+    : popularCities;
+
+  let html = '';
+  // Current location button at top
+  html += `<div onclick="useCurrentLocation()" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--cream);cursor:pointer;margin-bottom:4px;border:1px solid var(--border);">
+    <span style="font-size:16px;">📍</span>
+    <div style="display:flex;align-items:baseline;gap:6px;">
+      <div style="font-size:13px;font-weight:500;color:var(--navy);">${lang==='tr'?'Mevcut Konumum':'My Current Location'}</div>
+      <div style="font-size:11px;color:var(--text-muted);">${lang==='tr'?'GPS ile algıla':'Detect via GPS'}</div>
+    </div>
+  </div>`;
+
+  filtered.forEach(c => {
+    html += `<div onclick="selectCity('${c.name}','${c.country[lang]}','${c.flag}')" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background=''">
+      <span style="font-size:18px;flex-shrink:0;">${c.flag}</span>
+      <div style="display:flex;align-items:baseline;gap:6px;">
+        <div style="font-size:13px;font-weight:500;color:var(--text-primary);">${c.name}</div>
+        <div style="font-size:11px;color:var(--text-muted);">${c.country[lang]}</div>
+      </div>
+    </div>`;
+  });
+
+  if (filtered.length === 0 && query) {
+    html += `<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">${lang==='tr'?'Şehir bulunamadı':'City not found'}</div>`;
+  }
+  list.innerHTML = html;
+}
+
+function selectCity(name, country, flag) {
+  const dot = document.getElementById('location-dot');
+  const text = document.getElementById('location-text');
+  dot.style.background = '#10b981';
+  text.textContent = flag + ' ' + name + ', ' + country;
+  const addSub = document.getElementById('add-sub');
+  if (addSub) addSub.textContent = name + ' · ' + (lang==='tr'?'Deneyimini paylaş':'Share your experience');
+  goTo('screen-home');
+}
+
+function useCurrentLocation() {
+  goTo('screen-home');
+  const dot = document.getElementById('location-dot');
+  const text = document.getElementById('location-text');
+  dot.style.background = '#f59e0b';
+  text.textContent = lang === 'tr' ? '📍 Konum alınıyor...' : '📍 Getting location...';
+  if (!navigator.geolocation) {
+    text.textContent = lang === 'tr' ? '📍 Desteklenmiyor' : '📍 Not supported';
+    dot.style.background = '#ef4444';
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      try {
+        const { latitude: lat, longitude: lon } = pos.coords;
+        const res = await fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json&accept-language=' + lang);
+        const data = await res.json();
+        const city = data.address.city || data.address.town || data.address.village || '';
+        const country = data.address.country || '';
+        dot.style.background = '#10b981';
+        text.textContent = '📍 ' + city + (country ? ', ' + country : '');
+        const addSub = document.getElementById('add-sub');
+        if (addSub) addSub.textContent = city + ' · ' + (lang==='tr'?'Deneyimini paylaş':'Share your experience');
+      } catch(e) {
+        dot.style.background = '#ef4444';
+        text.textContent = lang === 'tr' ? '📍 Konum alınamadı' : '📍 Could not get location';
+      }
+    },
+    () => {
+      dot.style.background = '#ef4444';
+      text.textContent = lang === 'tr' ? '📍 İzin reddedildi' : '📍 Permission denied';
+    }
+  );
+}
+
+// THEME
+function applyAccent(color) {
+  document.documentElement.style.setProperty('--gold', color);
+  document.documentElement.style.setProperty('--gold-light', color);
+  document.getElementById('accent-preview').style.background = color;
+  // Update all primary buttons
+  document.querySelectorAll('.btn-primary').forEach(b => { b.style.background = color; });
+  document.querySelectorAll('.copy-btn-small[style*="gold"]').forEach(b => { b.style.background = color; });
+}
+
+function applyBg(color) {
+  document.documentElement.style.setProperty('--cream', color);
+  document.getElementById('bg-preview').style.background = color;
+  document.getElementById('app').style.background = color;
+}
+
+function setMode(mode) {
+  const app = document.getElementById('app');
+  const btnLight = document.getElementById('btn-light');
+  const btnDark = document.getElementById('btn-dark');
+  if (mode === 'dark') {
+    document.documentElement.style.setProperty('--cream', '#1a1a2e');
+    document.documentElement.style.setProperty('--cream-dark', '#16213e');
+    document.documentElement.style.setProperty('--white', '#0f3460');
+    document.documentElement.style.setProperty('--text-primary', '#e2e8f0');
+    document.documentElement.style.setProperty('--text-secondary', '#94a3b8');
+    document.documentElement.style.setProperty('--text-muted', '#64748b');
+    document.documentElement.style.setProperty('--border', 'rgba(255,255,255,0.1)');
+    document.getElementById('bg-picker').value = '#1a1a2e';
+    document.getElementById('bg-preview').style.background = '#1a1a2e';
+    btnDark.style.border = '2px solid var(--gold)';
+    btnLight.style.border = '1.5px solid var(--border)';
+  } else {
+    document.documentElement.style.setProperty('--cream', '#f5f0e8');
+    document.documentElement.style.setProperty('--cream-dark', '#ede7d9');
+    document.documentElement.style.setProperty('--white', '#ffffff');
+    document.documentElement.style.setProperty('--text-primary', '#0f1729');
+    document.documentElement.style.setProperty('--text-secondary', '#6b7280');
+    document.documentElement.style.setProperty('--text-muted', '#9ca3af');
+    document.documentElement.style.setProperty('--border', 'rgba(15,23,41,0.1)');
+    document.getElementById('bg-picker').value = '#f5f0e8';
+    document.getElementById('bg-preview').style.background = '#f5f0e8';
+    btnLight.style.border = '2px solid var(--gold)';
+    btnDark.style.border = '1.5px solid var(--border)';
+  }
+  renderCards();
+}
+
+function resetTheme() {
+  applyAccent('#c9a84c');
+  applyBg('#f5f0e8');
+  setMode('light');
+  document.getElementById('accent-picker').value = '#c9a84c';
+  document.getElementById('bg-picker').value = '#f5f0e8';
+  showToast(lang==='tr' ? 'Tema sıfırlandı.' : 'Theme reset.');
+}
+
+// Init
+renderCards();
+renderSubCats();
+
+// ─── PWA: SERVICE WORKER KAYDI ────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js', { scope: './' })
+      .then(reg => {
+        console.log('[PWA] SW kayıtlı, scope:', reg.scope);
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              showUpdateBanner();
+            }
+          });
+        });
+      })
+      .catch(err => console.warn('[PWA] SW kaydı başarısız:', err));
+
+    navigator.serviceWorker.addEventListener('message', event => {
+      if (event.data && event.data.type === 'CITY_CACHED') {
+        showToast(lang === 'tr'
+          ? `${event.data.cityName} çevrimdışı kullanıma hazır ✓`
+          : `${event.data.cityName} ready for offline use ✓`);
+      }
+    });
+  });
+}
+
+// ─── PWA: GÜNCELLEME BANNER ───────────────────────────────────────────────────
+function showUpdateBanner() {
+  const t = document.getElementById('toast');
+  t.innerHTML = (lang === 'tr' ? 'Yeni sürüm var! ' : 'Update available! ') +
+    '<span onclick="applyUpdate()" style="text-decoration:underline;cursor:pointer;font-weight:700;">' +
+    (lang === 'tr' ? 'Güncelle' : 'Refresh') + '</span>';
+  t.classList.add('show');
+}
+
+function applyUpdate() {
+  if (navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage('skipWaiting');
+  }
+  window.location.reload();
+}
+
+// ─── PWA: ANA EKRANA EKLE (Install Prompt) ───────────────────────────────────
+let deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', event => {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+  showInstallButton();
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredInstallPrompt = null;
+  hideInstallButton();
+  showToast(lang === 'tr' ? '✓ CrewGuide yüklendi!' : '✓ CrewGuide installed!');
+});
+
+function showInstallButton() {
+  if (document.getElementById('pwa-install-btn')) return;
+  const btn = document.createElement('button');
+  btn.id = 'pwa-install-btn';
+  btn.onclick = triggerInstall;
+  btn.style.cssText = 'width:100%;padding:14px;border-radius:16px;background:var(--gold);color:var(--navy);font-family:Syne,sans-serif;font-size:15px;font-weight:600;border:none;cursor:pointer;margin:0 0 12px;';
+  btn.innerHTML = '📲 ' + (lang === 'tr' ? 'Uygulamayı Telefona Yükle' : 'Install App');
+  const profileBody = document.querySelector('#screen-profile-view .profile-body');
+  if (profileBody) profileBody.insertBefore(btn, profileBody.firstChild);
+  const splashBottom = document.querySelector('.splash-bottom');
+  if (splashBottom) {
+    const s = btn.cloneNode(true);
+    s.id = 'pwa-install-btn-splash';
+    s.onclick = triggerInstall;
+    splashBottom.insertBefore(s, splashBottom.firstChild);
+  }
+}
+
+function hideInstallButton() {
+  ['pwa-install-btn', 'pwa-install-btn-splash'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+  });
+}
+
+function triggerInstall() {
+  if (!deferredInstallPrompt) {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    if (isIOS) {
+      showToast(lang === 'tr' ? '📲 Safari\'de "Paylaş" → "Ana Ekrana Ekle"' : '📲 Safari: "Share" → "Add to Home Screen"');
+      return;
+    }
+    showToast(lang === 'tr' ? 'Tarayıcı yüklemeyi desteklemiyor.' : 'Browser install not supported.');
+    return;
+  }
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.then(choice => {
+    deferredInstallPrompt = null;
+  });
+}
+
+// ─── PWA: ONLINE/OFFLINE DURUM ───────────────────────────────────────────────
+window.addEventListener('online', () => {
+  showToast(lang === 'tr' ? '✓ İnternet bağlantısı geri geldi' : '✓ Back online');
+});
+window.addEventListener('offline', () => {
+  showToast(lang === 'tr' ? '📡 Çevrimdışı — cached veriler kullanılıyor' : '📡 Offline — using cached data');
+  const dot = document.getElementById('location-dot');
+  if (dot) dot.style.background = '#f59e0b';
+});
+</script>
+</body>
+</html>
