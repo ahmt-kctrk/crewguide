@@ -1156,7 +1156,8 @@
           <div class="comment-input-header" id="comment-input-title">Yorum Yaz</div>
           <div class="comment-name-row">
             <input class="comment-name-input" type="text" id="comment-username"
-              placeholder="Görünen adın (örn. CaptainSeoul)" maxlength="30">
+              placeholder="Görünen adın (örn. CaptainSeoul)" maxlength="30"
+              autocomplete="off">
             <div class="comment-star-pick" id="comment-star-pick">
               <span onclick="setCommentStar(1)" onmouseover="hoverCommentStar(1)" onmouseout="unhoverCommentStar()">★</span>
               <span onclick="setCommentStar(2)" onmouseover="hoverCommentStar(2)" onmouseout="unhoverCommentStar()">★</span>
@@ -1762,6 +1763,18 @@ function openDetail(id) {
   if (titleEl) titleEl.textContent = lang==='tr' ? 'Yorum Yaz' : 'Write a Review';
   if (taEl) taEl.placeholder = lang==='tr' ? 'Deneyimini paylaş...' : 'Share your experience...';
   if (btnEl) btnEl.textContent = lang==='tr' ? 'Yorum Gönder' : 'Send Comment';
+  // Giriş yapılmışsa ismi kilitle
+  const usernameInput = document.getElementById('comment-username');
+  if (usernameInput && currentProfile) {
+    usernameInput.value = currentProfile.username;
+    usernameInput.readOnly = true;
+    usernameInput.style.background = 'var(--cream-dark)';
+    usernameInput.style.color = 'var(--text-secondary)';
+  } else if (usernameInput) {
+    usernameInput.readOnly = false;
+    usernameInput.style.background = '';
+    usernameInput.style.color = '';
+  }
   loadComments(p.id);
   loadPlacePhotos(p.id);
   goTo('screen-detail');
@@ -3109,9 +3122,15 @@ function updateProfileUI() {
     el.textContent = inviteCode;
   });
 
-  // Yorum kutusunda default isim
+  // Yorum kutusunda kullanıcı adını doldur ve kilitle
   const commentInput = document.getElementById('comment-username');
-  if (commentInput && !commentInput.value) commentInput.value = username;
+  if (commentInput) {
+    commentInput.value = username;
+    commentInput.readOnly = true;
+    commentInput.style.background = 'var(--cream-dark)';
+    commentInput.style.color = 'var(--text-secondary)';
+    commentInput.title = lang==='tr' ? 'Giriş yapılan hesap' : 'Logged in account';
+  }
 }
 
 
