@@ -374,6 +374,89 @@
   .card-stars { font-size: 10px; color: #f59e0b; letter-spacing: 0.5px; }
   .card-rating-num { font-size: 10px; font-weight: 600; color: var(--text-primary); margin-left: 2px; }
 
+  /* GELİŞMİŞ FİLTRELER */
+  .filter-bar {
+    display: flex; gap: 6px; padding: 10px 20px 0;
+    overflow-x: auto; scrollbar-width: none; flex-shrink: 0;
+  }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    flex-shrink: 0; display: flex; align-items: center; gap: 4px;
+    padding: 5px 12px; border-radius: 20px;
+    font-size: 11px; font-weight: 500; cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.65); background: transparent;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .filter-chip.active {
+    background: rgba(255,255,255,0.15);
+    border-color: rgba(255,255,255,0.4);
+    color: #fff;
+  }
+  .filter-chip.has-value {
+    background: var(--gold); border-color: var(--gold); color: var(--navy);
+  }
+  .filter-panel {
+    background: var(--white); border-radius: var(--radius) var(--radius) 0 0;
+    padding: 20px; position: absolute; bottom: 0; left: 0; right: 0;
+    z-index: 90; box-shadow: 0 -4px 24px rgba(0,0,0,0.12);
+    display: none; flex-direction: column; gap: 16px;
+    max-height: 70vh; overflow-y: auto;
+  }
+  .filter-panel.open { display: flex; }
+  .filter-panel-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto -8px; }
+  .filter-panel-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: var(--text-primary); }
+  .filter-section-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; }
+  .filter-option-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .filter-opt-btn {
+    padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 500;
+    border: 1.5px solid var(--border); background: var(--white);
+    color: var(--text-secondary); cursor: pointer; transition: all 0.15s;
+  }
+  .filter-opt-btn.selected { border-color: var(--navy); background: var(--navy); color: #fff; }
+  .filter-rating-row { display: flex; gap: 6px; }
+  .filter-rating-btn {
+    flex: 1; padding: 8px; border-radius: 10px; text-align: center;
+    border: 1.5px solid var(--border); background: var(--white);
+    font-size: 13px; cursor: pointer; transition: all 0.15s;
+  }
+  .filter-rating-btn.selected { border-color: #f59e0b; background: #fef9ec; }
+  .filter-actions { display: flex; gap: 8px; padding-top: 4px; }
+  .filter-clear-btn {
+    flex: 1; padding: 11px; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border); background: transparent;
+    font-size: 13px; color: var(--text-muted); cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .filter-apply-btn {
+    flex: 2; padding: 11px; border-radius: var(--radius-sm);
+    background: var(--navy); color: #fff;
+    font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600;
+    border: none; cursor: pointer;
+  }
+  .filter-overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.4);
+    z-index: 89; display: none;
+  }
+  .filter-overlay.open { display: block; }
+
+  /* Kart layout - liste görünümü */
+  .home-content.list-view .place-card { display: flex; }
+  .home-content.list-view .place-card-img { width: 90px; height: 90px; flex-shrink: 0; }
+  .home-content.list-view .place-card-body { flex: 1; }
+
+  /* Sonuç sayısı */
+  .results-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 20px 0; flex-shrink: 0;
+  }
+  .results-count { font-size: 11px; color: rgba(255,255,255,0.5); }
+  .sort-btn {
+    font-size: 11px; color: rgba(255,255,255,0.6); background: none;
+    border: none; cursor: pointer; display: flex; align-items: center; gap: 4px;
+  }
+
+
   /* MAP */
   .map-placeholder {
     width: 100%; height: 80px; background: #e8f4f0;
@@ -906,6 +989,68 @@
         <button class="cat-tab" onclick="filterCat('sightseeing', this)" id="tab-sight">🗺 Gezi</button>
       </div>
     </div>
+
+    <!-- Filtre bar -->
+    <div class="filter-bar" id="filter-bar">
+      <button class="filter-chip" id="chip-price" onclick="openFilterPanel('price')">💰 <span id="chip-price-label">Fiyat</span></button>
+      <button class="filter-chip" id="chip-rating" onclick="openFilterPanel('rating')">⭐ <span id="chip-rating-label">Puan</span></button>
+      <button class="filter-chip" id="chip-sort" onclick="openFilterPanel('sort')">↕ <span id="chip-sort-label">Sırala</span></button>
+      <button class="filter-chip" id="chip-reset" onclick="resetFilters()" style="display:none;">✕ Temizle</button>
+    </div>
+
+    <!-- Sonuç sayısı -->
+    <div class="results-bar" id="results-bar">
+      <span class="results-count" id="results-count"></span>
+    </div>
+
+    <!-- Filtre overlay -->
+    <div class="filter-overlay" id="filter-overlay" onclick="closeFilterPanel()"></div>
+
+    <!-- Filtre panel -->
+    <div class="filter-panel" id="filter-panel">
+      <div class="filter-panel-handle"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div class="filter-panel-title" id="filter-panel-title">Filtrele</div>
+        <button onclick="closeFilterPanel()" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--text-muted);">✕</button>
+      </div>
+
+      <!-- Fiyat filtresi -->
+      <div id="filter-price-section">
+        <div class="filter-section-label" id="filter-price-label">Fiyat Aralığı</div>
+        <div class="filter-option-grid" id="filter-price-opts">
+          <button class="filter-opt-btn" data-val="$" onclick="toggleFilterOpt(this,'price')">$ Uygun</button>
+          <button class="filter-opt-btn" data-val="$$" onclick="toggleFilterOpt(this,'price')">$$ Orta</button>
+          <button class="filter-opt-btn" data-val="$$$" onclick="toggleFilterOpt(this,'price')">$$$ Pahalı</button>
+        </div>
+      </div>
+
+      <!-- Puan filtresi -->
+      <div id="filter-rating-section">
+        <div class="filter-section-label" id="filter-rating-label">Minimum Puan</div>
+        <div class="filter-rating-row" id="filter-rating-opts">
+          <button class="filter-rating-btn" data-val="3" onclick="selectRatingFilter(this)">3+ ⭐</button>
+          <button class="filter-rating-btn" data-val="4" onclick="selectRatingFilter(this)">4+ ⭐</button>
+          <button class="filter-rating-btn" data-val="4.5" onclick="selectRatingFilter(this)">4.5+ ⭐</button>
+        </div>
+      </div>
+
+      <!-- Sıralama -->
+      <div id="filter-sort-section">
+        <div class="filter-section-label" id="filter-sort-label">Sıralama</div>
+        <div class="filter-option-grid" id="filter-sort-opts">
+          <button class="filter-opt-btn selected" data-val="default" onclick="toggleFilterOpt(this,'sort')">Varsayılan</button>
+          <button class="filter-opt-btn" data-val="rating" onclick="toggleFilterOpt(this,'sort')">En Yüksek Puan</button>
+          <button class="filter-opt-btn" data-val="likes" onclick="toggleFilterOpt(this,'sort')">En Çok Beğenilen</button>
+          <button class="filter-opt-btn" data-val="newest" onclick="toggleFilterOpt(this,'sort')">En Yeni</button>
+        </div>
+      </div>
+
+      <div class="filter-actions">
+        <button class="filter-clear-btn" onclick="resetFilters();closeFilterPanel();" id="filter-clear-btn">Temizle</button>
+        <button class="filter-apply-btn" onclick="applyFilters();closeFilterPanel();" id="filter-apply-btn">Uygula</button>
+      </div>
+    </div>
+
     <div class="home-content" id="home-content">
       <!-- Cards injected by JS -->
     </div>
@@ -1473,7 +1618,9 @@ let locationDetected = false;
 
 function renderCards() {
   const container = document.getElementById('home-content');
-  let filtered = currentCat === 'all' ? places : places.filter(p => p.cat === currentCat);
+  let filtered = currentCat === 'all' ? [...places] : places.filter(p => p.cat === currentCat);
+
+  // Metin araması
   const q = (document.getElementById('search-input') ? document.getElementById('search-input').value : '').trim().toLowerCase();
   if (q) {
     filtered = filtered.filter(p =>
@@ -1483,6 +1630,36 @@ function renderCards() {
       (p.desc[lang] && p.desc[lang].toLowerCase().includes(q))
     );
   }
+
+  // Fiyat filtresi
+  if (activeFilters && activeFilters.price && activeFilters.price.length > 0) {
+    filtered = filtered.filter(p => activeFilters.price.includes(p.price));
+  }
+
+  // Puan filtresi
+  if (activeFilters && activeFilters.rating) {
+    filtered = filtered.filter(p => p.rating >= activeFilters.rating);
+  }
+
+  // Sıralama
+  if (activeFilters && activeFilters.sort) {
+    if (activeFilters.sort === 'rating') {
+      filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    } else if (activeFilters.sort === 'likes') {
+      filtered.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+    } else if (activeFilters.sort === 'newest') {
+      filtered.reverse();
+    }
+  }
+
+  // Sonuç sayısı güncelle
+  const countEl = document.getElementById('results-count');
+  if (countEl) {
+    countEl.textContent = filtered.length > 0
+      ? `${filtered.length} ${lang==='tr'?'yer bulundu':'places found'}`
+      : '';
+  }
+
   if (filtered.length === 0) {
     container.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text-muted);"><div style="font-size:36px;margin-bottom:10px;">🔍</div><div style="font-size:14px;">' + (lang==='tr'?'Sonuç bulunamadı.':'No results found.') + '</div></div>';
     return;
@@ -2900,6 +3077,134 @@ function copyAddress(addr) {
   } else {
     showToast(addr);
   }
+}
+
+
+// ── GELİŞMİŞ FİLTRELER ───────────────────────────────────────────────────────
+let activeFilters = { price: [], rating: null, sort: 'default' };
+let currentFilterSection = null;
+
+function openFilterPanel(section) {
+  currentFilterSection = section;
+  const panel = document.getElementById('filter-panel');
+  const overlay = document.getElementById('filter-overlay');
+  panel.classList.add('open');
+  overlay.classList.add('open');
+
+  // Hangi bölümü öne çıkar
+  ['price','rating','sort'].forEach(s => {
+    const el = document.getElementById(`filter-${s}-section`);
+    if (el) el.style.display = s === section ? '' : 'none';
+  });
+
+  const titles = {
+    price: { tr:'Fiyat Aralığı', en:'Price Range' },
+    rating: { tr:'Minimum Puan', en:'Min Rating' },
+    sort: { tr:'Sıralama', en:'Sort By' }
+  };
+  const t = titles[section];
+  if (t) document.getElementById('filter-panel-title').textContent = t[lang] || t.tr;
+}
+
+function closeFilterPanel() {
+  document.getElementById('filter-panel').classList.remove('open');
+  document.getElementById('filter-overlay').classList.remove('open');
+  // Tüm bölümleri tekrar göster
+  ['price','rating','sort'].forEach(s => {
+    const el = document.getElementById(`filter-${s}-section`);
+    if (el) el.style.display = '';
+  });
+}
+
+function toggleFilterOpt(btn, type) {
+  if (type === 'sort') {
+    // Tek seçim
+    document.querySelectorAll('#filter-sort-opts .filter-opt-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    activeFilters.sort = btn.dataset.val;
+  } else if (type === 'price') {
+    // Çok seçim
+    btn.classList.toggle('selected');
+    const val = btn.dataset.val;
+    if (btn.classList.contains('selected')) {
+      if (!activeFilters.price.includes(val)) activeFilters.price.push(val);
+    } else {
+      activeFilters.price = activeFilters.price.filter(v => v !== val);
+    }
+  }
+  updateFilterChips();
+}
+
+function selectRatingFilter(btn) {
+  const wasSelected = btn.classList.contains('selected');
+  document.querySelectorAll('#filter-rating-opts .filter-rating-btn').forEach(b => b.classList.remove('selected'));
+  if (!wasSelected) {
+    btn.classList.add('selected');
+    activeFilters.rating = parseFloat(btn.dataset.val);
+  } else {
+    activeFilters.rating = null;
+  }
+  updateFilterChips();
+}
+
+function updateFilterChips() {
+  // Fiyat chip
+  const priceChip = document.getElementById('chip-price');
+  const priceLabel = document.getElementById('chip-price-label');
+  if (activeFilters.price.length > 0) {
+    priceChip.classList.add('has-value');
+    priceLabel.textContent = activeFilters.price.join(', ');
+  } else {
+    priceChip.classList.remove('has-value');
+    priceLabel.textContent = lang==='tr'?'Fiyat':'Price';
+  }
+
+  // Puan chip
+  const ratingChip = document.getElementById('chip-rating');
+  const ratingLabel = document.getElementById('chip-rating-label');
+  if (activeFilters.rating) {
+    ratingChip.classList.add('has-value');
+    ratingLabel.textContent = `${activeFilters.rating}+ ⭐`;
+  } else {
+    ratingChip.classList.remove('has-value');
+    ratingLabel.textContent = lang==='tr'?'Puan':'Rating';
+  }
+
+  // Sıralama chip
+  const sortChip = document.getElementById('chip-sort');
+  const sortLabel = document.getElementById('chip-sort-label');
+  const sortLabels = {
+    default: { tr:'Sırala', en:'Sort' },
+    rating: { tr:'En Yüksek ⭐', en:'Top Rated ⭐' },
+    likes: { tr:'En Beğenilen ♥', en:'Most Liked ♥' },
+    newest: { tr:'En Yeni 🆕', en:'Newest 🆕' },
+  };
+  if (activeFilters.sort !== 'default') {
+    sortChip.classList.add('has-value');
+    sortLabel.textContent = (sortLabels[activeFilters.sort] || sortLabels.default)[lang];
+  } else {
+    sortChip.classList.remove('has-value');
+    sortLabel.textContent = lang==='tr'?'Sırala':'Sort';
+  }
+
+  // Temizle butonu
+  const hasAny = activeFilters.price.length > 0 || activeFilters.rating || activeFilters.sort !== 'default';
+  document.getElementById('chip-reset').style.display = hasAny ? '' : 'none';
+}
+
+function applyFilters() {
+  renderCards();
+}
+
+function resetFilters() {
+  activeFilters = { price: [], rating: null, sort: 'default' };
+  // UI sıfırla
+  document.querySelectorAll('.filter-opt-btn').forEach(b => b.classList.remove('selected'));
+  const defSort = document.querySelector('[data-val="default"]');
+  if (defSort) defSort.classList.add('selected');
+  document.querySelectorAll('.filter-rating-btn').forEach(b => b.classList.remove('selected'));
+  updateFilterChips();
+  renderCards();
 }
 
 // Init
