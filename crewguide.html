@@ -1555,6 +1555,31 @@
         </div>
       </div>
 
+      <!-- KULLANICI ADI DEĞİŞTİR -->
+      <div style="background:var(--white);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border);">
+          <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--text-primary);" id="settings-username-title">Kullanıcı Adı</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;" id="settings-username-sub">Diğer kullanıcılara bu ad görünür</div>
+        </div>
+        <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="text" id="settings-username-input"
+              style="flex:1;padding:10px 12px;background:var(--cream);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;color:var(--text-primary);"
+              placeholder="Yeni kullanıcı adı" maxlength="30" autocomplete="off"
+              onfocus="this.style.borderColor='var(--navy)'"
+              onblur="this.style.borderColor='var(--border)'">
+            <button onclick="changeUsername()" style="
+              padding:10px 16px;border-radius:var(--radius-sm);
+              background:var(--navy);color:#fff;
+              font-family:'Syne',sans-serif;font-size:12px;font-weight:600;
+              border:none;cursor:pointer;white-space:nowrap;" id="btn-change-username">
+              Kaydet
+            </button>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);" id="current-username-display"></div>
+        </div>
+      </div>
+
       <button onclick="resetTheme()" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid var(--border);background:transparent;font-size:13px;color:var(--text-muted);cursor:pointer;font-family:'DM Sans',sans-serif;" id="btn-reset-theme">↺ Varsayılana Sıfırla</button>
       <button onclick="signOut()" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid #fca5a5;background:transparent;font-size:13px;color:#ef4444;cursor:pointer;font-family:'DM Sans',sans-serif;" id="btn-sign-out">🚪 Çıkış Yap</button>
       <div style="height:20px;"></div>
@@ -2825,6 +2850,10 @@ function updateNotifStatus(status) {
 function checkNotifStatus() {
   if (!('Notification' in window)) return;
   updateNotifStatus(Notification.permission);
+  updateCurrentUsernameDisplay();
+  // Input placeholder'ını mevcut kullanıcı adıyla doldur
+  const input = document.getElementById('settings-username-input');
+  if (input && currentProfile) input.placeholder = currentProfile.username;
 }
 
 
@@ -3587,6 +3616,79 @@ async function adminHideComment(commentId) {
     showToast(lang==='tr'?'Yorum kaldırıldı.':'Comment removed.');
   } catch(e) {
     console.warn('[adminHideComment]', e);
+  }
+}
+
+
+// ── KULLANICI ADI DEĞİŞTİR ────────────────────────────────────────────────────
+async function changeUsername() {
+  const input = document.getElementById('settings-username-input');
+  const newUsername = input ? input.value.trim() : '';
+
+  if (!newUsername) { showToast(lang==='tr'?'Kullanıcı adı boş olamaz!':'Username cannot be empty!'); return; }
+  if (newUsername.length < 3) { showToast(lang==='tr'?'En az 3 karakter!':'At least 3 characters!'); return; }
+  if (newUsername.length > 30) { showToast(lang==='tr'?'En fazla 30 karakter!':'Max 30 characters!'); return; }
+  if (!/^[a-zA-Z0-9_çğışöüÇĞİŞÖÜ]+$/.test(newUsername)) {
+    showToast(lang==='tr'?'Sadece harf, rakam ve _ kullanılabilir!':'Only letters, numbers and _ allowed!');
+    return;
+  }
+  if (!currentUser) { showToast(lang==='tr'?'Giriş yapman gerekli!':'Please sign in!'); return; }
+
+  const btn = document.getElementById('btn-change-username');
+  if (btn) { btn.textContent = lang==='tr'?'Kaydediliyor...':'Saving...'; btn.disabled = true; }
+
+  try {
+    // Başka biri kullanıyor mu kontrol et
+    const existing = await sbFetch(
+      `profiles?username=eq.${encodeURIComponent(newUsername)}&id=neq.${currentUser.id}&select=id`,
+      { headers: { 'Prefer': '' } }
+    );
+    if (existing && existing.length > 0) {
+      showToast(lang==='tr'?'Bu kullanıcı adı alınmış!':'Username already taken!');
+      return;
+    }
+
+    // Güncelle
+    const token = sessionStorage.getItem('sb_access_token');
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${currentUser.id}`, {
+      method: 'PATCH',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + (token || SUPABASE_KEY),
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ username: newUsername })
+    });
+
+    if (!res.ok) throw new Error(await res.text());
+
+    // Yerel profili güncelle
+    if (currentProfile) currentProfile.username = newUsername;
+    updateProfileUI();
+
+    // Yorum input'unu da güncelle
+    const commentInput = document.getElementById('comment-username');
+    if (commentInput) commentInput.value = newUsername;
+
+    // Input'u temizle
+    if (input) input.value = '';
+    updateCurrentUsernameDisplay();
+
+    showToast(lang==='tr'?`✓ Kullanıcı adı "${newUsername}" olarak güncellendi!`:`✓ Username updated to "${newUsername}"!`);
+
+  } catch(e) {
+    showToast(lang==='tr'?'Güncelleme başarısız.':'Update failed.');
+    console.warn('[changeUsername]', e);
+  } finally {
+    if (btn) { btn.textContent = lang==='tr'?'Kaydet':'Save'; btn.disabled = false; }
+  }
+}
+
+function updateCurrentUsernameDisplay() {
+  const el = document.getElementById('current-username-display');
+  if (el && currentProfile) {
+    el.textContent = (lang==='tr'?'Mevcut: ':'Current: ') + currentProfile.username;
   }
 }
 
