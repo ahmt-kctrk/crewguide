@@ -376,25 +376,27 @@
 
   /* GELİŞMİŞ FİLTRELER */
   .filter-bar {
-    display: flex; gap: 6px; padding: 10px 20px 0;
+    display: flex; gap: 6px; padding: 10px 20px 8px;
     overflow-x: auto; scrollbar-width: none; flex-shrink: 0;
+    background: var(--cream);
   }
   .filter-bar::-webkit-scrollbar { display: none; }
   .filter-chip {
     flex-shrink: 0; display: flex; align-items: center; gap: 4px;
     padding: 5px 12px; border-radius: 20px;
     font-size: 11px; font-weight: 500; cursor: pointer;
-    border: 1px solid rgba(255,255,255,0.18);
-    color: rgba(255,255,255,0.65); background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--text-secondary); background: var(--white);
     transition: all 0.2s; white-space: nowrap;
   }
   .filter-chip.active {
-    background: rgba(255,255,255,0.15);
-    border-color: rgba(255,255,255,0.4);
-    color: #fff;
+    background: var(--cream-dark);
+    border-color: var(--navy);
+    color: var(--navy);
   }
   .filter-chip.has-value {
     background: var(--gold); border-color: var(--gold); color: var(--navy);
+    font-weight: 600;
   }
   .filter-panel {
     background: var(--white); border-radius: var(--radius) var(--radius) 0 0;
@@ -448,9 +450,10 @@
   /* Sonuç sayısı */
   .results-bar {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 8px 20px 0; flex-shrink: 0;
+    padding: 4px 20px 0; flex-shrink: 0;
+    background: var(--cream);
   }
-  .results-count { font-size: 11px; color: rgba(255,255,255,0.5); }
+  .results-count { font-size: 11px; color: var(--text-muted); }
   .sort-btn {
     font-size: 11px; color: rgba(255,255,255,0.6); background: none;
     border: none; cursor: pointer; display: flex; align-items: center; gap: 4px;
