@@ -1121,6 +1121,24 @@
       </div>
 
       <!-- RESET -->
+      <!-- BİLDİRİM AYARI -->
+      <div style="background:var(--white);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border);">
+          <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--text-primary);" id="settings-notif-title">Bildirimler</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;" id="settings-notif-sub">Yeni yerler ve yorumlar için</div>
+        </div>
+        <div style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between;">
+          <span id="notif-status-text" style="font-size:13px;color:var(--text-muted);">⏳ İzin bekleniyor</span>
+          <button onclick="grantNotifPermission()" style="
+            padding:7px 16px;border-radius:8px;
+            background:var(--navy);color:var(--white);
+            font-size:12px;font-family:'Syne',sans-serif;font-weight:600;
+            border:none;cursor:pointer;" id="btn-notif-settings">
+            İzin Ver
+          </button>
+        </div>
+      </div>
+
       <button onclick="resetTheme()" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid var(--border);background:transparent;font-size:13px;color:var(--text-muted);cursor:pointer;font-family:'DM Sans',sans-serif;" id="btn-reset-theme">↺ Varsayılana Sıfırla</button>
       <div style="height:20px;"></div>
     </div>
@@ -1277,6 +1295,14 @@ function goTo(id) {
   if (id === 'screen-home' && !locationDetected) {
     locationDetected = true;
     useCurrentLocation();
+  }
+  // Home'a ilk gelişte bildirim izni sor
+  if (id === 'screen-home') {
+    setTimeout(() => askNotificationPermission(), 500);
+  }
+  // Ayarlar ekranı açılınca mevcut durumu göster
+  if (id === 'screen-settings') {
+    checkNotifStatus();
   }
 }
 let locationDetected = false;
@@ -1983,6 +2009,137 @@ function scrollToCommentInput() {
   if (box) box.scrollIntoView({behavior:'smooth', block:'center'});
   const ta = document.getElementById('comment-text');
   if (ta) setTimeout(() => ta.focus(), 400);
+}
+
+
+// ── BİLDİRİM İZNİ ────────────────────────────────────────────────────────────
+// Kullanıcı home ekranına gelince izin sor (tek seferlik, nazikçe)
+let notifPermissionAsked = false;
+
+function askNotificationPermission() {
+  if (notifPermissionAsked) return;
+  if (!('Notification' in window)) return; // Tarayıcı desteklemiyor
+  if (Notification.permission === 'granted') {
+    notifPermissionAsked = true;
+    updateNotifStatus('granted');
+    return;
+  }
+  if (Notification.permission === 'denied') {
+    notifPermissionAsked = true;
+    return;
+  }
+
+  // İzin daha istenmemiş — 2 sn bekleyip sor
+  notifPermissionAsked = true;
+  setTimeout(() => showNotifPrompt(), 2000);
+}
+
+function showNotifPrompt() {
+  // Mevcut varsa kaldır
+  const old = document.getElementById('notif-prompt');
+  if (old) old.remove();
+
+  const prompt = document.createElement('div');
+  prompt.id = 'notif-prompt';
+  prompt.style.cssText = `
+    position:absolute; bottom:80px; left:16px; right:16px;
+    background:var(--navy); border-radius:16px;
+    padding:16px; z-index:90;
+    box-shadow:0 8px 32px rgba(0,0,0,0.3);
+    display:flex; flex-direction:column; gap:10px;
+    animation: slideUp 0.3s ease;
+  `;
+  prompt.innerHTML = `
+    <style>
+      @keyframes slideUp {
+        from { transform:translateY(20px); opacity:0; }
+        to   { transform:translateY(0);    opacity:1; }
+      }
+    </style>
+    <div style="display:flex;align-items:flex-start;gap:10px;">
+      <span style="font-size:22px;flex-shrink:0;">🔔</span>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:3px;" id="notif-prompt-title">
+          ${lang==='tr' ? 'Bildirimler' : 'Notifications'}
+        </div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.65);line-height:1.5;" id="notif-prompt-desc">
+          ${lang==='tr'
+            ? 'Gittiğin şehre yeni yer eklenince haberdar ol.'
+            : 'Get notified when new places are added to your city.'}
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="grantNotifPermission()" style="
+        flex:1; padding:10px; border-radius:10px;
+        background:var(--gold); color:var(--navy);
+        font-family:'Syne',sans-serif; font-size:13px; font-weight:700;
+        border:none; cursor:pointer;">
+        ${lang==='tr' ? '✓ İzin Ver' : '✓ Allow'}
+      </button>
+      <button onclick="dismissNotifPrompt()" style="
+        flex:1; padding:10px; border-radius:10px;
+        background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.7);
+        font-size:13px; font-weight:500;
+        border:1px solid rgba(255,255,255,0.15); cursor:pointer;">
+        ${lang==='tr' ? 'Şimdi Değil' : 'Not Now'}
+      </button>
+    </div>
+  `;
+
+  document.getElementById('app').appendChild(prompt);
+
+  // 8 saniye sonra otomatik kapat
+  setTimeout(() => dismissNotifPrompt(), 8000);
+}
+
+async function grantNotifPermission() {
+  dismissNotifPrompt();
+  try {
+    const result = await Notification.requestPermission();
+    updateNotifStatus(result);
+    if (result === 'granted') {
+      showToast(lang==='tr' ? '🔔 Bildirimler açık!' : '🔔 Notifications enabled!');
+      // SW'a bildir
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'NOTIF_GRANTED' });
+      }
+    } else {
+      showToast(lang==='tr' ? 'Bildirimler kapalı.' : 'Notifications disabled.');
+    }
+  } catch(e) {
+    console.warn('[Notif]', e);
+  }
+}
+
+function dismissNotifPrompt() {
+  const el = document.getElementById('notif-prompt');
+  if (el) {
+    el.style.animation = 'none';
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(10px)';
+    el.style.transition = 'all 0.2s ease';
+    setTimeout(() => el.remove(), 200);
+  }
+}
+
+function updateNotifStatus(status) {
+  // Ayarlar ekranına bildirim durumu yansıt
+  const el = document.getElementById('notif-status-text');
+  if (!el) return;
+  const labels = {
+    granted: { tr:'🔔 Açık', en:'🔔 On' },
+    denied:  { tr:'🔕 Kapalı', en:'🔕 Off' },
+    default: { tr:'⏳ İzin bekleniyor', en:'⏳ Pending' },
+  };
+  const lbl = labels[status] || labels['default'];
+  el.textContent = lbl[lang] || lbl['tr'];
+  el.style.color = status === 'granted' ? '#10b981' : status === 'denied' ? '#ef4444' : '#f59e0b';
+}
+
+function checkNotifStatus() {
+  if (!('Notification' in window)) return;
+  updateNotifStatus(Notification.permission);
 }
 
 // Init
