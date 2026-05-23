@@ -341,6 +341,37 @@
   .action-btn:active { background: var(--cream-dark); }
   .action-btn.primary { background: var(--navy); color: var(--white); border-color: var(--navy); font-family: 'Syne', sans-serif; }
 
+  /* STAR RATING */
+  .star-rating-bar {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px 16px;
+    margin-bottom: 16px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .star-rating-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  .star-rating-summary { display: flex; align-items: center; gap: 12px; }
+  .star-big-num { font-family: 'Syne', sans-serif; font-size: 36px; font-weight: 700; color: var(--text-primary); line-height: 1; }
+  .star-big-right { display: flex; flex-direction: column; gap: 4px; }
+  .stars-display { display: flex; gap: 2px; }
+  .stars-display span { font-size: 18px; }
+  .star-count-text { font-size: 11px; color: var(--text-muted); }
+  .star-bars { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+  .star-bar-row { display: flex; align-items: center; gap: 6px; }
+  .star-bar-label { font-size: 10px; color: var(--text-muted); width: 10px; text-align: right; flex-shrink: 0; }
+  .star-bar-track { flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .star-bar-fill { height: 100%; background: #f59e0b; border-radius: 3px; transition: width 0.4s ease; }
+  .star-bar-num { font-size: 10px; color: var(--text-muted); width: 16px; flex-shrink: 0; }
+  .star-input-row { display: flex; align-items: center; gap: 8px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .star-input-label { font-size: 12px; color: var(--text-secondary); flex-shrink: 0; }
+  .star-input { display: flex; gap: 4px; }
+  .star-input span { font-size: 24px; cursor: pointer; transition: transform 0.15s; filter: grayscale(1) opacity(0.4); }
+  .star-input span:hover, .star-input span.active { filter: none; transform: scale(1.2); }
+  .star-input span.lit { filter: none; }
+  .star-submit-btn { margin-left: auto; padding: 6px 14px; border-radius: 8px; background: var(--navy); color: var(--white); font-size: 11px; font-family: 'Syne', sans-serif; font-weight: 600; border: none; cursor: pointer; transition: opacity 0.2s; }
+  .star-submit-btn:active { opacity: 0.8; }
+  .card-stars { font-size: 10px; color: #f59e0b; letter-spacing: 0.5px; }
+  .card-rating-num { font-size: 10px; font-weight: 600; color: var(--text-primary); margin-left: 2px; }
+
+
   /* ADD SCREEN */
   .add-body { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
   .main-cat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
@@ -690,6 +721,28 @@
         <span class="badge badge-sub" id="detail-sub-badge">Restoran</span>
         <span class="badge badge-price" id="detail-price-badge">$$ Orta</span>
       </div>
+      <div id="detail-rating-bar" class="star-rating-bar">
+        <div class="star-rating-title" id="rating-title">Puan</div>
+        <div class="star-rating-summary">
+          <div class="star-big-num" id="rating-avg">4.6</div>
+          <div class="star-big-right">
+            <div class="stars-display" id="rating-stars-display"></div>
+            <div class="star-count-text" id="rating-count">34 değerlendirme</div>
+          </div>
+          <div class="star-bars" id="rating-bars" style="flex:1;"></div>
+        </div>
+        <div class="star-input-row">
+          <div class="star-input-label" id="rate-prompt">Puanla:</div>
+          <div class="star-input" id="star-input">
+            <span onclick="setUserRating(1)" onmouseover="hoverStars(1)" onmouseout="unhoverStars()">★</span>
+            <span onclick="setUserRating(2)" onmouseover="hoverStars(2)" onmouseout="unhoverStars()">★</span>
+            <span onclick="setUserRating(3)" onmouseover="hoverStars(3)" onmouseout="unhoverStars()">★</span>
+            <span onclick="setUserRating(4)" onmouseover="hoverStars(4)" onmouseout="unhoverStars()">★</span>
+            <span onclick="setUserRating(5)" onmouseover="hoverStars(5)" onmouseout="unhoverStars()">★</span>
+          </div>
+          <button class="star-submit-btn" onclick="submitRating()" id="btn-rate">Oyla</button>
+        </div>
+      </div>
       <div class="map-placeholder">🗺 <span id="map-text">Haritada Göster</span></div>
       <div class="detail-section">
         <div class="detail-section-title" id="about-title">Hakkında</div>
@@ -1016,10 +1069,10 @@ let liked = false;
 let saved = false;
 
 const places = [
-  { id:'mukbang', cat:'food', subcat:'Restoran', emoji:'🥩', name:'Mukbang BBQ', addr:'Mapo-gu, Seoul', price:'$$', priceName:{tr:'Orta',en:'Mid-range'}, likes:47, desc:{tr:'Sınırsız Kore barbekü, 90 dk. Akşam yoğun olur, öğlen git. Ödeme nakit tercih ediyorlar.',en:'Unlimited Korean BBQ, 90 min. Gets crowded in evenings, go for lunch. Cash payment preferred.'} },
-  { id:'dongdaemun', cat:'shopping', subcat:'Çanta & Valiz', emoji:'👜', name:'Dongdaemun Market', addr:'Jung-gu, Seoul', price:'$', priceName:{tr:'Uygun',en:'Budget'}, likes:31, desc:{tr:'Tekstil ve aksesuar için harika. Toplu alımda fiyat pazarlığı yapılabilir. Gece de açık.',en:'Great for textiles and accessories. Bargain for bulk purchases. Open at night too.'} },
-  { id:'gyeongbok', cat:'sightseeing', subcat:'Tarihi Yerler', emoji:'🏯', name:'Gyeongbokgung Palace', addr:'Jongno-gu, Seoul', price:'$', priceName:{tr:'Uygun',en:'Budget'}, likes:89, desc:{tr:'Seoul\'ün en büyük sarayı. Nöbet değişimi sabah 10\'da. Hanbok kiralayıp gir, ücretsiz!',en:'Seoul\'s largest palace. Guard changing at 10am. Rent a Hanbok to enter for free!'} },
-  { id:'cafe', cat:'food', subcat:'Kafe', emoji:'☕', name:'Cafe Bora', addr:'Insadong, Seoul', price:'$', priceName:{tr:'Uygun',en:'Budget'}, likes:55, desc:{tr:'Mor renkli dondurma ve latte\'siyle ünlü. Instagram için mükemmel. Erken git!',en:'Famous for purple-colored ice cream and lattes. Perfect for Instagram. Go early!'} },
+  { id:'mukbang', cat:'food', subcat:'Restoran', emoji:'🥩', name:'Mukbang BBQ', addr:'Mapo-gu, Seoul', price:'$$', priceName:{tr:'Orta',en:'Mid-range'}, likes:47, rating:4.6, ratingCount:34, ratings:{5:18,4:10,3:4,2:1,1:1}, desc:{tr:'Sınırsız Kore barbekü, 90 dk. Akşam yoğun olur, öğlen git. Ödeme nakit tercih ediyorlar.',en:'Unlimited Korean BBQ, 90 min. Gets crowded in evenings, go for lunch. Cash payment preferred.'} },
+  { id:'dongdaemun', cat:'shopping', subcat:'Çanta & Valiz', emoji:'👜', name:'Dongdaemun Market', addr:'Jung-gu, Seoul', price:'$', priceName:{tr:'Uygun',en:'Budget'}, likes:31, rating:4.1, ratingCount:22, ratings:{5:8,4:9,3:3,2:1,1:1}, desc:{tr:'Tekstil ve aksesuar için harika. Toplu alımda fiyat pazarlığı yapılabilir. Gece de açık.',en:'Great for textiles and accessories. Bargain for bulk purchases. Open at night too.'} },
+  { id:'gyeongbok', cat:'sightseeing', subcat:'Tarihi Yerler', emoji:'🏯', name:'Gyeongbokgung Palace', addr:'Jongno-gu, Seoul', price:'$', priceName:{tr:'Uygun',en:'Budget'}, likes:89, rating:4.8, ratingCount:61, ratings:{5:42,4:12,3:5,2:1,1:1}, desc:{tr:'Seoul\'ün en büyük sarayı. Nöbet değişimi sabah 10\'da. Hanbok kiralayıp gir, ücretsiz!',en:'Seoul\'s largest palace. Guard changing at 10am. Rent a Hanbok to enter for free!'} },
+  { id:'cafe', cat:'food', subcat:'Kafe', emoji:'☕', name:'Cafe Bora', addr:'Insadong, Seoul', price:'$', priceName:{tr:'Uygun',en:'Budget'}, likes:55, rating:4.3, ratingCount:28, ratings:{5:14,4:9,3:3,2:1,1:1}, desc:{tr:'Mor renkli dondurma ve latte\'siyle ünlü. Instagram için mükemmel. Erken git!',en:'Famous for purple-colored ice cream and lattes. Perfect for Instagram. Go early!'} },
 ];
 
 const subcats = {
@@ -1188,7 +1241,9 @@ function renderCards() {
         <div class="place-card-meta">${p.addr}</div>
         <div class="place-card-row">
           <span class="price-tag">${p.price} ${p.priceName[lang]}</span>
-          <span class="likes-tag"><span class="heart">♥</span> ${p.likes} ${lang==='tr'?'beğeni':'likes'}</span>
+          <span class="likes-tag">
+            ${p.rating > 0 ? `<span class="card-stars">${'★'.repeat(Math.round(p.rating))}${'☆'.repeat(5-Math.round(p.rating))}</span><span class="card-rating-num">${p.rating.toFixed(1)}</span>` : `<span class="heart">♥</span> ${p.likes}`}
+          </span>
         </div>
       </div>
     </div>
@@ -1202,9 +1257,14 @@ function filterCat(cat, btn) {
   renderCards();
 }
 
+let currentDetailId = null;
+let pendingRating = 0;
+
 function openDetail(id) {
   const p = places.find(x => x.id === id);
   if (!p) return;
+  currentDetailId = id;
+  pendingRating = 0;
   document.getElementById('detail-hero').className = `detail-hero ${p.cat}`;
   document.getElementById('detail-emoji').textContent = p.emoji;
   document.getElementById('detail-name').textContent = p.name;
@@ -1213,7 +1273,126 @@ function openDetail(id) {
   document.getElementById('detail-sub-badge').textContent = p.subcat;
   document.getElementById('detail-price-badge').textContent = `${p.price} ${p.priceName[lang]}`;
   document.getElementById('detail-desc').textContent = p.desc[lang];
+  renderRatingBar(p);
   goTo('screen-detail');
+}
+
+function renderRatingBar(p) {
+  // Ortalama & yıldız gösterimi
+  const avg = p.rating || 0;
+  const count = p.ratingCount || 0;
+  document.getElementById('rating-avg').textContent = avg > 0 ? avg.toFixed(1) : '—';
+  document.getElementById('rating-title').textContent = lang === 'tr' ? 'Puan' : 'Rating';
+  document.getElementById('rate-prompt').textContent = lang === 'tr' ? 'Puanla:' : 'Rate:';
+  document.getElementById('btn-rate').textContent = lang === 'tr' ? 'Oyla' : 'Rate';
+  document.getElementById('rating-count').textContent = count > 0
+    ? `${count} ${lang === 'tr' ? 'değerlendirme' : 'ratings'}`
+    : (lang === 'tr' ? 'Henüz puan yok' : 'No ratings yet');
+
+  // Yıldız display
+  const starsEl = document.getElementById('rating-stars-display');
+  starsEl.innerHTML = '';
+  for (let i = 1; i <= 5; i++) {
+    const s = document.createElement('span');
+    s.textContent = i <= Math.round(avg) ? '★' : '☆';
+    s.style.color = i <= Math.round(avg) ? '#f59e0b' : '#d1d5db';
+    s.style.fontSize = '16px';
+    starsEl.appendChild(s);
+  }
+
+  // Bar chart
+  const barsEl = document.getElementById('rating-bars');
+  barsEl.innerHTML = '';
+  const distrib = p.ratings || {5:0,4:0,3:0,2:0,1:0};
+  const maxVal = Math.max(...Object.values(distrib), 1);
+  [5,4,3,2,1].forEach(star => {
+    const val = distrib[star] || 0;
+    const pct = Math.round((val / (count || 1)) * 100);
+    barsEl.innerHTML += `
+      <div class="star-bar-row">
+        <div class="star-bar-label">${star}</div>
+        <div class="star-bar-track"><div class="star-bar-fill" style="width:${pct}%"></div></div>
+        <div class="star-bar-num">${val}</div>
+      </div>`;
+  });
+
+  // Kullanıcı daha önce oy verdiyse göster
+  if (p.userRating > 0) {
+    updateStarInput(p.userRating, true);
+    pendingRating = p.userRating;
+  } else {
+    updateStarInput(0, false);
+  }
+}
+
+function hoverStars(n) {
+  const stars = document.querySelectorAll('#star-input span');
+  stars.forEach((s, i) => {
+    s.style.filter = i < n ? 'none' : 'grayscale(1) opacity(0.4)';
+    s.style.transform = i < n ? 'scale(1.15)' : 'scale(1)';
+  });
+}
+
+function unhoverStars() {
+  if (pendingRating > 0) {
+    updateStarInput(pendingRating, false);
+  } else {
+    const stars = document.querySelectorAll('#star-input span');
+    stars.forEach(s => {
+      s.style.filter = 'grayscale(1) opacity(0.4)';
+      s.style.transform = 'scale(1)';
+    });
+  }
+}
+
+function setUserRating(n) {
+  pendingRating = n;
+  updateStarInput(n, false);
+}
+
+function updateStarInput(n, submitted) {
+  const stars = document.querySelectorAll('#star-input span');
+  stars.forEach((s, i) => {
+    s.style.filter = i < n ? 'none' : 'grayscale(1) opacity(0.4)';
+    s.style.transform = 'scale(1)';
+    s.style.color = i < n ? '#f59e0b' : '';
+  });
+  if (submitted) {
+    document.getElementById('btn-rate').textContent = lang === 'tr' ? '✓ Oylandı' : '✓ Rated';
+    document.getElementById('btn-rate').style.background = '#10b981';
+  }
+}
+
+function submitRating() {
+  if (pendingRating === 0) {
+    showToast(lang === 'tr' ? 'Önce bir yıldız seç!' : 'Select a star first!');
+    return;
+  }
+  const p = places.find(x => x.id === currentDetailId);
+  if (!p) return;
+
+  const prev = p.userRating || 0;
+
+  // Önceki oy varsa çıkar, yenisini ekle
+  if (prev > 0 && p.ratings[prev] > 0) {
+    p.ratings[prev]--;
+    p.ratingCount--;
+  }
+  p.ratings[pendingRating] = (p.ratings[pendingRating] || 0) + 1;
+  p.ratingCount++;
+  p.userRating = pendingRating;
+
+  // Ortalama yeniden hesapla
+  let total = 0, count = 0;
+  [1,2,3,4,5].forEach(s => { total += s * (p.ratings[s] || 0); count += (p.ratings[s] || 0); });
+  p.rating = count > 0 ? Math.round((total / count) * 10) / 10 : 0;
+
+  renderRatingBar(p);
+  updateStarInput(pendingRating, true);
+  renderCards();
+  showToast(lang === 'tr'
+    ? `${pendingRating} yıldız verdin! ★`
+    : `You rated ${pendingRating} stars! ★`);
 }
 
 function toggleLike() {
@@ -1277,6 +1456,8 @@ function submitPlace() {
     price: priceVal,
     priceName: priceName[priceVal] || {tr:'Uygun',en:'Budget'},
     likes: 0,
+    rating: 0, ratingCount: 0, ratings: {5:0,4:0,3:0,2:0,1:0},
+    userRating: 0,
     desc: { tr: desc || '', en: desc || '' }
   };
 
