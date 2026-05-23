@@ -651,6 +651,35 @@
     </div>
   </div>
 
+
+  <!-- SCREEN: LOGIN -->
+  <div class="screen" id="screen-login">
+    <div class="status-bar">
+      <span class="status-time">09:41</span>
+      <div class="status-icons"><div class="status-icon signal"></div><div class="status-icon battery"></div></div>
+    </div>
+    <div class="navy-header">
+      <div class="nav-back" onclick="goTo('screen-splash')">← </div>
+      <div class="header-title font-display" id="login-title">Giriş Yap</div>
+      <div class="header-sub" id="login-sub">CrewGuide hesabına giriş yap</div>
+    </div>
+    <div class="screen-body">
+      <div class="invite-visual">
+        <div class="invite-icon-big">✈️</div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">E-POSTA</div>
+        <input class="field-input" type="email" id="login-email" placeholder="email@gmail.com" autocomplete="email">
+      </div>
+      <div class="field-group">
+        <div class="field-label">ŞİFRE</div>
+        <input class="field-input" type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn-navy" onclick="signIn()" id="btn-sign-in">Giriş Yap →</button>
+      <button class="btn-ghost" onclick="goTo('screen-invite')" id="btn-go-register">Hesabın yok mu? Kayıt ol</button>
+    </div>
+  </div>
+
   <!-- SCREEN: SPLASH -->
   <div class="screen active" id="screen-splash">
     <div class="status-bar">
@@ -671,7 +700,7 @@
     </div>
     <div class="splash-bottom">
       <button class="btn-primary" onclick="goTo('screen-invite')" id="btn-have-code">Davet Kodum Var →</button>
-      <button class="btn-outline" onclick="goTo('screen-home')" id="btn-login">Giriş Yap</button>
+      <button class="btn-outline" onclick="goTo('screen-login')" id="btn-login">Giriş Yap</button>
       <div class="splash-note" id="splash-note">Sadece davet ile üye olunabilir.<br>Tüm kişisel bilgiler gizli tutulur.</div>
     </div>
   </div>
@@ -710,7 +739,7 @@
         </div>
         <div class="code-hint" id="invite-hint">7 haneli davet kodu · Büyük/küçük harf duyarsız</div>
       </div>
-      <button class="btn-navy" onclick="goTo('screen-profile')" id="btn-continue">Devam Et →</button>
+      <button class="btn-navy" onclick="verifyInviteCode()" id="btn-continue">Devam Et →</button>
       <button class="btn-ghost" id="btn-no-code">Kodum yok, nasıl alabilirim?</button>
     </div>
   </div>
@@ -1215,6 +1244,7 @@
       </div>
 
       <button onclick="resetTheme()" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid var(--border);background:transparent;font-size:13px;color:var(--text-muted);cursor:pointer;font-family:'DM Sans',sans-serif;" id="btn-reset-theme">↺ Varsayılana Sıfırla</button>
+      <button onclick="signOut()" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid #fca5a5;background:transparent;font-size:13px;color:#ef4444;cursor:pointer;font-family:'DM Sans',sans-serif;" id="btn-sign-out">🚪 Çıkış Yap</button>
       <div style="height:20px;"></div>
     </div>
   </div>
@@ -2399,10 +2429,275 @@ function openLightbox(index, urls) {
   document.getElementById('app').appendChild(lb);
 }
 
+
+// ── AUTH SİSTEMİ ──────────────────────────────────────────────────────────────
+let currentUser = null;
+let currentProfile = null;
+
+// Supabase Auth API yardımcıları
+async function authFetch(path, options = {}) {
+  const res = await fetch(SUPABASE_URL + '/auth/v1/' + path, {
+    ...options,
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      ...(options.headers || {})
+    }
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error_description || data.msg || JSON.stringify(data));
+  return data;
+}
+
+// Davet kodu doğrulama
+async function verifyInviteCode() {
+  const boxes = document.querySelectorAll('.code-box');
+  const code = Array.from(boxes).map(b => b.textContent.trim()).join('').replace(/\s/g,'');
+  
+  // Simüle edilmiş kod input — gerçek input olmadığı için sabit kodu al
+  const inputCode = 'CRW-X7K'; // Şimdilik sabit, ilerleyen adımda gerçek input eklenecek
+  
+  const btn = document.getElementById('btn-continue');
+  btn.textContent = lang==='tr'?'Kontrol ediliyor...':'Checking...';
+  btn.disabled = true;
+
+  try {
+    const data = await sbFetch(
+      `invite_codes?code=eq.${encodeURIComponent(inputCode)}&used_by=is.null&select=code`,
+      { headers: { 'Prefer': '' } }
+    );
+    if (!data || data.length === 0) {
+      showToast(lang==='tr'?'Geçersiz veya kullanılmış kod!':'Invalid or used code!');
+      return;
+    }
+    // Kodu sessionStorage'a kaydet
+    sessionStorage.setItem('pendingInviteCode', inputCode);
+    goTo('screen-profile');
+  } catch(e) {
+    showToast(lang==='tr'?'Bağlantı hatası, tekrar dene.':'Connection error, try again.');
+    console.warn('[verifyInviteCode]', e);
+  } finally {
+    btn.textContent = lang==='tr'?'Devam Et →':'Continue →';
+    btn.disabled = false;
+  }
+}
+
+// Kayıt ol
+async function createAccount() {
+  const username = document.getElementById('input-displayname').value.trim();
+  const email    = document.getElementById('input-email').value.trim();
+  const password = document.getElementById('input-password').value;
+  const inviteCode = sessionStorage.getItem('pendingInviteCode') || 'CRW-X7K';
+
+  if (!username) { showToast(lang==='tr'?'Görünen ad gerekli!':'Display name required!'); return; }
+  if (!email)    { showToast(lang==='tr'?'E-posta gerekli!':'Email required!'); return; }
+  if (password.length < 6) { showToast(lang==='tr'?'Şifre en az 6 karakter!':'Password must be 6+ chars!'); return; }
+
+  const btn = document.getElementById('btn-create-account');
+  btn.textContent = lang==='tr'?'Hesap oluşturuluyor...':'Creating account...';
+  btn.disabled = true;
+
+  try {
+    // 1. Supabase Auth'da kayıt
+    const authData = await authFetch('signup', {
+      method: 'POST',
+      body: JSON.stringify({ email, password })
+    });
+
+    const userId = authData.user?.id;
+    const accessToken = authData.access_token;
+    if (!userId) throw new Error('User ID alınamadı');
+
+    // 2. Profil oluştur
+    const newInviteCode = 'CRW-' + Math.random().toString(36).substring(2,5).toUpperCase();
+    await fetch(SUPABASE_URL + '/rest/v1/profiles', {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        id: userId,
+        username,
+        invite_code: newInviteCode,
+        invited_by: inviteCode
+      })
+    });
+
+    // 3. Davet kodunu kullanıldı olarak işaretle
+    await sbFetch(`invite_codes?code=eq.${encodeURIComponent(inviteCode)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ used_by: userId, used_at: new Date().toISOString() })
+    });
+
+    // 4. Session kaydet
+    sessionStorage.setItem('sb_access_token', accessToken);
+    sessionStorage.setItem('sb_refresh_token', authData.refresh_token || '');
+    currentUser = authData.user;
+    currentProfile = { username, invite_code: newInviteCode };
+
+    // 5. Davet kodunu welcome ekranında göster
+    const codeEl = document.querySelector('.invite-code-value');
+    if (codeEl) codeEl.textContent = newInviteCode;
+    sessionStorage.removeItem('pendingInviteCode');
+
+    updateProfileUI();
+    goTo('screen-welcome');
+
+  } catch(e) {
+    const msg = e.message || '';
+    if (msg.includes('already registered') || msg.includes('already been registered')) {
+      showToast(lang==='tr'?'Bu e-posta zaten kayıtlı!':'Email already registered!');
+    } else {
+      showToast(lang==='tr'?`Hata: ${msg}`:`Error: ${msg}`);
+    }
+    console.warn('[createAccount]', e);
+  } finally {
+    btn.textContent = lang==='tr'?'Hesap Oluştur →':'Create Account →';
+    btn.disabled = false;
+  }
+}
+
+// Giriş yap
+async function signIn() {
+  const email    = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+
+  if (!email || !password) {
+    showToast(lang==='tr'?'E-posta ve şifre gerekli!':'Email and password required!');
+    return;
+  }
+
+  const btn = document.getElementById('btn-sign-in');
+  btn.textContent = lang==='tr'?'Giriş yapılıyor...':'Signing in...';
+  btn.disabled = true;
+
+  try {
+    const data = await authFetch('token?grant_type=password', {
+      method: 'POST',
+      body: JSON.stringify({ email, password })
+    });
+
+    sessionStorage.setItem('sb_access_token', data.access_token);
+    sessionStorage.setItem('sb_refresh_token', data.refresh_token || '');
+    currentUser = data.user;
+
+    // Profili yükle
+    await loadProfile(data.user.id, data.access_token);
+    updateProfileUI();
+    goTo('screen-home');
+
+  } catch(e) {
+    const msg = e.message || '';
+    if (msg.includes('Invalid login')) {
+      showToast(lang==='tr'?'E-posta veya şifre hatalı!':'Invalid email or password!');
+    } else {
+      showToast(lang==='tr'?`Hata: ${msg}`:`Error: ${msg}`);
+    }
+    console.warn('[signIn]', e);
+  } finally {
+    btn.textContent = lang==='tr'?'Giriş Yap →':'Sign In →';
+    btn.disabled = false;
+  }
+}
+
+// Profil yükle
+async function loadProfile(userId, token) {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}&select=*`,
+      {
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + token,
+          'Prefer': ''
+        }
+      }
+    );
+    const data = await res.json();
+    if (data && data[0]) {
+      currentProfile = data[0];
+    }
+  } catch(e) {
+    console.warn('[loadProfile]', e);
+  }
+}
+
+// Çıkış yap
+async function signOut() {
+  try {
+    const token = sessionStorage.getItem('sb_access_token');
+    if (token) {
+      await authFetch('logout', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+    }
+  } catch(e) {}
+  sessionStorage.removeItem('sb_access_token');
+  sessionStorage.removeItem('sb_refresh_token');
+  currentUser = null;
+  currentProfile = null;
+  goTo('screen-splash');
+}
+
+// Session kontrolü — sayfa yenilenince oturumu koru
+async function checkSession() {
+  const token = sessionStorage.getItem('sb_access_token');
+  if (!token) return;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + token }
+    });
+    if (res.ok) {
+      const user = await res.json();
+      currentUser = user;
+      await loadProfile(user.id, token);
+      updateProfileUI();
+      goTo('screen-home');
+    } else {
+      sessionStorage.removeItem('sb_access_token');
+    }
+  } catch(e) {
+    console.warn('[checkSession]', e);
+  }
+}
+
+// Profil UI güncelle
+function updateProfileUI() {
+  if (!currentProfile) return;
+  const username = currentProfile.username || 'Crew';
+  const inviteCode = currentProfile.invite_code || 'CRW-XXX';
+
+  // Avatar baş harfi
+  const avatarEls = document.querySelectorAll('.home-avatar, .profile-avatar');
+  avatarEls.forEach(el => el.textContent = username.charAt(0).toUpperCase());
+
+  // Profil adı
+  const nameEl = document.querySelector('.profile-name');
+  if (nameEl) nameEl.textContent = username;
+
+  // Davet kodları
+  document.querySelectorAll('.invite-code-value, .invite-code-text').forEach(el => {
+    el.textContent = inviteCode;
+  });
+
+  // Yorum kutusunda default isim
+  const commentInput = document.getElementById('comment-username');
+  if (commentInput && !commentInput.value) commentInput.value = username;
+}
+
+
 // Init
 renderCards();
 renderSubCats();
 updateCurrencyBadge('Seoul');
+// Sayfa yüklenince session kontrol et
+window.addEventListener('load', () => {
+  checkSession();
+});
 
 function updateCurrencyBadge(cityName) {
   const cur = getCurrencyForCity(cityName);
