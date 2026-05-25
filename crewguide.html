@@ -3111,7 +3111,7 @@ async function createAccount() {
     const accessToken = authData.access_token;
     if (!userId) throw new Error('User ID alınamadı');
 
-    // 2. Profil oluştur
+    // 2. Profil oluştur (kendi kodu — tek ana kod)
     const newInviteCode = 'CRW-' + Math.random().toString(36).substring(2,5).toUpperCase();
     await fetch(SUPABASE_URL + '/rest/v1/profiles', {
       method: 'POST',
@@ -3129,21 +3129,33 @@ async function createAccount() {
       })
     });
 
-    // 3. Davet kodunu kullanıldı olarak işaretle
+    // 3. Kullanıcıya 3 adet davet kodu üret
+    const inviteCodes = [];
+    for (let i = 0; i < 3; i++) {
+      const code = 'CRW-' + Math.random().toString(36).substring(2,5).toUpperCase() + Math.random().toString(36).substring(2,4).toUpperCase();
+      inviteCodes.push({ code, created_by: userId });
+    }
+    await sbFetch('invite_codes', {
+      method: 'POST',
+      prefer: 'return=minimal',
+      body: JSON.stringify(inviteCodes)
+    });
+
+    // 4. Kullanılan davet kodunu işaretle
     await sbFetch(`invite_codes?code=eq.${encodeURIComponent(inviteCode)}`, {
       method: 'PATCH',
       body: JSON.stringify({ used_by: userId, used_at: new Date().toISOString() })
     });
 
-    // 4. Session kaydet
+    // 5. Session kaydet
     sessionStorage.setItem('sb_access_token', accessToken);
     sessionStorage.setItem('sb_refresh_token', authData.refresh_token || '');
     currentUser = authData.user;
-    currentProfile = { username, invite_code: newInviteCode };
+    currentProfile = { username, invite_code: newInviteCode, invite_codes: inviteCodes.map(c => c.code) };
 
-    // 5. Davet kodunu welcome ekranında göster
+    // 6. Davet kodunu welcome ekranında göster
     const codeEl = document.querySelector('.invite-code-value');
-    if (codeEl) codeEl.textContent = newInviteCode;
+    if (codeEl) codeEl.textContent = inviteCodes[0].code;
     sessionStorage.removeItem('pendingInviteCode');
 
     updateProfileUI();
@@ -3209,20 +3221,27 @@ async function signIn() {
 // Profil yükle
 async function loadProfile(userId, token) {
   try {
+    // Profil bilgilerini yükle
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}&select=*`,
-      {
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': 'Bearer ' + token,
-          'Prefer': ''
-        }
-      }
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + token, 'Prefer': '' } }
     );
     const data = await res.json();
     if (data && data[0]) {
       currentProfile = data[0];
     }
+
+    // Kullanıcının davet kodlarını yükle
+    const invRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/invite_codes?created_by=eq.${userId}&select=code,used_by,used_at&order=created_at.asc`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + token, 'Prefer': '' } }
+    );
+    const invData = await invRes.json();
+    if (invData && currentProfile) {
+      currentProfile.invite_codes = invData;
+    }
+
+    updateInviteCodesUI();
   } catch(e) {
     console.warn('[loadProfile]', e);
   }
@@ -3287,6 +3306,9 @@ function updateProfileUI() {
   document.querySelectorAll('.invite-code-value, .invite-code-text').forEach(el => {
     el.textContent = inviteCode;
   });
+
+  // Davet kodlarını güncelle
+  updateInviteCodesUI();
 
   // Yorum kutusunda kullanıcı adını doldur ve kilitle
   const commentInput = document.getElementById('comment-username');
@@ -3814,6 +3836,65 @@ async function loadPlaces() {
     console.log(`[Places] ${data.length} yer Supabase'den yüklendi.`);
   } catch(e) {
     console.warn('[loadPlaces]', e);
+  }
+}
+
+
+// ── DAVET KODLARI UI ──────────────────────────────────────────────────────────
+function updateInviteCodesUI() {
+  if (!currentProfile || !currentProfile.invite_codes) return;
+  const codes = currentProfile.invite_codes;
+
+  // Profil ekranındaki davet bölümünü güncelle
+  const inviteDisplay = document.querySelector('.invite-display');
+  if (!inviteDisplay) return;
+
+  const used = codes.filter(c => c.used_by).length;
+  const total = codes.length;
+  const remaining = total - used;
+
+  inviteDisplay.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">
+      ${codes.map(c => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+          <div>
+            <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;color:${c.used_by ? 'var(--text-muted)' : 'var(--navy)'};">
+              ${c.code}
+            </div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">
+              ${c.used_by
+                ? (lang==='tr'?'✓ Kullanıldı':'✓ Used')
+                : (lang==='tr'?'Kullanılabilir':'Available')}
+            </div>
+          </div>
+          ${!c.used_by ? `
+            <button onclick="copyInviteCode('${c.code}')" style="
+              font-size:11px;background:var(--navy);color:#fff;
+              border:none;border-radius:6px;padding:5px 12px;cursor:pointer;
+              font-family:'DM Sans',sans-serif;">
+              ${lang==='tr'?'Kopyala':'Copy'}
+            </button>` : `<span style="font-size:16px;">✓</span>`}
+        </div>
+      `).join('')}
+    </div>
+    <div class="quota-text" id="quota-text">
+      ${lang==='tr'
+        ? `${used} kişiyi davet ettin · ${remaining} hakkın kaldı`
+        : `You invited ${used} · ${remaining} remaining`}
+    </div>
+    <div class="quota-bar">
+      <div class="quota-fill" style="width:${total > 0 ? (used/total)*100 : 0}%"></div>
+    </div>
+  `;
+}
+
+function copyInviteCode(code) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(code).then(() => {
+      showToast(lang==='tr'?`"${code}" kopyalandı!`:`"${code}" copied!`);
+    });
+  } else {
+    showToast(code);
   }
 }
 
