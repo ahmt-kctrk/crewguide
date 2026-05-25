@@ -3259,6 +3259,7 @@ async function checkSession() {
       currentUser = user;
       await loadProfile(user.id, token);
       updateProfileUI();
+      loadPlaces();
       goTo('screen-home');
     } else {
       sessionStorage.removeItem('sb_access_token');
@@ -3769,10 +3770,59 @@ async function fillCurrentLocation() {
   );
 }
 
+
+// ── SUPABASE'DEN YERLERİ YÜKLE ───────────────────────────────────────────────
+async function loadPlaces() {
+  try {
+    const data = await sbFetch(
+      'places?is_hidden=eq.false&order=created_at.desc&limit=100',
+      { headers: { 'Prefer': '' } }
+    );
+    if (!data || data.length === 0) return;
+
+    // Supabase'den gelen yerleri places dizisine ekle (duplicate olmaması için)
+    const existingIds = new Set(places.map(p => p.id));
+    const priceName = {
+      '$':  { tr:'Uygun',  en:'Budget' },
+      '$$': { tr:'Orta',   en:'Mid-range' },
+      '$$$':{ tr:'Pahalı', en:'Expensive' }
+    };
+
+    data.forEach(row => {
+      if (existingIds.has(row.id)) return; // zaten varsa atla
+      places.push({
+        id: row.id,
+        cat: row.cat,
+        subcat: row.subcat || '',
+        emoji: row.emoji || '📍',
+        name: row.name,
+        addr: row.addr || '',
+        price: row.price || '$',
+        priceName: priceName[row.price] || { tr:'Uygun', en:'Budget' },
+        likes: row.likes || 0,
+        rating: parseFloat(row.rating) || 0,
+        ratingCount: row.rating_count || 0,
+        ratings: { 5:0, 4:0, 3:0, 2:0, 1:0 },
+        userRating: 0,
+        isAdult: row.is_adult || false,
+        userId: row.user_id || null,
+        desc: { tr: row.desc_tr || '', en: row.desc_en || '' }
+      });
+    });
+
+    renderCards();
+    console.log(`[Places] ${data.length} yer Supabase'den yüklendi.`);
+  } catch(e) {
+    console.warn('[loadPlaces]', e);
+  }
+}
+
 // Init
 renderCards();
 renderSubCats();
 updateCurrencyBadge('Seoul');
+// Supabase'den yerleri yükle
+loadPlaces();
 // Sayfa yüklenince session kontrol et
 window.addEventListener('load', () => {
   checkSession();
