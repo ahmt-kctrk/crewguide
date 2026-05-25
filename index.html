@@ -374,6 +374,16 @@
   .card-stars { font-size: 10px; color: #f59e0b; letter-spacing: 0.5px; }
   .card-rating-num { font-size: 10px; font-weight: 600; color: var(--text-primary); margin-left: 2px; }
 
+  .lang-setting-btn {
+    padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;
+    border: 1.5px solid var(--border); background: var(--white);
+    color: var(--text-secondary); cursor: pointer; transition: all 0.15s;
+  }
+  .lang-setting-btn.active {
+    background: var(--navy); color: #fff; border-color: var(--navy);
+  }
+
+
   /* +18 TOGGLE & ADMIN */
   .adult-toggle-row {
     display: flex; align-items: center; justify-content: space-between;
@@ -910,9 +920,16 @@
       <div class="splash-logo">✈️</div>
       <div class="splash-title font-display">CrewGuide</div>
       <div class="splash-tagline" id="splash-tagline">Havacılık çalışanlarının<br>dünya rehberi</div>
-      <div class="splash-lang">
-        <button class="lang-btn active" onclick="setLang('tr', this)">🇹🇷 Türkçe</button>
-        <button class="lang-btn" onclick="setLang('en', this)">🇬🇧 English</button>
+      <div class="splash-lang" style="flex-wrap:wrap;justify-content:center;gap:6px;">
+        <button class="lang-btn active" onclick="setLang('tr', this)">🇹🇷 TR</button>
+        <button class="lang-btn" onclick="setLang('en', this)">🇬🇧 EN</button>
+        <button class="lang-btn" onclick="setLang('de', this)">🇩🇪 DE</button>
+        <button class="lang-btn" onclick="setLang('fr', this)">🇫🇷 FR</button>
+        <button class="lang-btn" onclick="setLang('es', this)">🇪🇸 ES</button>
+        <button class="lang-btn" onclick="setLang('ar', this)">🇦🇪 AR</button>
+        <button class="lang-btn" onclick="setLang('ja', this)">🇯🇵 JA</button>
+        <button class="lang-btn" onclick="setLang('ko', this)">🇰🇷 KO</button>
+        <button class="lang-btn" onclick="setLang('zh', this)">🇨🇳 中文</button>
       </div>
     </div>
     <div class="splash-bottom">
@@ -1471,6 +1488,24 @@
     </div>
     <div style="padding:20px;display:flex;flex-direction:column;gap:20px;">
 
+      <!-- DİL SEÇİMİ -->
+      <div style="background:var(--white);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border);">
+          <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--text-primary);">🌐 Dil / Language</div>
+        </div>
+        <div style="padding:12px 16px;display:flex;flex-wrap:wrap;gap:6px;" id="settings-lang-grid">
+          <button onclick="setLangFromSettings('tr')" class="lang-setting-btn" data-lang="tr">🇹🇷 Türkçe</button>
+          <button onclick="setLangFromSettings('en')" class="lang-setting-btn" data-lang="en">🇬🇧 English</button>
+          <button onclick="setLangFromSettings('de')" class="lang-setting-btn" data-lang="de">🇩🇪 Deutsch</button>
+          <button onclick="setLangFromSettings('fr')" class="lang-setting-btn" data-lang="fr">🇫🇷 Français</button>
+          <button onclick="setLangFromSettings('es')" class="lang-setting-btn" data-lang="es">🇪🇸 Español</button>
+          <button onclick="setLangFromSettings('ar')" class="lang-setting-btn" data-lang="ar">🇦🇪 العربية</button>
+          <button onclick="setLangFromSettings('ja')" class="lang-setting-btn" data-lang="ja">🇯🇵 日本語</button>
+          <button onclick="setLangFromSettings('ko')" class="lang-setting-btn" data-lang="ko">🇰🇷 한국어</button>
+          <button onclick="setLangFromSettings('zh')" class="lang-setting-btn" data-lang="zh">🇨🇳 中文</button>
+        </div>
+      </div>
+
       <!-- DARK/LIGHT MODE -->
       <div style="background:var(--white);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;">
         <div style="padding:14px 16px;border-bottom:1px solid var(--border);">
@@ -1668,6 +1703,364 @@ const translations = {
     'dl-t3': 'Yorumlar', 'dl-s3': 'Opsiyonel · ~0.4 MB ekstra',
     'dl-cancel': 'İptal',
   },
+
+  de: {
+    'splash-tagline': 'Der Weltführer für<br>Flugpersonal',
+    'btn-have-code': 'Ich habe einen Einladungscode →',
+    'btn-login': 'Anmelden',
+    'splash-note': 'Nur auf Einladung.<br>Alle persönlichen Daten bleiben privat.',
+    'back-splash': '', 'invite-title': 'Einladungscode', 'invite-sub': 'Schritt 1/3',
+    'invite-desc': 'CrewGuide ist nur auf Einladung. Frag einen Kollegen nach einem Code.',
+    'invite-code-label': 'EINLADUNGSCODE',
+    'invite-hint': '7-stelliger Code · Groß-/Kleinschreibung egal',
+    'btn-continue': 'Weiter →', 'btn-no-code': 'Kein Code? Wie bekomme ich einen?',
+    'back-invite': '', 'profile-setup-title': 'Profil erstellen', 'profile-setup-sub': 'Schritt 2/3',
+    'avatar-hint': 'Foto hinzufügen (optional)',
+    'label-displayname': 'ANZEIGENAME — ÖFFENTLICH',
+    'label-email': 'E-MAIL — NUR FÜR LOGIN',
+    'label-password': 'PASSWORT',
+    'privacy-text': 'E-Mail und Passwort werden niemals geteilt. Andere Nutzer sehen nur deinen Anzeigenamen.',
+    'btn-create-account': 'Konto erstellen →',
+    'welcome-title': 'Willkommen!',
+    'welcome-sub': 'Du kannst jetzt Empfehlungen von Crew weltweit abrufen.',
+    'your-code-label': 'DEIN EINLADUNGSCODE', 'invite-quota-text': 'Du kannst 3 Freunde einladen',
+    'btn-explore': 'Entdecken →',
+    'location-text': '📍 Seoul, Südkorea', 'search-placeholder': 'Orte, Essen, Shops suchen...',
+    'tab-all': 'Alle', 'tab-food': '🍜 Essen', 'tab-shopping': '🛍 Shopping', 'tab-sight': '🗺 Sehenswürdigkeiten',
+    'bnav-home': 'Entdecken', 'bnav-saved': 'Gespeichert', 'bnav-profile': 'Profil',
+    'about-title': 'Über', 'reviews-title': 'Bewertungen',
+    'review1-text': 'Fleischqualität ausgezeichnet, Personal spricht Englisch, sehr empfehlenswert!',
+    'review2-text': 'Essen war super, aber am Wochenende 1 Stunde gewartet. Reservierung nötig.',
+    'like-label': 'Gefällt mir', 'save-label': 'Speichern', 'comment-label': 'Bewerten',
+    'map-text': 'Auf Karte zeigen',
+    'back-home-add': '', 'add-title': 'Neuen Ort hinzufügen', 'add-sub': 'Seoul · Teile deine Erfahrung',
+    'label-main-cat': 'HAUPTKATEGORIE', 'label-sub-cat': 'UNTERKATEGORIE',
+    'cat-food-label': 'Essen', 'cat-shopping-label': 'Shopping', 'cat-sight-label': 'Sehenswürdigkeiten',
+    'label-place-name': 'ORTSNAME', 'label-place-addr': 'ADRESSE / STANDORT',
+    'label-price': 'PREISKLASSE', 'price-cheap': 'Günstig', 'price-mid': 'Mittel', 'price-high': 'Teuer',
+    'label-desc': 'BESCHREIBUNG & NOTIZEN', 'photo-text': 'Foto hinzufügen',
+    'photo-opt': 'Optional · Bis zu 5 Fotos', 'btn-submit': 'Teilen →',
+    'back-saved': '', 'saved-title': 'Gespeicherte Orte', 'saved-sub': 'Deine gespeicherten Orte',
+    'saved-empty': 'Noch keine gespeicherten Orte.',
+    'profile-since': 'Mitglied seit März 2025',
+    'stat-places-label': 'Orte hinzugefügt', 'stat-likes-label': 'Likes erhalten', 'stat-invite-label': 'Einladungen',
+    'section-invite': 'Mein Einladungscode', 'quota-text': '1 Person eingeladen · 2 übrig',
+    'btn-copy': 'Kopieren', 'section-my-places': 'Meine Orte',
+    'cat-food-badge': 'Essen', 'cat-shop-badge': 'Shopping',
+    'section-offline': 'Offline-Städte',
+    'city1-meta': '47 Orte · 2,3 MB · Ohne Fotos', 'city2-meta': '61 Orte · 18 MB · Mit Fotos',
+    'city3-meta': '34 Orte · Noch nicht heruntergeladen', 'btn-download-paris': '⬇ Herunterladen',
+    'dl-t1': 'Ortsinformationen & Adressen', 'dl-s1': 'Immer enthalten · ~2,1 MB',
+    'dl-t2': 'Fotos', 'dl-s2': 'Optional · ~16 MB extra',
+    'dl-t3': 'Bewertungen', 'dl-s3': 'Optional · ~0,4 MB extra',
+    'dl-cancel': 'Abbrechen',
+  },
+  fr: {
+    'splash-tagline': 'Le guide mondial pour<br>le personnel navigant',
+    'btn-have-code': "J'ai un code d'invitation →",
+    'btn-login': 'Se connecter',
+    'splash-note': "Adhésion sur invitation uniquement.<br>Toutes les données personnelles sont privées.",
+    'back-splash': '', 'invite-title': "Code d'invitation", 'invite-sub': 'Étape 1/3',
+    'invite-desc': "CrewGuide est sur invitation uniquement. Demandez un code à un collègue.",
+    'invite-code-label': "CODE D'INVITATION",
+    'invite-hint': "Code à 7 caractères · Insensible à la casse",
+    'btn-continue': 'Continuer →', 'btn-no-code': "Pas de code ? Comment en obtenir un ?",
+    'back-invite': '', 'profile-setup-title': 'Créer un profil', 'profile-setup-sub': 'Étape 2/3',
+    'avatar-hint': 'Ajouter une photo (optionnel)',
+    'label-displayname': 'NOM AFFICHÉ — PUBLIC',
+    'label-email': 'EMAIL — CONNEXION UNIQUEMENT',
+    'label-password': 'MOT DE PASSE',
+    'privacy-text': "Votre email et mot de passe ne sont jamais partagés. Les autres utilisateurs voient uniquement votre nom affiché.",
+    'btn-create-account': 'Créer un compte →',
+    'welcome-title': 'Bienvenue !',
+    'welcome-sub': 'Vous pouvez maintenant accéder aux recommandations de l'équipage du monde entier.',
+    'your-code-label': 'VOTRE CODE D'INVITATION', 'invite-quota-text': 'Vous pouvez inviter 3 amis',
+    'btn-explore': 'Commencer à explorer →',
+    'location-text': '📍 Séoul, Corée du Sud', 'search-placeholder': 'Rechercher des lieux, restaurants...',
+    'tab-all': 'Tous', 'tab-food': '🍜 Restauration', 'tab-shopping': '🛍 Shopping', 'tab-sight': '🗺 Tourisme',
+    'bnav-home': 'Explorer', 'bnav-saved': 'Enregistré', 'bnav-profile': 'Profil',
+    'about-title': 'À propos', 'reviews-title': 'Avis',
+    'review1-text': 'Qualité de viande excellente, personnel anglophone, je recommande vivement !',
+    'review2-text': 'Repas délicieux mais 1h d'attente le week-end. Réservation indispensable.',
+    'like-label': 'J'aime', 'save-label': 'Enregistrer', 'comment-label': 'Avis',
+    'map-text': 'Voir sur la carte',
+    'back-home-add': '', 'add-title': 'Ajouter un lieu', 'add-sub': 'Séoul · Partagez votre expérience',
+    'label-main-cat': 'CATÉGORIE PRINCIPALE', 'label-sub-cat': 'SOUS-CATÉGORIE',
+    'cat-food-label': 'Restauration', 'cat-shopping-label': 'Shopping', 'cat-sight-label': 'Tourisme',
+    'label-place-name': 'NOM DU LIEU', 'label-place-addr': 'ADRESSE / LOCALISATION',
+    'label-price': 'GAMME DE PRIX', 'price-cheap': 'Économique', 'price-mid': 'Moyen', 'price-high': 'Cher',
+    'label-desc': 'DESCRIPTION & NOTES', 'photo-text': 'Ajouter une photo',
+    'photo-opt': 'Optionnel · Jusqu'à 5 photos', 'btn-submit': 'Partager →',
+    'back-saved': '', 'saved-title': 'Lieux enregistrés', 'saved-sub': 'Vos lieux favoris',
+    'saved-empty': 'Aucun lieu enregistré pour l'instant.',
+    'profile-since': 'Membre depuis mars 2025',
+    'stat-places-label': 'Lieux ajoutés', 'stat-likes-label': 'J'aime reçus', 'stat-invite-label': 'Invitations',
+    'section-invite': 'Mon code d'invitation', 'quota-text': '1 personne invitée · 2 restantes',
+    'btn-copy': 'Copier', 'section-my-places': 'Mes lieux ajoutés',
+    'cat-food-badge': 'Restauration', 'cat-shop-badge': 'Shopping',
+    'section-offline': 'Villes hors ligne',
+    'city1-meta': '47 lieux · 2,3 Mo · Sans photos', 'city2-meta': '61 lieux · 18 Mo · Avec photos',
+    'city3-meta': '34 lieux · Pas encore téléchargé', 'btn-download-paris': '⬇ Télécharger',
+    'dl-t1': 'Infos et adresses', 'dl-s1': 'Toujours inclus · ~2,1 Mo',
+    'dl-t2': 'Photos', 'dl-s2': 'Optionnel · ~16 Mo supplémentaires',
+    'dl-t3': 'Avis', 'dl-s3': 'Optionnel · ~0,4 Mo supplémentaires',
+    'dl-cancel': 'Annuler',
+  },
+  es: {
+    'splash-tagline': 'La guía mundial para<br>el personal de vuelo',
+    'btn-have-code': 'Tengo un código de invitación →',
+    'btn-login': 'Iniciar sesión',
+    'splash-note': 'Solo por invitación.<br>Todos los datos personales son privados.',
+    'back-splash': '', 'invite-title': 'Código de invitación', 'invite-sub': 'Paso 1/3',
+    'invite-desc': 'CrewGuide es solo por invitación. Pide un código a un compañero.',
+    'invite-code-label': 'CÓDIGO DE INVITACIÓN',
+    'invite-hint': 'Código de 7 caracteres · No distingue mayúsculas',
+    'btn-continue': 'Continuar →', 'btn-no-code': '¿Sin código? ¿Cómo consigo uno?',
+    'back-invite': '', 'profile-setup-title': 'Crear perfil', 'profile-setup-sub': 'Paso 2/3',
+    'avatar-hint': 'Agregar foto (opcional)',
+    'label-displayname': 'NOMBRE VISIBLE — PÚBLICO',
+    'label-email': 'CORREO — SOLO PARA INICIO DE SESIÓN',
+    'label-password': 'CONTRASEÑA',
+    'privacy-text': 'Tu correo y contraseña nunca se comparten. Los demás usuarios solo ven tu nombre visible.',
+    'btn-create-account': 'Crear cuenta →',
+    'welcome-title': '¡Bienvenido!',
+    'welcome-sub': 'Ahora puedes acceder a las recomendaciones de tripulaciones de todo el mundo.',
+    'your-code-label': 'TU CÓDIGO DE INVITACIÓN', 'invite-quota-text': 'Puedes invitar a 3 amigos',
+    'btn-explore': 'Empezar a explorar →',
+    'location-text': '📍 Seúl, Corea del Sur', 'search-placeholder': 'Buscar lugares, comida, tiendas...',
+    'tab-all': 'Todos', 'tab-food': '🍜 Comida', 'tab-shopping': '🛍 Compras', 'tab-sight': '🗺 Turismo',
+    'bnav-home': 'Explorar', 'bnav-saved': 'Guardado', 'bnav-profile': 'Perfil',
+    'about-title': 'Acerca de', 'reviews-title': 'Reseñas',
+    'review1-text': '¡Calidad de carne excelente, personal habla inglés, muy recomendable!',
+    'review2-text': 'La comida estaba genial pero esperamos 1 hora los fines de semana. Reserva esencial.',
+    'like-label': 'Me gusta', 'save-label': 'Guardar', 'comment-label': 'Reseña',
+    'map-text': 'Ver en el mapa',
+    'back-home-add': '', 'add-title': 'Agregar lugar', 'add-sub': 'Seúl · Comparte tu experiencia',
+    'label-main-cat': 'CATEGORÍA PRINCIPAL', 'label-sub-cat': 'SUBCATEGORÍA',
+    'cat-food-label': 'Comida', 'cat-shopping-label': 'Compras', 'cat-sight-label': 'Turismo',
+    'label-place-name': 'NOMBRE DEL LUGAR', 'label-place-addr': 'DIRECCIÓN / UBICACIÓN',
+    'label-price': 'RANGO DE PRECIOS', 'price-cheap': 'Económico', 'price-mid': 'Medio', 'price-high': 'Caro',
+    'label-desc': 'DESCRIPCIÓN Y NOTAS', 'photo-text': 'Agregar foto',
+    'photo-opt': 'Opcional · Hasta 5 fotos', 'btn-submit': 'Compartir →',
+    'back-saved': '', 'saved-title': 'Lugares guardados', 'saved-sub': 'Tus lugares favoritos',
+    'saved-empty': 'Aún no hay lugares guardados.',
+    'profile-since': 'Miembro desde marzo 2025',
+    'stat-places-label': 'Lugares añadidos', 'stat-likes-label': 'Me gusta recibidos', 'stat-invite-label': 'Invitaciones',
+    'section-invite': 'Mi código de invitación', 'quota-text': '1 persona invitada · 2 restantes',
+    'btn-copy': 'Copiar', 'section-my-places': 'Mis lugares añadidos',
+    'cat-food-badge': 'Comida', 'cat-shop-badge': 'Compras',
+    'section-offline': 'Ciudades sin conexión',
+    'city1-meta': '47 lugares · 2,3 MB · Sin fotos', 'city2-meta': '61 lugares · 18 MB · Con fotos',
+    'city3-meta': '34 lugares · Aún no descargado', 'btn-download-paris': '⬇ Descargar',
+    'dl-t1': 'Info y direcciones', 'dl-s1': 'Siempre incluido · ~2,1 MB',
+    'dl-t2': 'Fotos', 'dl-s2': 'Opcional · ~16 MB extra',
+    'dl-t3': 'Reseñas', 'dl-s3': 'Opcional · ~0,4 MB extra',
+    'dl-cancel': 'Cancelar',
+  },
+  ar: {
+    'splash-tagline': 'الدليل العالمي<br>لطاقم الطيران',
+    'btn-have-code': 'لدي رمز دعوة →',
+    'btn-login': 'تسجيل الدخول',
+    'splash-note': 'العضوية بالدعوة فقط.<br>جميع البيانات الشخصية محمية.',
+    'back-splash': '', 'invite-title': 'رمز الدعوة', 'invite-sub': 'الخطوة 1/3',
+    'invite-desc': 'CrewGuide بالدعوة فقط. اطلب رمزاً من زميل.',
+    'invite-code-label': 'رمز الدعوة',
+    'invite-hint': 'رمز مكون من 7 أحرف · غير حساس للحالة',
+    'btn-continue': 'متابعة →', 'btn-no-code': 'لا يوجد رمز؟ كيف أحصل على واحد؟',
+    'back-invite': '', 'profile-setup-title': 'إنشاء الملف الشخصي', 'profile-setup-sub': 'الخطوة 2/3',
+    'avatar-hint': 'إضافة صورة (اختياري)',
+    'label-displayname': 'الاسم المعروض — عام',
+    'label-email': 'البريد الإلكتروني — لتسجيل الدخول فقط',
+    'label-password': 'كلمة المرور',
+    'privacy-text': 'لن يتم مشاركة بريدك الإلكتروني وكلمة المرور أبداً.',
+    'btn-create-account': 'إنشاء حساب →',
+    'welcome-title': 'مرحباً!',
+    'welcome-sub': 'يمكنك الآن الوصول إلى توصيات الطاقم من جميع أنحاء العالم.',
+    'your-code-label': 'رمز دعوتك', 'invite-quota-text': 'يمكنك دعوة 3 أصدقاء',
+    'btn-explore': 'ابدأ الاستكشاف →',
+    'location-text': '📍 سيول، كوريا الجنوبية', 'search-placeholder': 'ابحث عن أماكن، مطاعم...',
+    'tab-all': 'الكل', 'tab-food': '🍜 طعام', 'tab-shopping': '🛍 تسوق', 'tab-sight': '🗺 سياحة',
+    'bnav-home': 'استكشاف', 'bnav-saved': 'المحفوظات', 'bnav-profile': 'الملف',
+    'about-title': 'حول', 'reviews-title': 'التقييمات',
+    'review1-text': 'جودة اللحم ممتازة، الموظفون يتحدثون الإنجليزية، أنصح بشدة!',
+    'review2-text': 'الطعام رائع لكن انتظرنا ساعة في عطلة نهاية الأسبوع. الحجز ضروري.',
+    'like-label': 'إعجاب', 'save-label': 'حفظ', 'comment-label': 'تقييم',
+    'map-text': 'عرض على الخريطة',
+    'back-home-add': '', 'add-title': 'إضافة مكان', 'add-sub': 'سيول · شارك تجربتك',
+    'label-main-cat': 'الفئة الرئيسية', 'label-sub-cat': 'الفئة الفرعية',
+    'cat-food-label': 'طعام', 'cat-shopping-label': 'تسوق', 'cat-sight-label': 'سياحة',
+    'label-place-name': 'اسم المكان', 'label-place-addr': 'العنوان / الموقع',
+    'label-price': 'نطاق السعر', 'price-cheap': 'اقتصادي', 'price-mid': 'متوسط', 'price-high': 'غالي',
+    'label-desc': 'الوصف والملاحظات', 'photo-text': 'إضافة صورة',
+    'photo-opt': 'اختياري · حتى 5 صور', 'btn-submit': 'مشاركة →',
+    'back-saved': '', 'saved-title': 'الأماكن المحفوظة', 'saved-sub': 'أماكنك المفضلة',
+    'saved-empty': 'لا توجد أماكن محفوظة بعد.',
+    'profile-since': 'عضو منذ مارس 2025',
+    'stat-places-label': 'أماكن مضافة', 'stat-likes-label': 'إعجابات مستلمة', 'stat-invite-label': 'دعوات',
+    'section-invite': 'رمز دعوتي', 'quota-text': 'دعوت شخصاً · 2 متبقية',
+    'btn-copy': 'نسخ', 'section-my-places': 'أماكني المضافة',
+    'cat-food-badge': 'طعام', 'cat-shop-badge': 'تسوق',
+    'section-offline': 'المدن دون اتصال',
+    'city1-meta': '47 مكاناً · 2.3 ميجا · بدون صور', 'city2-meta': '61 مكاناً · 18 ميجا · مع صور',
+    'city3-meta': '34 مكاناً · لم يتم التنزيل بعد', 'btn-download-paris': '⬇ تنزيل',
+    'dl-t1': 'معلومات وعناوين', 'dl-s1': 'مضمن دائماً · ~2.1 ميجا',
+    'dl-t2': 'صور', 'dl-s2': 'اختياري · ~16 ميجا إضافية',
+    'dl-t3': 'تقييمات', 'dl-s3': 'اختياري · ~0.4 ميجا إضافية',
+    'dl-cancel': 'إلغاء',
+  },
+  ja: {
+    'splash-tagline': '航空クルーのための<br>世界ガイド',
+    'btn-have-code': '招待コードを持っています →',
+    'btn-login': 'ログイン',
+    'splash-note': '招待制メンバーシップ。<br>個人情報はすべて非公開です。',
+    'back-splash': '', 'invite-title': '招待コード', 'invite-sub': 'ステップ 1/3',
+    'invite-desc': 'CrewGuideは招待制です。同僚からコードをもらってください。',
+    'invite-code-label': '招待コード',
+    'invite-hint': '7文字の招待コード · 大文字小文字不問',
+    'btn-continue': '続ける →', 'btn-no-code': 'コードがない？どうやって入手する？',
+    'back-invite': '', 'profile-setup-title': 'プロフィール作成', 'profile-setup-sub': 'ステップ 2/3',
+    'avatar-hint': '写真を追加（任意）',
+    'label-displayname': '表示名 — 公開',
+    'label-email': 'メール — ログイン専用',
+    'label-password': 'パスワード',
+    'privacy-text': 'メールとパスワードは共有されません。他のユーザーには表示名のみ表示されます。',
+    'btn-create-account': 'アカウント作成 →',
+    'welcome-title': 'ようこそ！',
+    'welcome-sub': '世界中のクルーからのおすすめにアクセスできます。',
+    'your-code-label': 'あなたの招待コード', 'invite-quota-text': '3人の友達を招待できます',
+    'btn-explore': '探索を始める →',
+    'location-text': '📍 ソウル、韓国', 'search-placeholder': '場所、食事、ショップを検索...',
+    'tab-all': 'すべて', 'tab-food': '🍜 グルメ', 'tab-shopping': '🛍 ショッピング', 'tab-sight': '🗺 観光',
+    'bnav-home': '探索', 'bnav-saved': '保存済み', 'bnav-profile': 'プロフィール',
+    'about-title': '概要', 'reviews-title': 'レビュー',
+    'review1-text': '肉の質が素晴らしく、スタッフは英語を話します。強くお勧めします！',
+    'review2-text': '食事は美味しかったですが、週末は1時間待ちました。予約必須。',
+    'like-label': 'いいね', 'save-label': '保存', 'comment-label': 'レビュー',
+    'map-text': '地図で見る',
+    'back-home-add': '', 'add-title': '場所を追加', 'add-sub': 'ソウル · 体験をシェア',
+    'label-main-cat': 'メインカテゴリ', 'label-sub-cat': 'サブカテゴリ',
+    'cat-food-label': 'グルメ', 'cat-shopping-label': 'ショッピング', 'cat-sight-label': '観光',
+    'label-place-name': '場所名', 'label-place-addr': '住所 / 場所',
+    'label-price': '価格帯', 'price-cheap': 'リーズナブル', 'price-mid': '普通', 'price-high': '高級',
+    'label-desc': '説明とメモ', 'photo-text': '写真を追加',
+    'photo-opt': '任意 · 最大5枚', 'btn-submit': 'シェア →',
+    'back-saved': '', 'saved-title': '保存済みの場所', 'saved-sub': 'お気に入りの場所',
+    'saved-empty': 'まだ保存された場所はありません。',
+    'profile-since': '2025年3月より会員',
+    'stat-places-label': '追加した場所', 'stat-likes-label': 'いいね数', 'stat-invite-label': '招待',
+    'section-invite': '私の招待コード', 'quota-text': '1人を招待済み · 残り2回',
+    'btn-copy': 'コピー', 'section-my-places': '追加した場所',
+    'cat-food-badge': 'グルメ', 'cat-shop-badge': 'ショッピング',
+    'section-offline': 'オフライン都市',
+    'city1-meta': '47か所 · 2.3MB · 写真なし', 'city2-meta': '61か所 · 18MB · 写真あり',
+    'city3-meta': '34か所 · 未ダウンロード', 'btn-download-paris': '⬇ ダウンロード',
+    'dl-t1': '場所情報と住所', 'dl-s1': '常に含む · ~2.1MB',
+    'dl-t2': '写真', 'dl-s2': '任意 · ~16MB追加',
+    'dl-t3': 'レビュー', 'dl-s3': '任意 · ~0.4MB追加',
+    'dl-cancel': 'キャンセル',
+  },
+  ko: {
+    'splash-tagline': '항공 승무원을 위한<br>세계 가이드',
+    'btn-have-code': '초대 코드가 있어요 →',
+    'btn-login': '로그인',
+    'splash-note': '초대 전용 멤버십.<br>모든 개인 정보는 비공개입니다.',
+    'back-splash': '', 'invite-title': '초대 코드', 'invite-sub': '1/3 단계',
+    'invite-desc': 'CrewGuide는 초대 전용입니다. 동료에게 코드를 요청하세요.',
+    'invite-code-label': '초대 코드',
+    'invite-hint': '7자리 초대 코드 · 대소문자 구분 없음',
+    'btn-continue': '계속하기 →', 'btn-no-code': '코드가 없나요? 어떻게 받나요?',
+    'back-invite': '', 'profile-setup-title': '프로필 만들기', 'profile-setup-sub': '2/3 단계',
+    'avatar-hint': '사진 추가 (선택사항)',
+    'label-displayname': '표시 이름 — 공개',
+    'label-email': '이메일 — 로그인 전용',
+    'label-password': '비밀번호',
+    'privacy-text': '이메일과 비밀번호는 절대 공유되지 않습니다. 다른 사용자는 표시 이름만 볼 수 있습니다.',
+    'btn-create-account': '계정 만들기 →',
+    'welcome-title': '환영합니다!',
+    'welcome-sub': '이제 전 세계 승무원의 추천을 확인할 수 있습니다.',
+    'your-code-label': '나의 초대 코드', 'invite-quota-text': '친구 3명을 초대할 수 있습니다',
+    'btn-explore': '탐색 시작하기 →',
+    'location-text': '📍 서울, 대한민국', 'search-placeholder': '장소, 음식, 쇼핑 검색...',
+    'tab-all': '전체', 'tab-food': '🍜 음식', 'tab-shopping': '🛍 쇼핑', 'tab-sight': '🗺 관광',
+    'bnav-home': '탐색', 'bnav-saved': '저장됨', 'bnav-profile': '프로필',
+    'about-title': '소개', 'reviews-title': '리뷰',
+    'review1-text': '고기 품질이 훌륭하고 직원들이 영어를 잘 해요. 강력 추천!',
+    'review2-text': '음식은 맛있었지만 주말에 1시간 기다렸어요. 예약 필수.',
+    'like-label': '좋아요', 'save-label': '저장', 'comment-label': '리뷰',
+    'map-text': '지도에서 보기',
+    'back-home-add': '', 'add-title': '장소 추가', 'add-sub': '서울 · 경험을 공유하세요',
+    'label-main-cat': '메인 카테고리', 'label-sub-cat': '하위 카테고리',
+    'cat-food-label': '음식', 'cat-shopping-label': '쇼핑', 'cat-sight-label': '관광',
+    'label-place-name': '장소 이름', 'label-place-addr': '주소 / 위치',
+    'label-price': '가격대', 'price-cheap': '저렴', 'price-mid': '보통', 'price-high': '비쌈',
+    'label-desc': '설명 및 메모', 'photo-text': '사진 추가',
+    'photo-opt': '선택사항 · 최대 5장', 'btn-submit': '공유하기 →',
+    'back-saved': '', 'saved-title': '저장된 장소', 'saved-sub': '즐겨찾기 장소',
+    'saved-empty': '아직 저장된 장소가 없습니다.',
+    'profile-since': '2025년 3월부터 회원',
+    'stat-places-label': '추가한 장소', 'stat-likes-label': '받은 좋아요', 'stat-invite-label': '초대',
+    'section-invite': '나의 초대 코드', 'quota-text': '1명 초대함 · 2번 남음',
+    'btn-copy': '복사', 'section-my-places': '내가 추가한 장소',
+    'cat-food-badge': '음식', 'cat-shop-badge': '쇼핑',
+    'section-offline': '오프라인 도시',
+    'city1-meta': '47개 장소 · 2.3MB · 사진 없음', 'city2-meta': '61개 장소 · 18MB · 사진 있음',
+    'city3-meta': '34개 장소 · 아직 다운로드 안 됨', 'btn-download-paris': '⬇ 다운로드',
+    'dl-t1': '장소 정보 및 주소', 'dl-s1': '항상 포함 · ~2.1MB',
+    'dl-t2': '사진', 'dl-s2': '선택사항 · ~16MB 추가',
+    'dl-t3': '리뷰', 'dl-s3': '선택사항 · ~0.4MB 추가',
+    'dl-cancel': '취소',
+  },
+  zh: {
+    'splash-tagline': '航空机组人员的<br>全球指南',
+    'btn-have-code': '我有邀请码 →',
+    'btn-login': '登录',
+    'splash-note': '仅限邀请制会员。<br>所有个人信息均保密。',
+    'back-splash': '', 'invite-title': '邀请码', 'invite-sub': '第 1/3 步',
+    'invite-desc': 'CrewGuide 仅限邀请制。请向同事索取邀请码。',
+    'invite-code-label': '邀请码',
+    'invite-hint': '7位邀请码 · 不区分大小写',
+    'btn-continue': '继续 →', 'btn-no-code': '没有邀请码？如何获取？',
+    'back-invite': '', 'profile-setup-title': '创建个人资料', 'profile-setup-sub': '第 2/3 步',
+    'avatar-hint': '添加照片（可选）',
+    'label-displayname': '显示名称 — 公开',
+    'label-email': '电子邮件 — 仅用于登录',
+    'label-password': '密码',
+    'privacy-text': '您的电子邮件和密码永远不会共享。其他用户只能看到您的显示名称。',
+    'btn-create-account': '创建账户 →',
+    'welcome-title': '欢迎！',
+    'welcome-sub': '您现在可以访问全球机组人员的推荐。',
+    'your-code-label': '您的邀请码', 'invite-quota-text': '您可以邀请3位朋友',
+    'btn-explore': '开始探索 →',
+    'location-text': '📍 首尔，韩国', 'search-placeholder': '搜索地点、美食、商店...',
+    'tab-all': '全部', 'tab-food': '🍜 美食', 'tab-shopping': '🛍 购物', 'tab-sight': '🗺 观光',
+    'bnav-home': '探索', 'bnav-saved': '已保存', 'bnav-profile': '个人资料',
+    'about-title': '关于', 'reviews-title': '评论',
+    'review1-text': '肉质极佳，员工会说英语，强烈推荐！',
+    'review2-text': '食物很好，但周末等了1小时。必须预订。',
+    'like-label': '喜欢', 'save-label': '保存', 'comment-label': '评论',
+    'map-text': '在地图上查看',
+    'back-home-add': '', 'add-title': '添加地点', 'add-sub': '首尔 · 分享您的体验',
+    'label-main-cat': '主要类别', 'label-sub-cat': '子类别',
+    'cat-food-label': '美食', 'cat-shopping-label': '购物', 'cat-sight-label': '观光',
+    'label-place-name': '地点名称', 'label-place-addr': '地址 / 位置',
+    'label-price': '价格范围', 'price-cheap': '经济', 'price-mid': '中等', 'price-high': '昂贵',
+    'label-desc': '描述和备注', 'photo-text': '添加照片',
+    'photo-opt': '可选 · 最多5张', 'btn-submit': '分享 →',
+    'back-saved': '', 'saved-title': '已保存的地点', 'saved-sub': '您的收藏地点',
+    'saved-empty': '还没有保存的地点。',
+    'profile-since': '2025年3月起成为会员',
+    'stat-places-label': '添加的地点', 'stat-likes-label': '收到的喜欢', 'stat-invite-label': '邀请',
+    'section-invite': '我的邀请码', 'quota-text': '已邀请1人 · 剩余2次',
+    'btn-copy': '复制', 'section-my-places': '我添加的地点',
+    'cat-food-badge': '美食', 'cat-shop-badge': '购物',
+    'section-offline': '离线城市',
+    'city1-meta': '47个地点 · 2.3MB · 无照片', 'city2-meta': '61个地点 · 18MB · 含照片',
+    'city3-meta': '34个地点 · 尚未下载', 'btn-download-paris': '⬇ 下载',
+    'dl-t1': '地点信息和地址', 'dl-s1': '始终包含 · ~2.1MB',
+    'dl-t2': '照片', 'dl-s2': '可选 · ~16MB额外',
+    'dl-t3': '评论', 'dl-s3': '可选 · ~0.4MB额外',
+    'dl-cancel': '取消',
+  },
   en: {
     'splash-tagline': 'The world guide for<br>aviation crew',
     'btn-have-code': 'I Have an Invite Code →',
@@ -1723,10 +2116,38 @@ const translations = {
 
 function setLang(l, btn) {
   lang = l;
+  localStorage.setItem('crewguide_lang', l);
+  document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';
   document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  document.querySelectorAll('.lang-setting-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === l);
+  });
   applyTranslations();
 }
+
+function setLangFromSettings(l) {
+  lang = l;
+  localStorage.setItem('crewguide_lang', l);
+
+  // RTL desteği (Arapça)
+  document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';
+
+  // Splash butonları güncelle
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+
+  // Ayarlar butonları güncelle
+  document.querySelectorAll('.lang-setting-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === l);
+  });
+
+  applyTranslations();
+  showToast(translations[l] ? '✓ ' + {
+    tr:'Türkçe', en:'English', de:'Deutsch', fr:'Français',
+    es:'Español', ar:'العربية', ja:'日本語', ko:'한국어', zh:'中文'
+  }[l] : '');
+}
+
 
 function applyTranslations() {
   const t = translations[lang];
@@ -3898,7 +4319,15 @@ function copyInviteCode(code) {
   }
 }
 
-// Init
+// Init — kayıtlı dili yükle
+const savedLang = localStorage.getItem('crewguide_lang');
+if (savedLang && translations[savedLang]) {
+  lang = savedLang;
+  document.documentElement.dir = savedLang === 'ar' ? 'rtl' : 'ltr';
+  document.querySelectorAll('.lang-setting-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === savedLang);
+  });
+}
 renderCards();
 renderSubCats();
 updateCurrencyBadge('Seoul');
