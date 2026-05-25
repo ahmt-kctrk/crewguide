@@ -1270,7 +1270,15 @@
       </div>
       <div class="field-group">
         <div class="field-label" id="label-place-addr">ADRES / KONUM</div>
-        <input class="field-input" type="text" id="input-place-addr" placeholder="Mapo-gu, Seoul">
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input class="field-input" type="text" id="input-place-addr" placeholder="Mapo-gu, Seoul" style="flex:1;margin:0;">
+          <button onclick="fillCurrentLocation()" id="btn-gps-location" title="Mevcut konumu kullan" style="
+            flex-shrink:0; width:44px; height:44px; border-radius:var(--radius-sm);
+            background:var(--navy); color:#fff; border:none; cursor:pointer;
+            font-size:18px; display:flex; align-items:center; justify-content:center;
+            transition:opacity 0.2s;">📍</button>
+        </div>
+        <div id="gps-status" style="font-size:11px;color:var(--text-muted);margin-top:4px;display:none;"></div>
       </div>
       <div>
         <div class="field-label" id="label-price" style="margin-bottom:8px;">FİYAT ARALIĞI</div>
@@ -3690,6 +3698,75 @@ function updateCurrentUsernameDisplay() {
   if (el && currentProfile) {
     el.textContent = (lang==='tr'?'Mevcut: ':'Current: ') + currentProfile.username;
   }
+}
+
+
+// ── YER EKLEME — GPS KONUM ────────────────────────────────────────────────────
+async function fillCurrentLocation() {
+  const btn = document.getElementById('btn-gps-location');
+  const status = document.getElementById('gps-status');
+  const input = document.getElementById('input-place-addr');
+
+  if (!navigator.geolocation) {
+    showToast(lang==='tr'?'Tarayıcın konum desteklemiyor.':'Geolocation not supported.');
+    return;
+  }
+
+  // Loading durumu
+  if (btn) { btn.textContent = '⏳'; btn.style.opacity = '0.6'; btn.disabled = true; }
+  if (status) { status.style.display = 'block'; status.textContent = lang==='tr'?'📡 Konum alınıyor...':'📡 Getting location...'; }
+
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      const { latitude: lat, longitude: lon, accuracy } = pos.coords;
+      try {
+        // Nominatim ile koordinat → adres
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=${lang}`,
+          { headers: { 'User-Agent': 'CrewGuide/1.0' } }
+        );
+        const data = await res.json();
+
+        // En anlamlı adresi oluştur
+        const a = data.address || {};
+        const parts = [];
+        if (a.road || a.pedestrian || a.street) parts.push(a.road || a.pedestrian || a.street);
+        if (a.neighbourhood || a.suburb || a.district) parts.push(a.neighbourhood || a.suburb || a.district);
+        if (a.city || a.town || a.village || a.county) parts.push(a.city || a.town || a.village || a.county);
+        if (a.country) parts.push(a.country);
+
+        const addr = parts.join(', ') || data.display_name || `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+
+        if (input) input.value = addr;
+        if (status) {
+          status.textContent = `✓ ${lang==='tr'?'Konum alındı':'Location found'} (~${Math.round(accuracy)}m ${lang==='tr'?'hassasiyet':'accuracy'})`;
+          status.style.color = '#10b981';
+          setTimeout(() => { if (status) status.style.display = 'none'; }, 3000);
+        }
+        showToast(lang==='tr'?'📍 Konum eklendi!':'📍 Location added!');
+
+      } catch(e) {
+        // Nominatim hatası — koordinatı direkt yaz
+        if (input) input.value = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+        if (status) { status.textContent = lang==='tr'?'⚠️ Adres çözümlenemedi, koordinat eklendi.':'⚠️ Address lookup failed, coordinates added.'; status.style.color = '#f59e0b'; }
+        console.warn('[GPS reverse geocode]', e);
+      } finally {
+        if (btn) { btn.textContent = '📍'; btn.style.opacity = '1'; btn.disabled = false; }
+      }
+    },
+    (err) => {
+      if (btn) { btn.textContent = '📍'; btn.style.opacity = '1'; btn.disabled = false; }
+      const msgs = {
+        1: { tr:'Konum izni reddedildi. Tarayıcı ayarlarından izin ver.', en:'Location permission denied. Enable in browser settings.' },
+        2: { tr:'Konum alınamadı. Tekrar dene.', en:'Could not get location. Try again.' },
+        3: { tr:'Konum zaman aşımına uğradı.', en:'Location request timed out.' },
+      };
+      const msg = msgs[err.code] || { tr:'Konum hatası.', en:'Location error.' };
+      if (status) { status.style.display = 'block'; status.textContent = '⚠️ ' + msg[lang]; status.style.color = '#ef4444'; }
+      showToast(msg[lang]);
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+  );
 }
 
 // Init
