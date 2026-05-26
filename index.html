@@ -2216,6 +2216,7 @@ function applyTranslations() {
   }
   renderCards();
   renderSubCats();
+  updateFilterChips();
 }
 
 function goTo(id) {
@@ -2374,8 +2375,11 @@ function renderRatingBar(p) {
   const avg = p.rating || 0;
   const count = p.ratingCount || 0;
   document.getElementById('rating-avg').textContent = avg > 0 ? avg.toFixed(1) : '—';
-  document.getElementById('rating-title').textContent = lang === 'tr' ? 'Puan' : 'Rating';
-  document.getElementById('rate-prompt').textContent = lang === 'tr' ? 'Puanla:' : 'Rate:';
+  const ratingTitles = {tr:'Puan',en:'Rating',de:'Bewertung',fr:'Note',es:'Calificación',ar:'التقييم',ja:'評価',ko:'평점',zh:'评分'};
+  const ratePrompts = {tr:'Puanla:',en:'Rate:',de:'Bewerten:',fr:'Noter:',es:'Calificar:',ar:'قيّم:',ja:'評価する:',ko:'평가:',zh:'评分:'};
+  const _l = lang || 'tr';
+  document.getElementById('rating-title').textContent = ratingTitles[_l] || ratingTitles.en;
+  document.getElementById('rate-prompt').textContent = ratePrompts[_l] || ratePrompts.en;
   document.getElementById('btn-rate').textContent = lang === 'tr' ? 'Oyla' : 'Rate';
   document.getElementById('rating-count').textContent = count > 0
     ? `${count} ${lang === 'tr' ? 'değerlendirme' : 'ratings'}`
@@ -4024,6 +4028,19 @@ function selectRatingFilter(btn) {
 }
 
 function updateFilterChips() {
+  const chipLabels = {
+    price: {tr:'Fiyat',en:'Price',de:'Preis',fr:'Prix',es:'Precio',ar:'السعر',ja:'価格',ko:'가격',zh:'价格'},
+    rating: {tr:'Puan',en:'Rating',de:'Bewertung',fr:'Note',es:'Calificación',ar:'التقييم',ja:'評価',ko:'평점',zh:'评分'},
+    sort: {tr:'Sırala',en:'Sort',de:'Sortieren',fr:'Trier',es:'Ordenar',ar:'ترتيب',ja:'並替',ko:'정렬',zh:'排序'},
+  };
+  const sortLabels = {
+    default: {tr:'Sırala',en:'Sort',de:'Sortieren',fr:'Trier',es:'Ordenar',ar:'ترتيب',ja:'並替',ko:'정렬',zh:'排序'},
+    rating: {tr:'En Yüksek ⭐',en:'Top Rated ⭐',de:'Beste ⭐',fr:'Mieux noté ⭐',es:'Mejor valorado ⭐',ar:'الأعلى ⭐',ja:'高評価 ⭐',ko:'높은 평점 ⭐',zh:'最高评分 ⭐'},
+    likes: {tr:'En Beğenilen ♥',en:'Most Liked ♥',de:'Beliebteste ♥',fr:'Plus aimé ♥',es:'Más gustado ♥',ar:'الأكثر إعجاباً ♥',ja:'人気 ♥',ko:'인기 ♥',zh:'最受欢迎 ♥'},
+    newest: {tr:'En Yeni 🆕',en:'Newest 🆕',de:'Neueste 🆕',fr:'Plus récent 🆕',es:'Más nuevo 🆕',ar:'الأحدث 🆕',ja:'最新 🆕',ko:'최신 🆕',zh:'最新 🆕'},
+  };
+  const l = lang || 'tr';
+
   // Fiyat chip
   const priceChip = document.getElementById('chip-price');
   const priceLabel = document.getElementById('chip-price-label');
@@ -4032,7 +4049,7 @@ function updateFilterChips() {
     priceLabel.textContent = activeFilters.price.join(', ');
   } else {
     priceChip.classList.remove('has-value');
-    priceLabel.textContent = lang==='tr'?'Fiyat':'Price';
+    priceLabel.textContent = (chipLabels.price[l] || chipLabels.price.en);
   }
 
   // Puan chip
@@ -4043,24 +4060,18 @@ function updateFilterChips() {
     ratingLabel.textContent = `${activeFilters.rating}+ ⭐`;
   } else {
     ratingChip.classList.remove('has-value');
-    ratingLabel.textContent = lang==='tr'?'Puan':'Rating';
+    ratingLabel.textContent = (chipLabels.rating[l] || chipLabels.rating.en);
   }
 
   // Sıralama chip
   const sortChip = document.getElementById('chip-sort');
   const sortLabel = document.getElementById('chip-sort-label');
-  const sortLabels = {
-    default: { tr:'Sırala', en:'Sort' },
-    rating: { tr:'En Yüksek ⭐', en:'Top Rated ⭐' },
-    likes: { tr:'En Beğenilen ♥', en:'Most Liked ♥' },
-    newest: { tr:'En Yeni 🆕', en:'Newest 🆕' },
-  };
   if (activeFilters.sort !== 'default') {
     sortChip.classList.add('has-value');
-    sortLabel.textContent = (sortLabels[activeFilters.sort] || sortLabels.default)[lang];
+    sortLabel.textContent = (sortLabels[activeFilters.sort] || sortLabels.default)[l] || (sortLabels[activeFilters.sort] || sortLabels.default).en;
   } else {
     sortChip.classList.remove('has-value');
-    sortLabel.textContent = lang==='tr'?'Sırala':'Sort';
+    sortLabel.textContent = (chipLabels.sort[l] || chipLabels.sort.en);
   }
 
   // Temizle butonu
