@@ -1427,10 +1427,10 @@
       </div>
     </div>
     <div class="bottom-nav">
-      <div class="bnav-item" onclick="goTo('screen-home')"><div class="bnav-icon">🏠</div><div class="bnav-label">Keşfet</div></div>
-      <div class="bnav-item active"><div class="bnav-icon">🔖</div><div class="bnav-label">Kayıtlı</div></div>
+      <div class="bnav-item" onclick="goTo('screen-home')"><div class="bnav-icon">🏠</div><div class="bnav-label" id="bnav-home-saved">Keşfet</div></div>
+      <div class="bnav-item active"><div class="bnav-icon">🔖</div><div class="bnav-label" id="bnav-saved-saved">Kayıtlı</div></div>
       <div class="bnav-item" onclick="goTo('screen-add')"><div class="bnav-add">＋</div></div>
-      <div class="bnav-item" onclick="goTo('screen-profile-view')"><div class="bnav-icon">👤</div><div class="bnav-label">Profil</div></div>
+      <div class="bnav-item" onclick="goTo('screen-profile-view')"><div class="bnav-icon">👤</div><div class="bnav-label" id="bnav-profile-saved">Profil</div></div>
     </div>
   </div>
 
@@ -1526,10 +1526,10 @@
       <div style="height:20px;"></div>
     </div>
     <div class="bottom-nav">
-      <div class="bnav-item" onclick="goTo('screen-home')"><div class="bnav-icon">🏠</div><div class="bnav-label">Keşfet</div></div>
-      <div class="bnav-item" onclick="goTo('screen-saved')"><div class="bnav-icon">🔖</div><div class="bnav-label">Kayıtlı</div></div>
+      <div class="bnav-item" onclick="goTo('screen-home')"><div class="bnav-icon">🏠</div><div class="bnav-label" id="bnav-home-profile">Keşfet</div></div>
+      <div class="bnav-item" onclick="goTo('screen-saved')"><div class="bnav-icon">🔖</div><div class="bnav-label" id="bnav-saved-profile">Kayıtlı</div></div>
       <div class="bnav-item" onclick="goTo('screen-add')"><div class="bnav-add">＋</div></div>
-      <div class="bnav-item active"><div class="bnav-icon">👤</div><div class="bnav-label">Profil</div></div>
+      <div class="bnav-item active"><div class="bnav-icon">👤</div><div class="bnav-label" id="bnav-profile-profile">Profil</div></div>
     </div>
   </div>
 
@@ -1735,6 +1735,14 @@ const translations = {
     'location-text': '📍 Seoul, Güney Kore', 'search-placeholder': 'Yer, yemek, mağaza ara...',
     'tab-all': 'Tümü', 'tab-food': '🍜 Yemek', 'tab-shopping': '🛍 Alışveriş', 'tab-sight': '🗺 Gezi',
     'bnav-home': 'Keşfet', 'bnav-saved': 'Kayıtlı', 'bnav-profile': 'Profil',
+    'settings-title': 'Ayarlar', 'settings-sub': 'Görünümü kişiselleştir',
+    'settings-mode-title': 'Mod', 'label-light': 'Açık', 'label-dark': 'Koyu',
+    'settings-accent-title': 'Vurgu Rengi', 'settings-accent-sub': 'Butonlar ve başlıklarda kullanılır',
+    'settings-bg-title': 'Arka Plan Rengi', 'settings-bg-sub': 'Genel sayfa arka planı',
+    'label-presets': 'Hazır renkler', 'label-bg-presets': 'Hazır renkler',
+    'btn-reset-theme': '↺ Varsayılana Sıfırla',
+    'bnav-home-saved': 'Keşfet', 'bnav-saved-saved': 'Kayıtlı', 'bnav-profile-saved': 'Profil',
+    'bnav-home-profile': 'Keşfet', 'bnav-saved-profile': 'Kayıtlı', 'bnav-profile-profile': 'Profil',
     'about-title': 'Hakkında', 'reviews-title': 'Yorumlar',
     'review1-text': 'Et kalitesi çok iyi, garsonlar İngilizce biliyor, mutlaka gidin!',
     'review2-text': 'Yemek güzeldi ama hafta sonu 1 saat beklettiler, rezervasyon şart.',
@@ -1787,6 +1795,14 @@ const translations = {
     'location-text': '📍 Seoul, Südkorea', 'search-placeholder': 'Orte, Essen, Shops suchen...',
     'tab-all': 'Alle', 'tab-food': '🍜 Essen', 'tab-shopping': '🛍 Shopping', 'tab-sight': '🗺 Sehenswürdigkeiten',
     'bnav-home': 'Entdecken', 'bnav-saved': 'Gespeichert', 'bnav-profile': 'Profil',
+    'settings-title': 'Einstellungen', 'settings-sub': 'Aussehen anpassen',
+    'settings-mode-title': 'Modus', 'label-light': 'Hell', 'label-dark': 'Dunkel',
+    'settings-accent-title': 'Akzentfarbe', 'settings-accent-sub': 'Für Schaltflächen und Überschriften',
+    'settings-bg-title': 'Hintergrundfarbe', 'settings-bg-sub': 'Allgemeiner Seitenhintergrund',
+    'label-presets': 'Voreingestellte Farben', 'label-bg-presets': 'Voreingestellte Farben',
+    'btn-reset-theme': '↺ Zurücksetzen',
+    'bnav-home-saved': 'Entdecken', 'bnav-saved-saved': 'Gespeichert', 'bnav-profile-saved': 'Profil',
+    'bnav-home-profile': 'Entdecken', 'bnav-saved-profile': 'Gespeichert', 'bnav-profile-profile': 'Profil',
     'about-title': 'Über', 'reviews-title': 'Bewertungen',
     'review1-text': 'Fleischqualität ausgezeichnet, Personal spricht Englisch, sehr empfehlenswert!',
     'review2-text': 'Essen war super, aber am Wochenende 1 Stunde gewartet. Reservierung nötig.',
@@ -1838,6 +1854,14 @@ const translations = {
     "location-text": "📍 Séoul, Corée du Sud", "search-placeholder": "Rechercher des lieux...",
     "tab-all": "Tous", "tab-food": "🍜 Restauration", "tab-shopping": "🛍 Shopping", "tab-sight": "🗺 Tourisme",
     "bnav-home": "Explorer", "bnav-saved": "Enregistré", "bnav-profile": "Profil",
+    'settings-title': 'Paramètres', 'settings-sub': "Personnaliser l'apparence",
+    'settings-mode-title': 'Mode', 'label-light': 'Clair', 'label-dark': 'Sombre',
+    'settings-accent-title': "Couleur d'accent", 'settings-accent-sub': 'Utilisé dans les boutons',
+    'settings-bg-title': 'Couleur de fond', 'settings-bg-sub': 'Fond général de la page',
+    'label-presets': 'Couleurs prédéfinies', 'label-bg-presets': 'Couleurs prédéfinies',
+    'btn-reset-theme': '↺ Réinitialiser',
+    'bnav-home-saved': 'Explorer', 'bnav-saved-saved': 'Enregistré', 'bnav-profile-saved': 'Profil',
+    'bnav-home-profile': 'Explorer', 'bnav-saved-profile': 'Enregistré', 'bnav-profile-profile': 'Profil',
     "about-title": "À propos", "reviews-title": "Avis",
     "review1-text": "Qualité excellente, personnel anglophone, je recommande !",
     "review2-text": "Délicieux mais longue attente le week-end. Réservation indispensable.",
@@ -1889,6 +1913,14 @@ const translations = {
     'location-text': '📍 Seúl, Corea del Sur', 'search-placeholder': 'Buscar lugares, comida, tiendas...',
     'tab-all': 'Todos', 'tab-food': '🍜 Comida', 'tab-shopping': '🛍 Compras', 'tab-sight': '🗺 Turismo',
     'bnav-home': 'Explorar', 'bnav-saved': 'Guardado', 'bnav-profile': 'Perfil',
+    'settings-title': 'Ajustes', 'settings-sub': 'Personalizar apariencia',
+    'settings-mode-title': 'Modo', 'label-light': 'Claro', 'label-dark': 'Oscuro',
+    'settings-accent-title': 'Color de acento', 'settings-accent-sub': 'Usado en botones y títulos',
+    'settings-bg-title': 'Color de fondo', 'settings-bg-sub': 'Fondo general de la página',
+    'label-presets': 'Colores predefinidos', 'label-bg-presets': 'Colores predefinidos',
+    'btn-reset-theme': '↺ Restablecer',
+    'bnav-home-saved': 'Explorar', 'bnav-saved-saved': 'Guardado', 'bnav-profile-saved': 'Perfil',
+    'bnav-home-profile': 'Explorar', 'bnav-saved-profile': 'Guardado', 'bnav-profile-profile': 'Perfil',
     'about-title': 'Acerca de', 'reviews-title': 'Reseñas',
     'review1-text': '¡Calidad de carne excelente, personal habla inglés, muy recomendable!',
     'review2-text': 'La comida estaba genial pero esperamos 1 hora los fines de semana. Reserva esencial.',
@@ -1940,6 +1972,14 @@ const translations = {
     'location-text': '📍 سيول، كوريا الجنوبية', 'search-placeholder': 'ابحث عن أماكن، مطاعم...',
     'tab-all': 'الكل', 'tab-food': '🍜 طعام', 'tab-shopping': '🛍 تسوق', 'tab-sight': '🗺 سياحة',
     'bnav-home': 'استكشاف', 'bnav-saved': 'المحفوظات', 'bnav-profile': 'الملف',
+    'settings-title': 'الإعدادات', 'settings-sub': 'تخصيص المظهر',
+    'settings-mode-title': 'الوضع', 'label-light': 'فاتح', 'label-dark': 'داكن',
+    'settings-accent-title': 'لون التمييز', 'settings-accent-sub': 'يستخدم في الأزرار والعناوين',
+    'settings-bg-title': 'لون الخلفية', 'settings-bg-sub': 'خلفية الصفحة العامة',
+    'label-presets': 'الألوان المحددة مسبقاً', 'label-bg-presets': 'الألوان المحددة مسبقاً',
+    'btn-reset-theme': '↺ إعادة التعيين',
+    'bnav-home-saved': 'استكشاف', 'bnav-saved-saved': 'المحفوظات', 'bnav-profile-saved': 'الملف',
+    'bnav-home-profile': 'استكشاف', 'bnav-saved-profile': 'المحفوظات', 'bnav-profile-profile': 'الملف',
     'about-title': 'حول', 'reviews-title': 'التقييمات',
     'review1-text': 'جودة اللحم ممتازة، الموظفون يتحدثون الإنجليزية، أنصح بشدة!',
     'review2-text': 'الطعام رائع لكن انتظرنا ساعة في عطلة نهاية الأسبوع. الحجز ضروري.',
@@ -1991,6 +2031,14 @@ const translations = {
     'location-text': '📍 ソウル、韓国', 'search-placeholder': '場所、食事、ショップを検索...',
     'tab-all': 'すべて', 'tab-food': '🍜 グルメ', 'tab-shopping': '🛍 ショッピング', 'tab-sight': '🗺 観光',
     'bnav-home': '探索', 'bnav-saved': '保存済み', 'bnav-profile': 'プロフィール',
+    'settings-title': '設定', 'settings-sub': '外観をカスタマイズ',
+    'settings-mode-title': 'モード', 'label-light': 'ライト', 'label-dark': 'ダーク',
+    'settings-accent-title': 'アクセントカラー', 'settings-accent-sub': 'ボタンと見出しに使用',
+    'settings-bg-title': '背景色', 'settings-bg-sub': 'ページ全体の背景',
+    'label-presets': 'プリセットカラー', 'label-bg-presets': 'プリセットカラー',
+    'btn-reset-theme': '↺ デフォルトに戻す',
+    'bnav-home-saved': '探索', 'bnav-saved-saved': '保存済み', 'bnav-profile-saved': 'プロフィール',
+    'bnav-home-profile': '探索', 'bnav-saved-profile': '保存済み', 'bnav-profile-profile': 'プロフィール',
     'about-title': '概要', 'reviews-title': 'レビュー',
     'review1-text': '肉の質が素晴らしく、スタッフは英語を話します。強くお勧めします！',
     'review2-text': '食事は美味しかったですが、週末は1時間待ちました。予約必須。',
@@ -2042,6 +2090,14 @@ const translations = {
     'location-text': '📍 서울, 대한민국', 'search-placeholder': '장소, 음식, 쇼핑 검색...',
     'tab-all': '전체', 'tab-food': '🍜 음식', 'tab-shopping': '🛍 쇼핑', 'tab-sight': '🗺 관광',
     'bnav-home': '탐색', 'bnav-saved': '저장됨', 'bnav-profile': '프로필',
+    'settings-title': '설정', 'settings-sub': '외관 맞춤 설정',
+    'settings-mode-title': '모드', 'label-light': '라이트', 'label-dark': '다크',
+    'settings-accent-title': '강조 색상', 'settings-accent-sub': '버튼과 제목에 사용됨',
+    'settings-bg-title': '배경 색상', 'settings-bg-sub': '전체 페이지 배경',
+    'label-presets': '프리셋 색상', 'label-bg-presets': '프리셋 색상',
+    'btn-reset-theme': '↺ 기본값으로 재설정',
+    'bnav-home-saved': '탐색', 'bnav-saved-saved': '저장됨', 'bnav-profile-saved': '프로필',
+    'bnav-home-profile': '탐색', 'bnav-saved-profile': '저장됨', 'bnav-profile-profile': '프로필',
     'about-title': '소개', 'reviews-title': '리뷰',
     'review1-text': '고기 품질이 훌륭하고 직원들이 영어를 잘 해요. 강력 추천!',
     'review2-text': '음식은 맛있었지만 주말에 1시간 기다렸어요. 예약 필수.',
@@ -2093,6 +2149,14 @@ const translations = {
     'location-text': '📍 首尔，韩国', 'search-placeholder': '搜索地点、美食、商店...',
     'tab-all': '全部', 'tab-food': '🍜 美食', 'tab-shopping': '🛍 购物', 'tab-sight': '🗺 观光',
     'bnav-home': '探索', 'bnav-saved': '已保存', 'bnav-profile': '个人资料',
+    'settings-title': '设置', 'settings-sub': '自定义外观',
+    'settings-mode-title': '模式', 'label-light': '浅色', 'label-dark': '深色',
+    'settings-accent-title': '强调色', 'settings-accent-sub': '用于按钮和标题',
+    'settings-bg-title': '背景颜色', 'settings-bg-sub': '整体页面背景',
+    'label-presets': '预设颜色', 'label-bg-presets': '预设颜色',
+    'btn-reset-theme': '↺ 重置为默认',
+    'bnav-home-saved': '探索', 'bnav-saved-saved': '已保存', 'bnav-profile-saved': '个人资料',
+    'bnav-home-profile': '探索', 'bnav-saved-profile': '已保存', 'bnav-profile-profile': '个人资料',
     'about-title': '关于', 'reviews-title': '评论',
     'review1-text': '肉质极佳，员工会说英语，强烈推荐！',
     'review2-text': '食物很好，但周末等了1小时。必须预订。',
@@ -2144,6 +2208,14 @@ const translations = {
     'location-text': '📍 Seoul, South Korea', 'search-placeholder': 'Search places, food, shops...',
     'tab-all': 'All', 'tab-food': '🍜 Food', 'tab-shopping': '🛍 Shopping', 'tab-sight': '🗺 Sightseeing',
     'bnav-home': 'Explore', 'bnav-saved': 'Saved', 'bnav-profile': 'Profile',
+    'settings-title': 'Settings', 'settings-sub': 'Customize appearance',
+    'settings-mode-title': 'Mode', 'label-light': 'Light', 'label-dark': 'Dark',
+    'settings-accent-title': 'Accent Color', 'settings-accent-sub': 'Used in buttons and headings',
+    'settings-bg-title': 'Background Color', 'settings-bg-sub': 'Overall page background',
+    'label-presets': 'Preset colors', 'label-bg-presets': 'Preset colors',
+    'btn-reset-theme': '↺ Reset to Default',
+    'bnav-home-saved': 'Explore', 'bnav-saved-saved': 'Saved', 'bnav-profile-saved': 'Profile',
+    'bnav-home-profile': 'Explore', 'bnav-saved-profile': 'Saved', 'bnav-profile-profile': 'Profile',
     'about-title': 'About', 'reviews-title': 'Reviews',
     'review1-text': 'Meat quality is excellent, staff speaks English, highly recommend!',
     'review2-text': 'Food was great but waited 1 hour on weekends, reservations essential.',
