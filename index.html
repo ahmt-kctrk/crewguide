@@ -374,6 +374,40 @@
   .card-stars { font-size: 10px; color: #f59e0b; letter-spacing: 0.5px; }
   .card-rating-num { font-size: 10px; font-weight: 600; color: var(--text-primary); margin-left: 2px; }
 
+  /* DİL DROPDOWN */
+  .lang-dropdown-wrapper { position: relative; margin-top: 20px; }
+  .lang-dropdown-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 18px; border-radius: 20px;
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.85); font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .lang-dropdown-btn:hover { background: rgba(255,255,255,0.15); }
+  .lang-dropdown-btn .arrow { font-size: 10px; transition: transform 0.2s; }
+  .lang-dropdown-btn.open .arrow { transform: rotate(180deg); }
+  .lang-dropdown-menu {
+    position: absolute; top: calc(100% + 6px); left: 50%;
+    transform: translateX(-50%);
+    background: var(--navy-light); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 14px; padding: 6px; min-width: 180px;
+    display: none; flex-direction: column; gap: 2px;
+    z-index: 50; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .lang-dropdown-menu.open { display: flex; }
+  .lang-option {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 14px; border-radius: 10px;
+    font-size: 13px; color: rgba(255,255,255,0.75);
+    cursor: pointer; transition: background 0.15s; border: none;
+    background: transparent; width: 100%; text-align: left;
+  }
+  .lang-option:hover { background: rgba(255,255,255,0.1); color: #fff; }
+  .lang-option.active { background: var(--gold); color: var(--navy); font-weight: 600; }
+  .lang-option .lang-flag { font-size: 18px; flex-shrink: 0; }
+  .lang-option .lang-name { flex: 1; }
+
+
   .lang-setting-btn {
     padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;
     border: 1.5px solid var(--border); background: var(--white);
@@ -920,16 +954,41 @@
       <div class="splash-logo">✈️</div>
       <div class="splash-title font-display">CrewGuide</div>
       <div class="splash-tagline" id="splash-tagline">Havacılık çalışanlarının<br>dünya rehberi</div>
-      <div class="splash-lang" style="flex-wrap:wrap;justify-content:center;gap:6px;">
-        <button class="lang-btn active" onclick="setLang('tr', this)">🇹🇷 TR</button>
-        <button class="lang-btn" onclick="setLang('en', this)">🇬🇧 EN</button>
-        <button class="lang-btn" onclick="setLang('de', this)">🇩🇪 DE</button>
-        <button class="lang-btn" onclick="setLang('fr', this)">🇫🇷 FR</button>
-        <button class="lang-btn" onclick="setLang('es', this)">🇪🇸 ES</button>
-        <button class="lang-btn" onclick="setLang('ar', this)">🇦🇪 AR</button>
-        <button class="lang-btn" onclick="setLang('ja', this)">🇯🇵 JA</button>
-        <button class="lang-btn" onclick="setLang('ko', this)">🇰🇷 KO</button>
-        <button class="lang-btn" onclick="setLang('zh', this)">🇨🇳 中文</button>
+      <div class="lang-dropdown-wrapper">
+        <button class="lang-dropdown-btn" id="lang-dropdown-btn" onclick="toggleLangDropdown()">
+          <span id="lang-btn-flag">🇹🇷</span>
+          <span id="lang-btn-name">Türkçe</span>
+          <span class="arrow">▼</span>
+        </button>
+        <div class="lang-dropdown-menu" id="lang-dropdown-menu">
+          <button class="lang-option active" data-lang="tr" onclick="selectLang('tr')">
+            <span class="lang-flag">🇹🇷</span><span class="lang-name">Türkçe</span>
+          </button>
+          <button class="lang-option" data-lang="en" onclick="selectLang('en')">
+            <span class="lang-flag">🇬🇧</span><span class="lang-name">English</span>
+          </button>
+          <button class="lang-option" data-lang="de" onclick="selectLang('de')">
+            <span class="lang-flag">🇩🇪</span><span class="lang-name">Deutsch</span>
+          </button>
+          <button class="lang-option" data-lang="fr" onclick="selectLang('fr')">
+            <span class="lang-flag">🇫🇷</span><span class="lang-name">Français</span>
+          </button>
+          <button class="lang-option" data-lang="es" onclick="selectLang('es')">
+            <span class="lang-flag">🇪🇸</span><span class="lang-name">Español</span>
+          </button>
+          <button class="lang-option" data-lang="ar" onclick="selectLang('ar')">
+            <span class="lang-flag">🇦🇪</span><span class="lang-name">العربية</span>
+          </button>
+          <button class="lang-option" data-lang="ja" onclick="selectLang('ja')">
+            <span class="lang-flag">🇯🇵</span><span class="lang-name">日本語</span>
+          </button>
+          <button class="lang-option" data-lang="ko" onclick="selectLang('ko')">
+            <span class="lang-flag">🇰🇷</span><span class="lang-name">한국어</span>
+          </button>
+          <button class="lang-option" data-lang="zh" onclick="selectLang('zh')">
+            <span class="lang-flag">🇨🇳</span><span class="lang-name">中文</span>
+          </button>
+        </div>
       </div>
     </div>
     <div class="splash-bottom">
@@ -4319,6 +4378,65 @@ function copyInviteCode(code) {
   }
 }
 
+
+// ── DİL DROPDOWN ─────────────────────────────────────────────────────────────
+const langMeta = {
+  tr: { flag: '🇹🇷', name: 'Türkçe' },
+  en: { flag: '🇬🇧', name: 'English' },
+  de: { flag: '🇩🇪', name: 'Deutsch' },
+  fr: { flag: '🇫🇷', name: 'Français' },
+  es: { flag: '🇪🇸', name: 'Español' },
+  ar: { flag: '🇦🇪', name: 'العربية' },
+  ja: { flag: '🇯🇵', name: '日本語' },
+  ko: { flag: '🇰🇷', name: '한국어' },
+  zh: { flag: '🇨🇳', name: '中文' },
+};
+
+function toggleLangDropdown() {
+  const btn = document.getElementById('lang-dropdown-btn');
+  const menu = document.getElementById('lang-dropdown-menu');
+  if (!btn || !menu) return;
+  btn.classList.toggle('open');
+  menu.classList.toggle('open');
+}
+
+function selectLang(l) {
+  // Dropdown'ı kapat
+  const btn = document.getElementById('lang-dropdown-btn');
+  const menu = document.getElementById('lang-dropdown-menu');
+  if (btn) btn.classList.remove('open');
+  if (menu) menu.classList.remove('open');
+
+  // Buton metnini güncelle
+  updateLangBtn(l);
+
+  // Dili uygula
+  setLangFromSettings(l);
+}
+
+function updateLangBtn(l) {
+  const meta = langMeta[l];
+  if (!meta) return;
+  const flagEl = document.getElementById('lang-btn-flag');
+  const nameEl = document.getElementById('lang-btn-name');
+  if (flagEl) flagEl.textContent = meta.flag;
+  if (nameEl) nameEl.textContent = meta.name;
+
+  // Aktif option'ı işaretle
+  document.querySelectorAll('.lang-option').forEach(opt => {
+    opt.classList.toggle('active', opt.dataset.lang === l);
+  });
+}
+
+// Dropdown dışına tıklayınca kapat
+document.addEventListener('click', (e) => {
+  const wrapper = document.querySelector('.lang-dropdown-wrapper');
+  if (wrapper && !wrapper.contains(e.target)) {
+    document.getElementById('lang-dropdown-btn')?.classList.remove('open');
+    document.getElementById('lang-dropdown-menu')?.classList.remove('open');
+  }
+});
+
 // Init — kayıtlı dili yükle
 const savedLang = localStorage.getItem('crewguide_lang');
 if (savedLang && translations[savedLang]) {
@@ -4327,6 +4445,8 @@ if (savedLang && translations[savedLang]) {
   document.querySelectorAll('.lang-setting-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.lang === savedLang);
   });
+  // Dropdown butonunu güncelle
+  setTimeout(() => updateLangBtn(savedLang), 0);
 }
 renderCards();
 renderSubCats();
