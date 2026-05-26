@@ -1550,7 +1550,7 @@
       <!-- DİL SEÇİMİ -->
       <div style="background:var(--white);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;">
         <div style="padding:14px 16px;border-bottom:1px solid var(--border);">
-          <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--text-primary);">🌐 Dil / Language</div>
+          <div id="lang-section-title" style="font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--text-primary);">🌐 Dil / Language</div>
         </div>
         <div style="padding:12px 16px;display:flex;flex-wrap:wrap;gap:6px;" id="settings-lang-grid">
           <button onclick="setLangFromSettings('tr')" class="lang-setting-btn" data-lang="tr">🇹🇷 Türkçe</button>
@@ -1734,7 +1734,8 @@ const translations = {
     'btn-explore': 'Keşfetmeye Başla →',
     'location-text': '📍 Seoul, Güney Kore', 'search-placeholder': 'Yer, yemek, mağaza ara...',
     'tab-all': 'Tümü', 'tab-food': '🍜 Yemek', 'tab-shopping': '🛍 Alışveriş', 'tab-sight': '🗺 Gezi',
-    'bnav-home': 'Keşfet', 'bnav-saved': 'Kayıtlı', 'bnav-profile': 'Profil',
+    'bnav-home': 'Keşfet'
+    'lang-section-title': '🌐 Dil / Dil',, 'bnav-saved': 'Kayıtlı', 'bnav-profile': 'Profil',
     'settings-title': 'Ayarlar', 'settings-sub': 'Görünümü kişiselleştir',
     'settings-mode-title': 'Mod', 'label-light': 'Açık', 'label-dark': 'Koyu',
     'settings-accent-title': 'Vurgu Rengi', 'settings-accent-sub': 'Butonlar ve başlıklarda kullanılır',
@@ -1810,7 +1811,8 @@ const translations = {
     'btn-explore': 'Entdecken →',
     'location-text': '📍 Seoul, Südkorea', 'search-placeholder': 'Orte, Essen, Shops suchen...',
     'tab-all': 'Alle', 'tab-food': '🍜 Essen', 'tab-shopping': '🛍 Shopping', 'tab-sight': '🗺 Sehenswürdigkeiten',
-    'bnav-home': 'Entdecken', 'bnav-saved': 'Gespeichert', 'bnav-profile': 'Profil',
+    'bnav-home': 'Entdecken',
+    'lang-section-title': '🌐 Sprache', 'bnav-saved': 'Gespeichert', 'bnav-profile': 'Profil',
     'settings-title': 'Einstellungen', 'settings-sub': 'Aussehen anpassen',
     'settings-mode-title': 'Modus', 'label-light': 'Hell', 'label-dark': 'Dunkel',
     'settings-accent-title': 'Akzentfarbe', 'settings-accent-sub': 'Für Schaltflächen und Überschriften',
@@ -1885,7 +1887,8 @@ const translations = {
     "btn-explore": "Commencer à explorer →",
     "location-text": "📍 Séoul, Corée du Sud", "search-placeholder": "Rechercher des lieux...",
     "tab-all": "Tous", "tab-food": "🍜 Restauration", "tab-shopping": "🛍 Shopping", "tab-sight": "🗺 Tourisme",
-    "bnav-home": "Explorer", "bnav-saved": "Enregistré", "bnav-profile": "Profil",
+    "bnav-home": "Explorer",
+    "lang-section-title": "🌐 Langue", "bnav-saved": "Enregistré", "bnav-profile": "Profil",
     'settings-title': 'Paramètres', 'settings-sub': "Personnaliser l'apparence",
     'settings-mode-title': 'Mode', 'label-light': 'Clair', 'label-dark': 'Sombre',
     'settings-accent-title': "Couleur d'accent", 'settings-accent-sub': 'Utilisé dans les boutons',
@@ -1960,7 +1963,8 @@ const translations = {
     'btn-explore': 'Empezar a explorar →',
     'location-text': '📍 Seúl, Corea del Sur', 'search-placeholder': 'Buscar lugares, comida, tiendas...',
     'tab-all': 'Todos', 'tab-food': '🍜 Comida', 'tab-shopping': '🛍 Compras', 'tab-sight': '🗺 Turismo',
-    'bnav-home': 'Explorar', 'bnav-saved': 'Guardado', 'bnav-profile': 'Perfil',
+    'bnav-home': 'Explorar',
+    'lang-section-title': '🌐 Idioma', 'bnav-saved': 'Guardado', 'bnav-profile': 'Perfil',
     'settings-title': 'Ajustes', 'settings-sub': 'Personalizar apariencia',
     'settings-mode-title': 'Modo', 'label-light': 'Claro', 'label-dark': 'Oscuro',
     'settings-accent-title': 'Color de acento', 'settings-accent-sub': 'Usado en botones y títulos',
@@ -2035,7 +2039,8 @@ const translations = {
     'btn-explore': 'ابدأ الاستكشاف →',
     'location-text': '📍 سيول، كوريا الجنوبية', 'search-placeholder': 'ابحث عن أماكن، مطاعم...',
     'tab-all': 'الكل', 'tab-food': '🍜 طعام', 'tab-shopping': '🛍 تسوق', 'tab-sight': '🗺 سياحة',
-    'bnav-home': 'استكشاف', 'bnav-saved': 'المحفوظات', 'bnav-profile': 'الملف',
+    'bnav-home': 'استكشاف',
+    'lang-section-title': '🌐 اللغة', 'bnav-saved': 'المحفوظات', 'bnav-profile': 'الملف',
     'settings-title': 'الإعدادات', 'settings-sub': 'تخصيص المظهر',
     'settings-mode-title': 'الوضع', 'label-light': 'فاتح', 'label-dark': 'داكن',
     'settings-accent-title': 'لون التمييز', 'settings-accent-sub': 'يستخدم في الأزرار والعناوين',
@@ -2201,7 +2206,8 @@ const translations = {
     'btn-explore': '탐색 시작하기 →',
     'location-text': '📍 서울, 대한민국', 'search-placeholder': '장소, 음식, 쇼핑 검색...',
     'tab-all': '전체', 'tab-food': '🍜 음식', 'tab-shopping': '🛍 쇼핑', 'tab-sight': '🗺 관광',
-    'bnav-home': '탐색', 'bnav-saved': '저장됨', 'bnav-profile': '프로필',
+    'bnav-home': '탐색',
+    'lang-section-title': '🌐 언어', 'bnav-saved': '저장됨', 'bnav-profile': '프로필',
     'settings-title': '설정', 'settings-sub': '외관 맞춤 설정',
     'settings-mode-title': '모드', 'label-light': '라이트', 'label-dark': '다크',
     'settings-accent-title': '강조 색상', 'settings-accent-sub': '버튼과 제목에 사용됨',
@@ -2328,7 +2334,8 @@ const translations = {
     'btn-explore': 'Start Exploring →',
     'location-text': '📍 Seoul, South Korea', 'search-placeholder': 'Search places, food, shops...',
     'tab-all': 'All', 'tab-food': '🍜 Food', 'tab-shopping': '🛍 Shopping', 'tab-sight': '🗺 Sightseeing',
-    'bnav-home': 'Explore', 'bnav-saved': 'Saved', 'bnav-profile': 'Profile',
+    'bnav-home': 'Explore',
+    'lang-section-title': '🌐 Language', 'bnav-saved': 'Saved', 'bnav-profile': 'Profile',
     'settings-title': 'Settings', 'settings-sub': 'Customize appearance',
     'settings-mode-title': 'Mode', 'label-light': 'Light', 'label-dark': 'Dark',
     'settings-accent-title': 'Accent Color', 'settings-accent-sub': 'Used in buttons and headings',
