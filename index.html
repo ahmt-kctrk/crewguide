@@ -3548,12 +3548,12 @@ function updateNotifStatus(status) {
   const el = document.getElementById('notif-status-text');
   if (!el) return;
   const labels = {
-    granted: { tr:'🔔 Açık', en:'🔔 On' },
-    denied:  { tr:'🔕 Kapalı', en:'🔕 Off' },
-    default: { tr:'⏳ İzin bekleniyor', en:'⏳ Pending' },
+    granted: { tr:'🔔 Açık', en:'🔔 On', de:'🔔 Ein', fr:'🔔 Activé', es:'🔔 Activado', ar:'🔔 مفعّل', ja:'🔔 オン', ko:'🔔 켜짐', zh:'🔔 开启' },
+    denied:  { tr:'🔕 Kapalı', en:'🔕 Off', de:'🔕 Aus', fr:'🔕 Désactivé', es:'🔕 Desactivado', ar:'🔕 معطّل', ja:'🔕 オフ', ko:'🔕 꺼짐', zh:'🔕 关闭' },
+    default: { tr:'⏳ İzin bekleniyor', en:'⏳ Pending', de:'⏳ Ausstehend', fr:'⏳ En attente', es:'⏳ Pendiente', ar:'⏳ في الانتظار', ja:'⏳ 保留中', ko:'⏳ 대기 중', zh:'⏳ 待定' },
   };
   const lbl = labels[status] || labels['default'];
-  el.textContent = lbl[lang] || lbl['tr'];
+  el.textContent = lbl[lang] || lbl['en'];
   el.style.color = status === 'granted' ? '#10b981' : status === 'denied' ? '#ef4444' : '#f59e0b';
 }
 
@@ -3771,6 +3771,13 @@ async function verifyInviteCode() {
       `invite_codes?code=eq.${encodeURIComponent(inputCode)}&used_by=is.null&select=code`,
       { headers: { 'Prefer': '' } }
     );
+    // Master kod kontrolü — sınırsız kullanım
+    if (inputCode.toUpperCase() === 'CRW-MASTER') {
+      sessionStorage.setItem('pendingInviteCode', inputCode);
+      sessionStorage.setItem('isMasterInvite', 'true');
+      goTo('screen-profile');
+      return;
+    }
     if (!data || data.length === 0) {
       showToast(lang==='tr'?'Geçersiz veya kullanılmış kod!':'Invalid or used code!');
       return;
@@ -3843,8 +3850,10 @@ async function createAccount() {
       body: JSON.stringify(inviteCodes)
     });
 
-    // 4. Kullanılan davet kodunu işaretle
-    await sbFetch(`invite_codes?code=eq.${encodeURIComponent(inviteCode)}`, {
+    // 4. Kullanılan davet kodunu işaretle (master kod için atlıyoruz)
+    const isMaster = sessionStorage.getItem('isMasterInvite') === 'true';
+    sessionStorage.removeItem('isMasterInvite');
+    if (!isMaster) await sbFetch(`invite_codes?code=eq.${encodeURIComponent(inviteCode)}`, {
       method: 'PATCH',
       body: JSON.stringify({ used_by: userId, used_at: new Date().toISOString() })
     });
