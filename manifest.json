@@ -2,7 +2,7 @@
   "name": "CrewGuide",
   "short_name": "CrewGuide",
   "description": "Havacılık çalışanlarının dünya rehberi",
-  "start_url": "./crewguide.html",
+  "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0f1729",
@@ -73,14 +73,14 @@
       "name": "Yeni Yer Ekle",
       "short_name": "Ekle",
       "description": "Hızlıca yeni bir yer paylaş",
-      "url": "./crewguide.html#add",
+      "url": "/#add",
       "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
     },
     {
       "name": "Kayıtlı Yerler",
       "short_name": "Kayıtlı",
       "description": "Kayıtlı yerlerine bak",
-      "url": "./crewguide.html#saved",
+      "url": "/#saved",
       "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
     }
   ]
