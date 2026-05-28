@@ -2809,8 +2809,7 @@ async function submitPlace() {
         cat: selectedMainCat,
         subcat: subLabel,
         emoji: catEmojis[selectedMainCat],
-        name, addr: addr || currentCity || 'Seoul',
-        city: currentCity || 'Seoul',
+        name, addr: addr || 'Seoul',
         price: priceVal,
         price_name_tr: (priceName[priceVal]||{}).tr || 'Uygun',
         price_name_en: (priceName[priceVal]||{}).en || 'Budget',
@@ -4535,7 +4534,7 @@ async function loadPlaces(cityFilter) {
     const city = cityFilter || currentCity || null;
     let query = 'places?is_hidden=eq.false&order=created_at.desc&limit=100';
     if (city) {
-      query += '&city=eq.' + encodeURIComponent(city);
+      query += '&addr=ilike.*' + encodeURIComponent(city) + '*';
     }
     const data = await sbFetch(query, { headers: { 'Prefer': '' } });
 
