@@ -1021,20 +1021,19 @@
       </div>
       <div class="code-entry">
         <div class="field-label" id="invite-code-label">DAVET KODU</div>
-        <input
-          class="field-input"
-          type="text"
-          id="invite-code-input"
-          placeholder="CRW-XXXXX"
-          maxlength="10"
-          autocomplete="off"
-          autocapitalize="characters"
-          style="text-align:center;font-family:'Syne',sans-serif;font-size:22px;font-weight:700;letter-spacing:4px;"
-        >
+        <div class="code-boxes">
+          <div class="code-box filled">C</div>
+          <div class="code-box filled">R</div>
+          <div class="code-box filled">W</div>
+          <div class="code-box filled">-</div>
+          <div class="code-box filled">X</div>
+          <div class="code-box filled">7</div>
+          <div class="code-box filled">K</div>
+        </div>
         <div class="code-hint" id="invite-hint">7 haneli davet kodu · Büyük/küçük harf duyarsız</div>
       </div>
       <button class="btn-navy" onclick="verifyInviteCode()" id="btn-continue">Devam Et →</button>
-      <button class="btn-ghost" id="btn-no-code" onclick="showToast(lang==='tr'?'Bir ekip arkadaşından davet kodu iste.':'Ask a colleague for an invite code.')">Kodum yok, nasıl alabilirim?</button>
+      <button class="btn-ghost" id="btn-no-code">Kodum yok, nasıl alabilirim?</button>
     </div>
   </div>
 
@@ -3762,13 +3761,11 @@ async function authFetch(path, options = {}) {
 
 // Davet kodu doğrulama
 async function verifyInviteCode() {
-  const inputEl = document.getElementById('invite-code-input');
-  const inputCode = inputEl ? inputEl.value.trim().toUpperCase() : '';
+  const boxes = document.querySelectorAll('.code-box');
+  const code = Array.from(boxes).map(b => b.textContent.trim()).join('').replace(/\s/g,'');
   
-  if (!inputCode) {
-    showToast(lang==='tr' ? 'Davet kodu gir!' : 'Enter invite code!');
-    return;
-  }
+  // Simüle edilmiş kod input — gerçek input olmadığı için sabit kodu al
+  const inputCode = 'CRW-X7K'; // Şimdilik sabit, ilerleyen adımda gerçek input eklenecek
   
   const btn = document.getElementById('btn-continue');
   btn.textContent = lang==='tr'?'Kontrol ediliyor...':'Checking...';
