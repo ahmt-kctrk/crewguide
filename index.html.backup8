@@ -2906,9 +2906,6 @@ function onSearch(val) {
 // Sembol · Kod · Yaklaşık USD kuru (statik, gerçek projede API'den gelir)
 const currencyDB = {
   'İstanbul':    { symbol:'₺',  code:'TRY', rate:0.028,  name:{tr:'Türk Lirası',   en:'Turkish Lira'} },
-  'Istanbul':    { symbol:'₺',  code:'TRY', rate:0.028,  name:{tr:'Türk Lirası',   en:'Turkish Lira'} },
-  'Türkiye':     { symbol:'₺',  code:'TRY', rate:0.028,  name:{tr:'Türk Lirası',   en:'Turkish Lira'} },
-  'Turkey':      { symbol:'₺',  code:'TRY', rate:0.028,  name:{tr:'Türk Lirası',   en:'Turkish Lira'} },
   'Tokyo':       { symbol:'¥',  code:'JPY', rate:0.0067, name:{tr:'Japon Yeni',    en:'Japanese Yen'} },
   'Seoul':       { symbol:'₩',  code:'KRW', rate:0.00073,name:{tr:'Güney Kore Wonu',en:'S. Korean Won'} },
   'Dubai':       { symbol:'د.إ',code:'AED', rate:0.272,  name:{tr:'BAE Dirhemi',   en:'UAE Dirham'} },
@@ -3075,20 +3072,17 @@ function useCurrentLocation() {
         const { latitude: lat, longitude: lon } = pos.coords;
         const res = await fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json&accept-language=' + lang);
         const data = await res.json();
-        // Önce büyük şehir adını al, sonra ilçeyi göster
-        const cityName = data.address.city || data.address.province || data.address.state || '';
-        const district = data.address.town || data.address.suburb || data.address.village || '';
+        const city = data.address.city || data.address.town || data.address.village || '';
         const country = data.address.country || '';
-        const displayName = district ? district + ', ' + cityName : cityName;
         dot.style.background = '#10b981';
-        text.textContent = '📍 ' + (displayName || cityName) + (country ? ', ' + country : '');
+        text.textContent = '📍 ' + city + (country ? ', ' + country : '');
         const addSub = document.getElementById('add-sub');
-        if (addSub) addSub.textContent = (cityName || district) + ' · ' + (lang==='tr'?'Deneyimini paylaş':'Share your experience');
-        // Şehir adıyla yerleri yükle ve para birimini güncelle
-        currentCity = cityName || district;
-        currentCurrency = getCurrencyForCity(currentCity);
-        updateCurrencyBadge(currentCity);
-        loadPlaces(currentCity);
+        if (addSub) addSub.textContent = city + ' · ' + (lang==='tr'?'Deneyimini paylaş':'Share your experience');
+        // Şehri güncelle ve yerleri yükle
+        currentCity = city;
+        currentCurrency = getCurrencyForCity(city);
+        updateCurrencyBadge(city);
+        loadPlaces(city);
       } catch(e) {
         dot.style.background = '#ef4444';
         text.textContent = lang === 'tr' ? '📍 Konum alınamadı' : '📍 Could not get location';
