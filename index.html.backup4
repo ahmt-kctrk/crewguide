@@ -1697,8 +1697,12 @@ let selectedMainCat = 'food';
 let liked = false;
 let saved = false;
 
-const places = [];
-// Yerler Supabase'den yüklenir
+const places = [
+  { id:'mukbang', cat:'food', subcat:'Restoran', emoji:'🥩', name:'Mukbang BBQ', addr:'Mapo-gu, Seoul', price:'$$', priceName:{tr:'Orta',en:'Mid-range'}, likes:47, rating:4.6, ratingCount:34, ratings:{5:18,4:10,3:4,2:1,1:1}, desc:{tr:'Sınırsız Kore barbekü, 90 dk. Akşam yoğun olur, öğlen git. Ödeme nakit tercih ediyorlar.',en:'Unlimited Korean BBQ, 90 min. Gets crowded in evenings, go for lunch. Cash payment preferred.'} },
+  { id:'dongdaemun', cat:'shopping', subcat:'Çanta & Valiz', emoji:'👜', name:'Dongdaemun Market', addr:'Jung-gu, Seoul', price:'$', priceName:{tr:'Uygun',en:'Budget'}, likes:31, rating:4.1, ratingCount:22, ratings:{5:8,4:9,3:3,2:1,1:1}, desc:{tr:'Tekstil ve aksesuar için harika. Toplu alımda fiyat pazarlığı yapılabilir. Gece de açık.',en:'Great for textiles and accessories. Bargain for bulk purchases. Open at night too.'} },
+  { id:'gyeongbok', cat:'sightseeing', subcat:'Tarihi Yerler', emoji:'🏯', name:'Gyeongbokgung Palace', addr:'Jongno-gu, Seoul', price:'$', priceName:{tr:'Uygun',en:'Budget'}, likes:89, rating:4.8, ratingCount:61, ratings:{5:42,4:12,3:5,2:1,1:1}, desc:{tr:'Seoul\'ün en büyük sarayı. Nöbet değişimi sabah 10\'da. Hanbok kiralayıp gir, ücretsiz!',en:'Seoul\'s largest palace. Guard changing at 10am. Rent a Hanbok to enter for free!'} },
+  { id:'cafe', cat:'food', subcat:'Kafe', emoji:'☕', name:'Cafe Bora', addr:'Insadong, Seoul', price:'$', priceName:{tr:'Uygun',en:'Budget'}, likes:55, rating:4.3, ratingCount:28, ratings:{5:14,4:9,3:3,2:1,1:1}, desc:{tr:'Mor renkli dondurma ve latte\'siyle ünlü. Instagram için mükemmel. Erken git!',en:'Famous for purple-colored ice cream and lattes. Perfect for Instagram. Go early!'} },
+];
 
 const subcats = {
   food: [{tr:'🍳 Kahvaltı',en:'🍳 Breakfast'},{tr:'🥡 Sokak Yemeği',en:'🥡 Street Food'},{tr:'🍽 Restoran',en:'🍽 Restaurant'},{tr:'☕ Kafe',en:'☕ Café'},{tr:'🍺 Bar & Pub',en:'🍺 Bar & Pub'},{tr:'🍰 Tatlı',en:'🍰 Dessert'}],
@@ -3041,8 +3045,7 @@ function selectCity(name, country, flag) {
   const dot = document.getElementById('location-dot');
   const text = document.getElementById('location-text');
   dot.style.background = '#10b981';
-if (text) text.textContent = flag + ' ' + name + ', ' + country;
-
+  text.textContent = flag + ' ' + name + ', ' + country;
   const addSub = document.getElementById('add-sub');
   if (addSub) addSub.textContent = name + ' · ' + (lang==='tr'?'Deneyimini paylaş':'Share your experience');
   // Para birimini güncelle
@@ -4535,8 +4538,20 @@ async function loadPlaces(cityFilter) {
     }
     const data = await sbFetch(query, { headers: { 'Prefer': '' } });
 
-    // Şehir değişince tüm yerleri temizle, Supabase'den taze yükle
-    places.length = 0;
+    // Şehir değişince önceki Supabase yerlerini temizle (demo yerler kalır)
+    const demoIds = ['mukbang','dongdaemun','gyeongbok','cafe'];
+    for (let i = places.length - 1; i >= 0; i--) {
+      if (!demoIds.includes(places[i].id)) {
+        places.splice(i, 1);
+      }
+    }
+
+    // Demo yerleri de şehre göre filtrele
+    if (city && city !== 'Seoul') {
+      for (let i = places.length - 1; i >= 0; i--) {
+        places.splice(i, 1);
+      }
+    }
 
     if (!data || data.length === 0) {
       renderCards();
@@ -4713,8 +4728,8 @@ if (savedLang && translations[savedLang]) {
 renderCards();
 renderSubCats();
 updateCurrencyBadge('Seoul');
-// Supabase'den Seoul yerlerini yükle
-loadPlaces('Seoul');
+// Supabase'den yerleri yükle
+loadPlaces();
 // Sayfa yüklenince session kontrol et
 window.addEventListener('load', () => {
   checkSession();
