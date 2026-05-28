@@ -1321,7 +1321,7 @@
     <div class="navy-header">
       <div class="nav-back" onclick="goTo('screen-home')" id="back-home-add"></div>
       <div class="header-title font-display" id="add-title">Yeni Yer Ekle</div>
-      <div class="header-sub" id="add-sub">· Deneyimini paylaş</div>
+      <div class="header-sub" id="add-sub">Seoul · Deneyimini paylaş</div>
     </div>
     <div class="add-body">
       <div>
@@ -3149,58 +3149,6 @@ function setMode(mode) {
     btnDark.style.border = '1.5px solid var(--border)';
   }
   renderCards();
-}
-
-
-// ── PUSH SUBSCRIPTION ────────────────────────────────────────────────────────
-async function subscribePush() {
-  if (!('PushManager' in window)) return;
-  if (!navigator.serviceWorker.controller) return;
-  try {
-    const reg = await navigator.serviceWorker.ready;
-    const existing = await reg.pushManager.getSubscription();
-    if (existing) {
-      await savePushSubscription(existing);
-      return;
-    }
-  } catch(e) {
-    console.warn('[Push subscribe]', e);
-  }
-}
-
-async function savePushSubscription(sub) {
-  if (!currentUser) return;
-  try {
-    const subJson = sub.toJSON();
-    const token = sessionStorage.getItem('sb_access_token');
-    const res = await fetch(SUPABASE_URL + '/rest/v1/push_subscriptions', {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': 'Bearer ' + (token || SUPABASE_KEY),
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify({
-        user_id: currentUser.id,
-        subscription: {
-          endpoint: subJson.endpoint,
-          keys: {
-            p256dh: subJson.keys?.p256dh,
-            auth: subJson.keys?.auth
-          }
-        },
-        city: currentCity || 'Seoul'
-      })
-    });
-    if (res.ok) {
-      console.log('[Push] Subscription kaydedildi');
-    } else {
-      console.warn('[Push save]', await res.text());
-    }
-  } catch(e) {
-    console.warn('[Push save]', e);
-  }
 }
 
 function resetTheme() {
