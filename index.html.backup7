@@ -3078,11 +3078,6 @@ function useCurrentLocation() {
         text.textContent = '📍 ' + city + (country ? ', ' + country : '');
         const addSub = document.getElementById('add-sub');
         if (addSub) addSub.textContent = city + ' · ' + (lang==='tr'?'Deneyimini paylaş':'Share your experience');
-        // Şehri güncelle ve yerleri yükle
-        currentCity = city;
-        currentCurrency = getCurrencyForCity(city);
-        updateCurrencyBadge(city);
-        loadPlaces(city);
       } catch(e) {
         dot.style.background = '#ef4444';
         text.textContent = lang === 'tr' ? '📍 Konum alınamadı' : '📍 Could not get location';
