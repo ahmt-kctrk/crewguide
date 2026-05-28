@@ -2749,10 +2749,7 @@ function selectPrice(el) {
 const ADMIN_EMAIL = 'ahmtkctrk@gmail.com';
 
 function isAdmin() {
-  if (!currentUser) return false;
-  if (currentUser.email === ADMIN_EMAIL) return true;
-  if (currentProfile && currentProfile.role === 'admin') return true;
-  return false;
+  return currentUser && currentUser.email === ADMIN_EMAIL;
 }
 
 let isAdultContent = false;
@@ -3039,9 +3036,7 @@ function filterCities(q) {
   list.innerHTML = html;
 }
 
-let currentCity = 'Seoul';
 function selectCity(name, country, flag) {
-  currentCity = name;
   const dot = document.getElementById('location-dot');
   const text = document.getElementById('location-text');
   dot.style.background = '#10b981';
@@ -3051,8 +3046,7 @@ function selectCity(name, country, flag) {
   // Para birimini güncelle
   currentCurrency = getCurrencyForCity(name);
   updateCurrencyBadge(name);
-  // Şehir bazlı yerleri Supabase'den yükle
-  loadPlaces(name);
+  renderCards();
   goTo('screen-home');
 }
 
@@ -3530,8 +3524,6 @@ async function grantNotifPermission() {
       if (navigator.serviceWorker.controller) {
         navigator.serviceWorker.controller.postMessage({ type: 'NOTIF_GRANTED' });
       }
-      // Push subscription kaydet
-      subscribePush();
     } else {
       showToast(lang==='tr' ? 'Bildirimler kapalı.' : 'Notifications disabled.');
     }
@@ -4520,18 +4512,13 @@ async function fillCurrentLocation() {
 
 
 // ── SUPABASE'DEN YERLERİ YÜKLE ───────────────────────────────────────────────
-async function loadPlaces(cityFilter) {
+async function loadPlaces() {
   try {
-    const city = cityFilter || currentCity || null;
-    let query = 'places?is_hidden=eq.false&order=created_at.desc&limit=100';
-    if (city) {
-      query += `&addr=ilike.*${encodeURIComponent(city)}*`;
-    }
-    const data = await sbFetch(query, { headers: { 'Prefer': '' } });
-    if (!data || data.length === 0) {
-      renderCards();
-      return;
-    }
+    const data = await sbFetch(
+      'places?is_hidden=eq.false&order=created_at.desc&limit=100',
+      { headers: { 'Prefer': '' } }
+    );
+    if (!data || data.length === 0) return;
 
     // Supabase'den gelen yerleri places dizisine ekle (duplicate olmaması için)
     const existingIds = new Set(places.map(p => p.id));
@@ -4794,9 +4781,6 @@ if ('serviceWorker' in navigator) {
         showToast(lang === 'tr'
           ? `${event.data.cityName} çevrimdışı kullanıma hazır ✓`
           : `${event.data.cityName} ready for offline use ✓`);
-      }
-      if (event.data?.type === 'NOTIF_CLICK') {
-        goTo('screen-home');
       }
     });
   });

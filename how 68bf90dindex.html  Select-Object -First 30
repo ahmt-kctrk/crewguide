@@ -1,0 +1,53 @@
+[33m606d55b[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m feat: Supabase entegrasyonu
+[33m41abc1c[m feat: Supabase entegrasyonu - yer ekle/sil kalıcı
+[33md51ab27[m Update index.html
+[33m0e11e13[m Update manifest.json
+[33m68bf90d[m feat: master davet kodu ve bildirim dil destegi
+[33mfdc2e9e[m fix: TR bnav-home virgul eksikligi duzeltildi
+[33mabef602[m fix: TR cift virgul duzeltildi
+[33me43ca1e[m fix: dil baslik elementine ID ve ceviri eklendi
+[33mfbbab05[m fix: fransizca apostrof syntax hatasi duzeltildi
+[33m71ac0c3[m fix: tum dil bloklarinda virgul hatasi duzeltildi
+[33mda87a5a[m fix: tum ekranlarda eksik ceviri tamamlandi
+[33m571774a[m fix: ekran degisiminde ceviri uygula
+[33m9dfb0a3[m fix: bnav ve ayarlar tum dillerde calissin
+[33m4816732[m fix: filtre chip'leri tum dillerde calissin
+[33mb3aa9d7[m fix: dil secimi sayfa yuklenince uygulansin
+[33m21c4690[m feat: dil secimi dropdown menu
+[33m726447b[m fix: netlify publish dizini guncellendi
+[33m8482a40[m fix: netlify publish dizini guncellendi
+[33mbd0c15f[m feat: netlify config eklendi
+[33m3b10b15[m fix: redeploy
+[33me5d105a[m Delete .github/workflows/static.yml
+[33mb0faf86[m fix: force redeploy
+[33m5b3c2ca[m Create static.yml
+[33m806a5e4[m fix: SW cache temizle
+[33ma52ed2b[m chore: deployment tetikle
+[33mf64fb69[m fix: Fransizca cift tirnak ile yeniden yazildi
+[33ma23e423[m fix: Fransizca kesme isareti hatasi tamamen duzeltildi
+[33m02079c7[m fix: Fransizca kesme isareti hatasi duzeltildi
+[33m9bc403b[m feat: 8 dil destegi - DE FR ES AR JA KO ZH
+[33mdee90f3[m feat: 8 dil destegi v11
+[33m01e752a[m feat: 8 dil destegi
+[33m51a3701[m feat: 8 dil destegi - DE FR ES AR JA KO ZH
+[33m9de06e0[m refactor: index.html olarak yeniden adlandirildi
+[33m40d70e1[m Create CNAME
+[33mbb78cc8[m feat: kullanici basina 3 davet kodu
+[33m9d53f02[m feat: yerleri supabase den yukle - gercek zamanli paylasim
+[33m6d5769f[m feat: yer eklemede gps konum butonu
+[33md5e152a[m feat: kullanici adi degistirme ayarlarda
+[33mfb5de41[m feat: admin paneli ve +18 icerik filtresi
+[33m1317ae7[m fix: yorum isim alani giris yapilinca kilitlendi
+[33md5dcd51[m feat: yorum duzenleme ve silme
+[33m93b00a3[m fix: filtre chip renkleri duzeltildi
+[33m9bb01f7[m feat: gelismis arama ve filtre sistemi
+[33mf26c494[m feat: leaflet harita entegrasyonu
+[33mebff97c[m feat: supabase auth sistemi - gercek kayit ve giris
+[33md3ac311[m feat: gercek fotograf yukleme ve galeri
+[33me2a8d8a[m feat: bildirim izni altyapisi
+[33m1ebaa5f[m feat: pwa ikonlari eklendi
+[33m125ba8a[m feat: pwa ikonlari eklendi
+[33m94b996a[m feat: supabase gercek yorum sistemi
+[33mb5a895d[m feat: para birimi gostergesi ve fiyat rehberi
+[33m7c3351f[m feat: 1-5 yildiz puanlama sistemi
+[33m6de574b[m Initial PWA commit
