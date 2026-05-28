@@ -1305,7 +1305,7 @@
           background:#fef2f2;border:1.5px solid #fca5a5;
           color:#ef4444;font-size:13px;font-weight:600;
           font-family:'Syne',sans-serif;cursor:pointer;">
-          🗑 <span id="delete-place-label">Yeri Kaldır</span>
+          🗑 Yeri Kaldır (Admin)
         </button>
       </div>
     </div>
@@ -2579,10 +2579,9 @@ function openDetail(id) {
   }
   loadComments(p.id);
   loadPlacePhotos(p.id);
-  // Silme butonunu göster/gizle — admin veya yerin sahibi
+  // Admin butonunu göster/gizle
   const adminActions = document.getElementById('admin-actions');
-  const isOwner = currentUser && p.userId && currentUser.id === p.userId;
-  if (adminActions) adminActions.style.display = (isAdmin() || isOwner) ? 'block' : 'none';
+  if (adminActions) adminActions.style.display = isAdmin() ? 'block' : 'none';
   goTo('screen-detail');
 }
 
@@ -4345,9 +4344,8 @@ function resetFilters() {
 
 // ── ADMİN FONKSİYONLARI ──────────────────────────────────────────────────────
 async function adminDeletePlace() {
+  if (!isAdmin()) { showToast('Yetkisiz işlem!'); return; }
   const p = places.find(x => x.id === currentDetailId);
-  const isOwner = currentUser && p && p.userId && currentUser.id === p.userId;
-  if (!isAdmin() && !isOwner) { showToast(lang==='tr'?'Yetkisiz işlem!':'Unauthorized!'); return; }
   if (!p) return;
 
   const confirmed = confirm(
