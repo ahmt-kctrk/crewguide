@@ -1354,12 +1354,19 @@
             color:var(--text-primary);outline:none;cursor:pointer;">
             <option value="">Ülke seç...</option>
           </select>
-          <select id="select-city-add" onchange="onCityAddChange()" style="
-            flex:1;padding:11px 12px;background:var(--white);border:1.5px solid var(--border);
-            border-radius:var(--radius-sm);font-size:13px;font-family:'DM Sans',sans-serif;
-            color:var(--text-primary);outline:none;cursor:pointer;">
-            <option value="">Şehir seç...</option>
-          </select>
+          <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+            <select id="select-city-add" onchange="onCityAddChange()" style="
+              width:100%;padding:11px 12px;background:var(--white);border:1.5px solid var(--border);
+              border-radius:var(--radius-sm);font-size:13px;font-family:'DM Sans',sans-serif;
+              color:var(--text-primary);outline:none;cursor:pointer;">
+              <option value="">Şehir seç...</option>
+            </select>
+            <input id="input-city-custom" type="text" placeholder="Farklı şehir yaz..."
+              oninput="onCustomCityInput(this.value)"
+              style="width:100%;padding:8px 12px;background:var(--white);border:1.5px solid var(--border);
+              border-radius:var(--radius-sm);font-size:12px;font-family:'DM Sans',sans-serif;
+              color:var(--text-primary);outline:none;box-sizing:border-box;display:none;">
+          </div>
         </div>
         <div id="selected-city-display" style="font-size:11px;color:var(--text-muted);margin-top:4px;"></div>
       </div>
@@ -3192,8 +3199,12 @@ function filterCities(q) {
   const list = document.getElementById('city-list');
   const query = q.trim().toLowerCase();
   const allCities = getMergedCities();
-  const filtered = query
-    ? allCities.filter(c => c.name.toLowerCase().includes(query) || c.country[lang]?.toLowerCase().includes(query))
+  const normalize = s => s.toLowerCase()
+    .replace(/İ/g,'i').replace(/I/g,'ı').replace(/Ş/g,'ş').replace(/Ğ/g,'ğ').replace(/Ü/g,'ü').replace(/Ö/g,'ö').replace(/Ç/g,'ç')
+    .replace(/i̇/g,'i');
+  const nQuery = normalize(q.trim());
+  const filtered = nQuery
+    ? allCities.filter(c => normalize(c.name).includes(nQuery) || normalize(c.country[lang]||'').includes(nQuery))
     : allCities;
 
   let html = '';
@@ -5365,6 +5376,10 @@ function onCountryChange() {
     citySelect.value = currentCity;
     onCityAddChange();
   }
+
+  // Custom şehir input'unu göster
+  const customInput = document.getElementById('input-city-custom');
+  if (customInput) customInput.style.display = 'block';
 }
 
 function onCityAddChange() {
@@ -5373,6 +5388,19 @@ function onCityAddChange() {
   const city = citySelect.value;
   if (city) {
     currentCity = city;
+    const customInput = document.getElementById('input-city-custom');
+    if (customInput) customInput.value = '';
+    const display = document.getElementById('selected-city-display');
+    if (display) display.textContent = `${currentFlag} ${city} · ${currentCountry?.[lang]||''}`;
+  }
+}
+
+function onCustomCityInput(val) {
+  const city = val.trim();
+  if (city) {
+    currentCity = city;
+    const citySelect = document.getElementById('select-city-add');
+    if (citySelect) citySelect.value = ''; // dropdown seçimini temizle
     const display = document.getElementById('selected-city-display');
     if (display) display.textContent = `${currentFlag} ${city} · ${currentCountry?.[lang]||''}`;
   }
