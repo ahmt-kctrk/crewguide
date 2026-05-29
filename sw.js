@@ -1,6 +1,6 @@
-// CrewGuide Service Worker v2.1
-const STATIC_CACHE = 'crewguide-static-v2';
-const DYNAMIC_CACHE = 'crewguide-dynamic-v2';
+// CrewGuide Service Worker v3.0 — Offline-first
+const STATIC_CACHE = 'crewguide-static-v3';
+const DYNAMIC_CACHE = 'crewguide-dynamic-v3';
 
 const STATIC_ASSETS = [
   './',
@@ -10,7 +10,7 @@ const STATIC_ASSETS = [
 
 // ── INSTALL ──────────────────────────────────────────────────────────────────
 self.addEventListener('install', event => {
-  console.log('[SW] Installing v2...');
+  console.log('[SW] Installing v3...');
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then(cache => cache.addAll(STATIC_ASSETS))
@@ -107,18 +107,30 @@ async function networkFirst(request) {
   }
 }
 
+// ── BACKGROUND SYNC ───────────────────────────────────────────────────────────
+self.addEventListener('sync', event => {
+  if (event.tag === 'crewguide-sync') {
+    console.log('[SW] Background sync tetiklendi');
+    event.waitUntil(notifyClientsToSync());
+  }
+});
+
+async function notifyClientsToSync() {
+  const clientList = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+  for (const client of clientList) {
+    client.postMessage({ type: 'BG_SYNC' });
+  }
+}
+
 // ── PUSH BİLDİRİMLERİ ────────────────────────────────────────────────────────
 self.addEventListener('push', event => {
   let data = {};
-  try {
-    data = event.data ? event.data.json() : {};
-  } catch {
-    data = {};
-  }
+  try { data = event.data ? event.data.json() : {}; }
+  catch { data = {}; }
 
   const title = data.title || '✈️ CrewGuide';
   const options = {
-    body: data.body || 'Yeni bir yer eklendi!',
+    body: data.body || 'Yeni bir güncelleme var!',
     icon: './icons/icon-192.png',
     badge: './icons/icon-96.png',
     tag: data.tag || 'crewguide-notif',
@@ -129,6 +141,7 @@ self.addEventListener('push', event => {
 
   event.waitUntil(self.registration.showNotification(title, options));
 });
+
 // ── BİLDİRİME TIKLANMA ───────────────────────────────────────────────────────
 self.addEventListener('notificationclick', event => {
   event.notification.close();
@@ -168,5 +181,14 @@ self.addEventListener('message', async event => {
 
   if (type === 'skipWaiting' || type === 'SKIP_WAITING') {
     self.skipWaiting();
+  }
+
+  // Background sync kaydı
+  if (type === 'REGISTER_SYNC') {
+    try {
+      await self.registration.sync.register('crewguide-sync');
+    } catch(e) {
+      console.warn('[SW] Sync register hatası:', e);
+    }
   }
 });
