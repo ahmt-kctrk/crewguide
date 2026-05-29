@@ -3619,15 +3619,11 @@ async function showQueueStatus() {
     : `☁️ Pending: ${placeCount} places, ${commentCount} comments, ${ratingCount} ratings`;
 
   if (navigator.onLine) {
-    msg += lang==='tr' ? '
-Senkronize ediliyor...' : '
-Syncing...';
+    msg += lang==='tr' ? ' — Senkronize ediliyor...' : ' — Syncing...';
     showToast(msg);
     setTimeout(processQueue, 500);
   } else {
-    msg += lang==='tr' ? '
-(Çevrimdışı — internet bağlanınca sync olacak)' : '
-(Offline — will sync when connected)';
+    msg += lang==='tr' ? ' (Çevrimdışı)' : ' (Offline)';
     showToast(msg);
   }
 }
