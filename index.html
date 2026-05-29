@@ -4579,6 +4579,9 @@ async function createAccount() {
     // 5. Session kaydet
     sessionStorage.setItem('sb_access_token', accessToken);
     sessionStorage.setItem('sb_refresh_token', authData.refresh_token || '');
+    localStorage.setItem('sb_access_token', accessToken);
+    localStorage.setItem('sb_refresh_token', authData.refresh_token || '');
+    localStorage.setItem('sb_user', JSON.stringify(authData.user));
     currentUser = authData.user;
     currentProfile = { username, invite_code: newInviteCode, invite_codes: inviteCodes.map(c => c.code) };
 
@@ -4626,6 +4629,10 @@ async function signIn() {
 
     sessionStorage.setItem('sb_access_token', data.access_token);
     sessionStorage.setItem('sb_refresh_token', data.refresh_token || '');
+    // Çevrimdışı giriş için localStorage'a da kaydet
+    localStorage.setItem('sb_access_token', data.access_token);
+    localStorage.setItem('sb_refresh_token', data.refresh_token || '');
+    localStorage.setItem('sb_user', JSON.stringify(data.user));
     currentUser = data.user;
 
     // Profili yükle
@@ -4649,6 +4656,12 @@ async function signIn() {
 
 // Profil yükle
 async function loadProfile(userId, token) {
+  // Çevrimdışıysa localStorage'dan yükle
+  if (!navigator.onLine) {
+    const saved = localStorage.getItem('sb_profile');
+    if (saved) { try { currentProfile = JSON.parse(saved); } catch(e) {} }
+    return;
+  }
   try {
     // Profil bilgilerini yükle
     const res = await fetch(
@@ -4658,6 +4671,7 @@ async function loadProfile(userId, token) {
     const data = await res.json();
     if (data && data[0]) {
       currentProfile = data[0];
+      localStorage.setItem('sb_profile', JSON.stringify(currentProfile));
     }
 
     // Kullanıcının davet kodlarını yükle
@@ -4689,6 +4703,10 @@ async function signOut() {
   } catch(e) {}
   sessionStorage.removeItem('sb_access_token');
   sessionStorage.removeItem('sb_refresh_token');
+  localStorage.removeItem('sb_access_token');
+  localStorage.removeItem('sb_refresh_token');
+  localStorage.removeItem('sb_user');
+  localStorage.removeItem('sb_profile');
   currentUser = null;
   currentProfile = null;
   goTo('screen-splash');
@@ -4696,8 +4714,38 @@ async function signOut() {
 
 // Session kontrolü — sayfa yenilenince oturumu koru
 async function checkSession() {
-  const token = sessionStorage.getItem('sb_access_token');
+  // Önce sessionStorage, yoksa localStorage'a bak
+  let token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token');
   if (!token) return;
+
+  // sessionStorage'a da yaz (bu sekme için)
+  sessionStorage.setItem('sb_access_token', token);
+
+  // Çevrimdışıysa localStorage'daki kullanıcı bilgisini kullan
+  if (!navigator.onLine) {
+    const savedUser = localStorage.getItem('sb_user');
+    if (savedUser) {
+      try {
+        currentUser = JSON.parse(savedUser);
+        // Profil bilgisini localStorage'dan yükle
+        const savedProfile = localStorage.getItem('sb_profile');
+        if (savedProfile) {
+          currentProfile = JSON.parse(savedProfile);
+          updateProfileUI();
+        }
+        loadPlaces(); // cache'den yükler
+        goTo('screen-home');
+        showToast(lang==='tr' ? '✈️ Çevrimdışı mod' : '✈️ Offline mode');
+        console.log('[checkSession] Çevrimdışı — localStorage kullanılıyor');
+        return;
+      } catch(e) {
+        console.warn('[checkSession] Offline user parse hatası:', e);
+      }
+    }
+    return;
+  }
+
+  // Online: Supabase'den doğrula
   try {
     const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + token }
@@ -4705,15 +4753,36 @@ async function checkSession() {
     if (res.ok) {
       const user = await res.json();
       currentUser = user;
+      localStorage.setItem('sb_user', JSON.stringify(user));
       await loadProfile(user.id, token);
       updateProfileUI();
       loadPlaces();
       goTo('screen-home');
     } else {
+      // Token geçersiz — temizle
       sessionStorage.removeItem('sb_access_token');
+      localStorage.removeItem('sb_access_token');
+      localStorage.removeItem('sb_user');
     }
   } catch(e) {
     console.warn('[checkSession]', e);
+    // Network hatası — offline fallback dene
+    const savedUser = localStorage.getItem('sb_user');
+    if (savedUser) {
+      try {
+        currentUser = JSON.parse(savedUser);
+        const savedProfile = localStorage.getItem('sb_profile');
+        if (savedProfile) {
+          currentProfile = JSON.parse(savedProfile);
+          updateProfileUI();
+        }
+        loadPlaces();
+        goTo('screen-home');
+        showToast(lang==='tr' ? '✈️ Çevrimdışı mod' : '✈️ Offline mode');
+      } catch(e2) {
+        console.warn('[checkSession] Fallback hatası:', e2);
+      }
+    }
   }
 }
 
