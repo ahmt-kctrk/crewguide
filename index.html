@@ -1122,6 +1122,7 @@
         ">
           <span id="currency-symbol" style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--gold);">₩</span>
           <span id="currency-code" style="font-size:10px;color:rgba(255,255,255,0.7);font-weight:500;">KRW</span>
+          <span id="currency-rate-hint" style="font-size:9px;color:rgba(255,255,255,0.35);display:block;margin-top:1px;">1 USD ≈ 1,350 ₩</span>
         </div>
       </div>
       <div class="search-bar" style="padding:0;">
@@ -2444,6 +2445,10 @@ function goTo(id) {
   // Home'a ilk gelişte bildirim izni sor
   if (id === 'screen-home') {
     setTimeout(() => askNotificationPermission(), 500);
+    // Realtime bildirimleri başlat (giriş yapıldıysa, henüz bağlı değilse)
+    if (currentUser && !realtimeConnected) {
+      setTimeout(startRealtimeNotifications, 2000);
+    }
   }
   // Ayarlar ekranı açılınca mevcut durumu göster
   if (id === 'screen-settings') {
@@ -2579,6 +2584,7 @@ function openDetail(id) {
     usernameInput.style.color = '';
   }
   loadComments(p.id);
+  setTimeout(prefillCommentUsername, 300);
   loadPlacePhotos(p.id);
   // Silme butonunu göster/gizle — admin veya yerin sahibi
   const adminActions = document.getElementById('admin-actions');
@@ -2676,7 +2682,7 @@ function updateStarInput(n, submitted) {
   }
 }
 
-function submitRating() {
+async function submitRating() {
   if (pendingRating === 0) {
     showToast(lang === 'tr' ? 'Önce bir yıldız seç!' : 'Select a star first!');
     return;
@@ -2684,22 +2690,76 @@ function submitRating() {
   const p = places.find(x => x.id === currentDetailId);
   if (!p) return;
 
-  const prev = p.userRating || 0;
+  // Buton'u devre dışı bırak
+  const btn = document.getElementById('btn-rate');
+  if (btn) { btn.disabled = true; btn.textContent = '...'; }
 
-  // Önceki oy varsa çıkar, yenisini ekle
-  if (prev > 0 && p.ratings[prev] > 0) {
-    p.ratings[prev]--;
-    p.ratingCount--;
+  try {
+    const token = sessionStorage.getItem('sb_access_token');
+    const headers = {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + (token || SUPABASE_KEY),
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal'
+    };
+
+    // Supabase: ratings tablosuna upsert (user_id + place_id kombinasyonu unique)
+    const userId = currentUser ? currentUser.id : null;
+    if (userId) {
+      await fetch(`${SUPABASE_URL}/rest/v1/ratings`, {
+        method: 'POST',
+        headers: { ...headers, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({
+          place_id: p.id,
+          user_id: userId,
+          stars: pendingRating
+        })
+      });
+    }
+
+    // Supabase: places tablosundaki rating ve rating_count güncelle
+    // Basit yaklaşım: tüm ratingleri çek, ortalama hesapla, güncelle
+    const ratingsResp = await fetch(
+      `${SUPABASE_URL}/rest/v1/ratings?place_id=eq.${encodeURIComponent(p.id)}&select=stars`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + (token || SUPABASE_KEY) } }
+    );
+    if (ratingsResp.ok) {
+      const ratingRows = await ratingsResp.json();
+      if (ratingRows && ratingRows.length > 0) {
+        const count = ratingRows.length;
+        const total = ratingRows.reduce((s, r) => s + r.stars, 0);
+        const avg = Math.round((total / count) * 10) / 10;
+
+        await fetch(`${SUPABASE_URL}/rest/v1/places?id=eq.${p.id}`, {
+          method: 'PATCH',
+          headers,
+          body: JSON.stringify({ rating: avg, rating_count: count })
+        });
+
+        // Local state güncelle
+        p.ratingCount = count;
+        p.rating = avg;
+        // Dağılımı da güncelle
+        const dist = {1:0,2:0,3:0,4:0,5:0};
+        ratingRows.forEach(r => { dist[r.stars] = (dist[r.stars]||0)+1; });
+        p.ratings = dist;
+      }
+    }
+  } catch(e) {
+    console.warn('[submitRating Supabase]', e);
+    // Supabase başarısız olsa bile local güncelle
+    const prev = p.userRating || 0;
+    if (prev > 0 && p.ratings[prev] > 0) { p.ratings[prev]--; p.ratingCount--; }
+    p.ratings[pendingRating] = (p.ratings[pendingRating] || 0) + 1;
+    p.ratingCount++;
+    let total = 0, count = 0;
+    [1,2,3,4,5].forEach(s => { total += s*(p.ratings[s]||0); count+=(p.ratings[s]||0); });
+    p.rating = count > 0 ? Math.round((total/count)*10)/10 : 0;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = lang==='tr'?'Oyla':'Rate'; }
   }
-  p.ratings[pendingRating] = (p.ratings[pendingRating] || 0) + 1;
-  p.ratingCount++;
+
   p.userRating = pendingRating;
-
-  // Ortalama yeniden hesapla
-  let total = 0, count = 0;
-  [1,2,3,4,5].forEach(s => { total += s * (p.ratings[s] || 0); count += (p.ratings[s] || 0); });
-  p.rating = count > 0 ? Math.round((total / count) * 10) / 10 : 0;
-
   renderRatingBar(p);
   updateStarInput(pendingRating, true);
   renderCards();
@@ -2822,6 +2882,15 @@ async function submitPlace() {
         is_hidden: false
       })
     });
+
+    // Push bildirimi gönder — o şehirdeki tüm kullanıcılara
+    sendPushForNewPlace({
+      city:  currentCity || 'Seoul',
+      name:  name,
+      emoji: catEmojis[selectedMainCat] || '📍',
+      placeId: placeId
+    });
+
   } catch(e) {
     console.warn('[submitPlace Supabase]', e);
     // DB hatası olsa bile yerel olarak ekle
@@ -3153,25 +3222,72 @@ function setMode(mode) {
 
 
 // ── PUSH SUBSCRIPTION ────────────────────────────────────────────────────────
+// VAPID public key — Supabase Edge Function'dan üretilecekse buraya gir
+// Şimdilik boş: applicationServerKey olmadan subscription denenir
+const VAPID_PUBLIC_KEY = '';
+
 async function subscribePush() {
-  if (!('PushManager' in window)) return;
-  if (!navigator.serviceWorker.controller) return;
+  if (!('PushManager' in window)) {
+    console.log('[Push] PushManager desteklenmiyor');
+    return;
+  }
   try {
     const reg = await navigator.serviceWorker.ready;
+
+    // Mevcut subscription var mı?
     const existing = await reg.pushManager.getSubscription();
     if (existing) {
+      console.log('[Push] Mevcut subscription bulundu, kaydediliyor');
       await savePushSubscription(existing);
       return;
+    }
+
+    // Yeni subscription oluştur
+    const subscribeOptions = { userVisibleOnly: true };
+
+    // VAPID key varsa ekle
+    if (VAPID_PUBLIC_KEY) {
+      subscribeOptions.applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+    }
+
+    try {
+      const sub = await reg.pushManager.subscribe(subscribeOptions);
+      console.log('[Push] Yeni subscription oluşturuldu');
+      await savePushSubscription(sub);
+    } catch(subErr) {
+      // VAPID key olmadan bazı tarayıcılar reddeder — beklenen durum
+      console.warn('[Push] Subscription oluşturulamadı (VAPID key gerekli olabilir):', subErr.message);
     }
   } catch(e) {
     console.warn('[Push subscribe]', e);
   }
 }
 
+// VAPID base64 → Uint8Array yardımcısı
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
 async function savePushSubscription(sub) {
   if (!currentUser) return;
   try {
     const subJson = sub.toJSON();
+    const endpoint = subJson.endpoint;
+    const p256dh   = subJson.keys?.p256dh || '';
+    const auth     = subJson.keys?.auth    || '';
+
+    if (!endpoint) {
+      console.warn('[Push save] endpoint yok, kaydedilmedi');
+      return;
+    }
+
     const token = sessionStorage.getItem('sb_access_token');
     const res = await fetch(SUPABASE_URL + '/rest/v1/push_subscriptions', {
       method: 'POST',
@@ -3179,27 +3295,56 @@ async function savePushSubscription(sub) {
         'apikey': SUPABASE_KEY,
         'Authorization': 'Bearer ' + (token || SUPABASE_KEY),
         'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
+        // user_id unique — varsa güncelle
+        'Prefer': 'resolution=merge-duplicates,return=minimal'
       },
       body: JSON.stringify({
-        user_id: currentUser.id,
-        subscription: {
-          endpoint: subJson.endpoint,
-          keys: {
-            p256dh: subJson.keys?.p256dh,
-            auth: subJson.keys?.auth
-          }
-        },
-        city: currentCity || 'Seoul'
+        user_id:  currentUser.id,
+        endpoint: endpoint,
+        p256dh:   p256dh,
+        auth:     auth,
+        city:     currentCity || 'Seoul'
       })
     });
     if (res.ok) {
-      console.log('[Push] Subscription kaydedildi');
+      console.log('[Push] Subscription kaydedildi:', endpoint.slice(0, 60) + '...');
     } else {
-      console.warn('[Push save]', await res.text());
+      const errText = await res.text();
+      console.warn('[Push save] hata:', errText);
     }
   } catch(e) {
     console.warn('[Push save]', e);
+  }
+}
+
+// ── PUSH BİLDİRİMİ GÖNDER (Edge Function) ───────────────────────────────────
+async function sendPushForNewPlace({ city, name, emoji, placeId }) {
+  try {
+    const token = sessionStorage.getItem('sb_access_token');
+    const res = await fetch(
+      'https://nuebqtzeirpyyxtoptlp.supabase.co/functions/v1/send-push',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + (token || SUPABASE_KEY)
+        },
+        body: JSON.stringify({
+          // Edge function { city, name } formatı bekliyor
+          city: city,
+          name: `${emoji} ${name}`
+        })
+      }
+    );
+
+    if (res.ok) {
+      console.log('[Push] send-push çağrıldı:', city, name);
+    } else {
+      const err = await res.text();
+      console.warn('[Push] send-push hatası:', err);
+    }
+  } catch(e) {
+    console.warn('[Push] send-push çağrılamadı:', e);
   }
 }
 
@@ -3296,6 +3441,14 @@ function renderComments(comments) {
   if (box && section) section.appendChild(box);
 }
 
+function prefillCommentUsername() {
+  const input = document.getElementById('comment-username');
+  if (input && !input.value && currentProfile && currentProfile.username) {
+    input.value = currentProfile.username;
+    input.style.color = 'var(--text-muted)'; // görsel ipucu
+  }
+}
+
 function setCommentStar(n) {
   commentStar = n;
   updateCommentStars(n, false);
@@ -3320,7 +3473,12 @@ function updateCommentStars(n, reset) {
 }
 
 async function submitComment() {
-  const username = document.getElementById('comment-username').value.trim();
+  // Profil varsa username'i otomatik doldur
+  const usernameInput = document.getElementById('comment-username');
+  if (usernameInput && !usernameInput.value.trim() && currentProfile && currentProfile.username) {
+    usernameInput.value = currentProfile.username;
+  }
+  const username = usernameInput ? usernameInput.value.trim() : '';
   const text = document.getElementById('comment-text').value.trim();
   const btn = document.getElementById('comment-submit-btn');
 
@@ -4651,6 +4809,219 @@ async function loadPlaces(cityFilter) {
 }
 
 
+// ── SUPABASE REALTIME — YENİ YER BİLDİRİMİ ──────────────────────────────────
+let realtimeChannel = null;
+let realtimeConnected = false;
+
+function startRealtimeNotifications() {
+  // Zaten bağlıysa tekrar bağlama
+  if (realtimeConnected) return;
+
+  // Supabase Realtime WebSocket URL
+  const wsUrl = SUPABASE_URL.replace('https://', 'wss://') + '/realtime/v1/websocket?apikey=' + SUPABASE_KEY + '&vsn=1.0.0';
+
+  try {
+    const ws = new WebSocket(wsUrl);
+    realtimeChannel = ws;
+
+    ws.onopen = () => {
+      realtimeConnected = true;
+      console.log('[Realtime] Bağlandı');
+
+      // Heartbeat — her 30s ping at
+      const heartbeat = setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ topic: 'phoenix', event: 'heartbeat', payload: {}, ref: null }));
+        } else {
+          clearInterval(heartbeat);
+        }
+      }, 30000);
+
+      // places tablosunu dinle — INSERT eventi
+      const joinMsg = {
+        topic: 'realtime:public:places',
+        event: 'phx_join',
+        payload: {
+          config: {
+            broadcast: { self: false },
+            presence: { key: '' },
+            postgres_changes: [{ event: 'INSERT', schema: 'public', table: 'places' }]
+          }
+        },
+        ref: '1'
+      };
+      ws.send(JSON.stringify(joinMsg));
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+
+        // Yeni yer eklendi eventi
+        if (
+          msg.topic === 'realtime:public:places' &&
+          msg.event === 'postgres_changes' &&
+          msg.payload?.data?.type === 'INSERT'
+        ) {
+          const newPlace = msg.payload.data.record;
+          if (!newPlace || newPlace.is_hidden) return;
+
+          // Kullanıcının şu an baktığı şehirle aynı mı?
+          const placeCity = newPlace.city || '';
+          const isSameCity = placeCity.toLowerCase() === (currentCity || '').toLowerCase();
+
+          // Bildirim mesajı
+          const name = newPlace.name || '';
+          const emoji = newPlace.emoji || '📍';
+
+          if (isSameCity && name) {
+            // Şu an aynı şehirdeyse anında göster
+            showInAppNotification({
+              title: lang==='tr' ? '📍 Yeni Yer Eklendi!' : '📍 New Place Added!',
+              body: `${emoji} ${name}`,
+              action: () => {
+                // Yeni yeri places listesine ekle ve kartlara yansıt
+                const priceName = {
+                  '$':  { tr:'Uygun',  en:'Budget' },
+                  '$$': { tr:'Orta',   en:'Mid-range' },
+                  '$$$':{ tr:'Pahalı', en:'Expensive' }
+                };
+                const exists = places.find(x => x.id === newPlace.id);
+                if (!exists) {
+                  places.unshift({
+                    id: newPlace.id,
+                    cat: newPlace.cat,
+                    subcat: newPlace.subcat || '',
+                    emoji: newPlace.emoji || '📍',
+                    name: newPlace.name,
+                    addr: newPlace.addr || '',
+                    price: newPlace.price || '$',
+                    priceName: priceName[newPlace.price] || { tr:'Uygun', en:'Budget' },
+                    likes: 0,
+                    rating: parseFloat(newPlace.rating) || 0,
+                    ratingCount: newPlace.rating_count || 0,
+                    ratings: {5:0,4:0,3:0,2:0,1:0},
+                    userRating: 0,
+                    isAdult: newPlace.is_adult || false,
+                    userId: newPlace.user_id || null,
+                    desc: { tr: newPlace.desc_tr || '', en: newPlace.desc_en || '' }
+                  });
+                  renderCards();
+                }
+              }
+            });
+          } else if (name && placeCity) {
+            // Farklı şehirse daha sessiz bildirim
+            showInAppNotification({
+              title: lang==='tr' ? `✈️ ${placeCity} için yeni yer!` : `✈️ New place in ${placeCity}!`,
+              body: `${emoji} ${name}`,
+              quiet: true
+            });
+          }
+        }
+      } catch(e) {
+        // parse hatası — sessizce geç
+      }
+    };
+
+    ws.onerror = (e) => {
+      console.warn('[Realtime] WebSocket hatası:', e);
+    };
+
+    ws.onclose = () => {
+      realtimeConnected = false;
+      realtimeChannel = null;
+      console.log('[Realtime] Bağlantı kapandı — 30s sonra yeniden bağlanılacak');
+      // 30 saniye sonra yeniden bağlan
+      setTimeout(() => {
+        if (currentUser) startRealtimeNotifications();
+      }, 30000);
+    };
+
+  } catch(e) {
+    console.warn('[Realtime] Başlatma hatası:', e);
+  }
+}
+
+// Uygulama içi bildirim göster (push yerine)
+let inAppNotifQueue = [];
+let inAppNotifShowing = false;
+
+function showInAppNotification({ title, body, action, quiet = false }) {
+  inAppNotifQueue.push({ title, body, action, quiet });
+  if (!inAppNotifShowing) processNotifQueue();
+}
+
+function processNotifQueue() {
+  if (!inAppNotifQueue.length) { inAppNotifShowing = false; return; }
+  inAppNotifShowing = true;
+  const { title, body, action, quiet } = inAppNotifQueue.shift();
+
+  // Mevcut bildirim varsa kaldır
+  const existing = document.getElementById('in-app-notif');
+  if (existing) existing.remove();
+
+  const notif = document.createElement('div');
+  notif.id = 'in-app-notif';
+  notif.style.cssText = `
+    position:absolute; top:${quiet?'auto':'64px'}; bottom:${quiet?'80px':'auto'};
+    left:12px; right:12px;
+    background:var(--navy); color:#fff;
+    border-radius:14px; padding:12px 14px;
+    display:flex; align-items:center; gap:10px;
+    z-index:200; cursor:${action?'pointer':'default'};
+    box-shadow:0 8px 32px rgba(0,0,0,0.3);
+    animation: notifSlideIn 0.35s cubic-bezier(.22,.68,0,1.2) both;
+    border:1px solid rgba(201,168,76,0.2);
+  `;
+
+  // CSS animasyonu inject et (bir kez)
+  if (!document.getElementById('notif-anim-style')) {
+    const style = document.createElement('style');
+    style.id = 'notif-anim-style';
+    style.textContent = `
+      @keyframes notifSlideIn {
+        from { opacity:0; transform:translateY(-12px) scale(0.96); }
+        to   { opacity:1; transform:translateY(0) scale(1); }
+      }
+      @keyframes notifSlideOut {
+        from { opacity:1; transform:translateY(0); }
+        to   { opacity:0; transform:translateY(-8px); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  notif.innerHTML = `
+    <div style="font-size:22px;flex-shrink:0;">🔔</div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--gold);line-height:1.3;">${title}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.75);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${body}</div>
+    </div>
+    <div id="in-app-notif-close" style="font-size:18px;color:rgba(255,255,255,0.4);cursor:pointer;flex-shrink:0;padding:0 2px;">✕</div>
+  `;
+
+  const app = document.getElementById('app');
+  if (app) app.appendChild(notif);
+
+  // Kapat butonu
+  const closeBtn = notif.querySelector('#in-app-notif-close');
+  const dismiss = () => {
+    notif.style.animation = 'notifSlideOut 0.2s ease forwards';
+    setTimeout(() => { notif.remove(); setTimeout(processNotifQueue, 400); }, 200);
+  };
+  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); dismiss(); });
+
+  // Tıklanınca action çalıştır
+  if (action) {
+    notif.addEventListener('click', () => { dismiss(); action(); });
+  }
+
+  // Otomatik kapat
+  const autoClose = setTimeout(dismiss, quiet ? 4000 : 6000);
+  closeBtn.addEventListener('click', () => clearTimeout(autoClose));
+}
+
 // ── DAVET KODLARI UI ──────────────────────────────────────────────────────────
 function updateInviteCodesUI() {
   if (!currentProfile || !currentProfile.invite_codes) return;
@@ -4797,6 +5168,20 @@ function updateCurrencyBadge(cityName) {
   const codeEl = document.getElementById('currency-code');
   if (symEl) symEl.textContent = cur.symbol;
   if (codeEl) codeEl.textContent = cur.code;
+
+  // Badge'e kur bilgisi tooltip ekle
+  const badge = document.getElementById('currency-badge');
+  if (badge) {
+    const rate = (1 / cur.rate).toFixed(cur.rate < 0.01 ? 0 : cur.rate < 0.1 ? 1 : 2);
+    badge.title = `1 USD ≈ ${rate} ${cur.symbol}`;
+  }
+
+  // Kur bilgi satırı varsa güncelle
+  const rateEl = document.getElementById('currency-rate-hint');
+  if (rateEl) {
+    const rate = (1 / cur.rate).toFixed(cur.rate < 0.01 ? 0 : cur.rate < 0.1 ? 1 : 2);
+    rateEl.textContent = `1 USD ≈ ${rate} ${cur.symbol}`;
+  }
 }
 
 function showCurrencyInfo() {
