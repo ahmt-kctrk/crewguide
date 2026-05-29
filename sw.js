@@ -110,27 +110,25 @@ async function networkFirst(request) {
 // ── PUSH BİLDİRİMLERİ ────────────────────────────────────────────────────────
 self.addEventListener('push', event => {
   let data = {};
-  try { data = event.data ? event.data.json() : {}; }
-  catch { data = { title: 'CrewGuide', body: event.data ? event.data.text() : '' }; }
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = {};
+  }
 
-  const title = data.title || 'CrewGuide ✈️';
+  const title = data.title || '✈️ CrewGuide';
   const options = {
-    body: data.body || 'Yeni bir güncelleme var!',
+    body: data.body || 'Yeni bir yer eklendi!',
     icon: './icons/icon-192.png',
     badge: './icons/icon-96.png',
     tag: data.tag || 'crewguide-notif',
     data: { url: data.url || './' },
     vibrate: [200, 100, 200],
     requireInteraction: false,
-    actions: [
-      { action: 'open', title: data.action_label || 'Görüntüle' },
-      { action: 'close', title: 'Kapat' }
-    ]
   };
 
   event.waitUntil(self.registration.showNotification(title, options));
 });
-
 // ── BİLDİRİME TIKLANMA ───────────────────────────────────────────────────────
 self.addEventListener('notificationclick', event => {
   event.notification.close();
