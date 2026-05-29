@@ -3090,8 +3090,85 @@ const priceRangeUSD = { '$': 15, '$$': 40, '$$$': 90 };
 
 let currentCurrency = currencyDB['Seoul']; // default
 
+// Ülke → para birimi eşleştirme
+const countryCurrencyDB = {
+  'Turkey': { symbol:'₺', code:'TRY', rate:0.028, name:{tr:'Türk Lirası',en:'Turkish Lira'} },
+  'Türkiye': { symbol:'₺', code:'TRY', rate:0.028, name:{tr:'Türk Lirası',en:'Turkish Lira'} },
+  'Japan': { symbol:'¥', code:'JPY', rate:0.0067, name:{tr:'Japon Yeni',en:'Japanese Yen'} },
+  'Japonya': { symbol:'¥', code:'JPY', rate:0.0067, name:{tr:'Japon Yeni',en:'Japanese Yen'} },
+  'South Korea': { symbol:'₩', code:'KRW', rate:0.00073, name:{tr:'Güney Kore Wonu',en:'S. Korean Won'} },
+  'Güney Kore': { symbol:'₩', code:'KRW', rate:0.00073, name:{tr:'Güney Kore Wonu',en:'S. Korean Won'} },
+  'UAE': { symbol:'د.إ', code:'AED', rate:0.272, name:{tr:'BAE Dirhemi',en:'UAE Dirham'} },
+  'BAE': { symbol:'د.إ', code:'AED', rate:0.272, name:{tr:'BAE Dirhemi',en:'UAE Dirham'} },
+  'UK': { symbol:'£', code:'GBP', rate:1.27, name:{tr:'İngiliz Sterlini',en:'British Pound'} },
+  'İngiltere': { symbol:'£', code:'GBP', rate:1.27, name:{tr:'İngiliz Sterlini',en:'British Pound'} },
+  'France': { symbol:'€', code:'EUR', rate:1.09, name:{tr:'Euro',en:'Euro'} },
+  'Fransa': { symbol:'€', code:'EUR', rate:1.09, name:{tr:'Euro',en:'Euro'} },
+  'Germany': { symbol:'€', code:'EUR', rate:1.09, name:{tr:'Euro',en:'Euro'} },
+  'Almanya': { symbol:'€', code:'EUR', rate:1.09, name:{tr:'Euro',en:'Euro'} },
+  'Spain': { symbol:'€', code:'EUR', rate:1.09, name:{tr:'Euro',en:'Euro'} },
+  'İspanya': { symbol:'€', code:'EUR', rate:1.09, name:{tr:'Euro',en:'Euro'} },
+  'Italy': { symbol:'€', code:'EUR', rate:1.09, name:{tr:'Euro',en:'Euro'} },
+  'İtalya': { symbol:'€', code:'EUR', rate:1.09, name:{tr:'Euro',en:'Euro'} },
+  'Netherlands': { symbol:'€', code:'EUR', rate:1.09, name:{tr:'Euro',en:'Euro'} },
+  'Hollanda': { symbol:'€', code:'EUR', rate:1.09, name:{tr:'Euro',en:'Euro'} },
+  'Greece': { symbol:'€', code:'EUR', rate:1.09, name:{tr:'Euro',en:'Euro'} },
+  'Yunanistan': { symbol:'€', code:'EUR', rate:1.09, name:{tr:'Euro',en:'Euro'} },
+  'Austria': { symbol:'€', code:'EUR', rate:1.09, name:{tr:'Euro',en:'Euro'} },
+  'Avusturya': { symbol:'€', code:'EUR', rate:1.09, name:{tr:'Euro',en:'Euro'} },
+  'USA': { symbol:'$', code:'USD', rate:1, name:{tr:'Amerikan Doları',en:'US Dollar'} },
+  'ABD': { symbol:'$', code:'USD', rate:1, name:{tr:'Amerikan Doları',en:'US Dollar'} },
+  'Australia': { symbol:'A$', code:'AUD', rate:0.64, name:{tr:'Avustralya Doları',en:'Australian Dollar'} },
+  'Avustralya': { symbol:'A$', code:'AUD', rate:0.64, name:{tr:'Avustralya Doları',en:'Australian Dollar'} },
+  'Canada': { symbol:'C$', code:'CAD', rate:0.73, name:{tr:'Kanada Doları',en:'Canadian Dollar'} },
+  'Kanada': { symbol:'C$', code:'CAD', rate:0.73, name:{tr:'Kanada Doları',en:'Canadian Dollar'} },
+  'Thailand': { symbol:'฿', code:'THB', rate:0.028, name:{tr:'Tayland Bahtı',en:'Thai Baht'} },
+  'Tayland': { symbol:'฿', code:'THB', rate:0.028, name:{tr:'Tayland Bahtı',en:'Thai Baht'} },
+  'Malaysia': { symbol:'RM', code:'MYR', rate:0.22, name:{tr:'Malezya Ringgiti',en:'Malaysian Ringgit'} },
+  'Malezya': { symbol:'RM', code:'MYR', rate:0.22, name:{tr:'Malezya Ringgiti',en:'Malaysian Ringgit'} },
+  'India': { symbol:'₹', code:'INR', rate:0.012, name:{tr:'Hindistan Rupisi',en:'Indian Rupee'} },
+  'Hindistan': { symbol:'₹', code:'INR', rate:0.012, name:{tr:'Hindistan Rupisi',en:'Indian Rupee'} },
+  'China': { symbol:'¥', code:'CNY', rate:0.138, name:{tr:'Çin Yuanı',en:'Chinese Yuan'} },
+  'Çin': { symbol:'¥', code:'CNY', rate:0.138, name:{tr:'Çin Yuanı',en:'Chinese Yuan'} },
+  'Switzerland': { symbol:'CHF', code:'CHF', rate:1.13, name:{tr:'İsviçre Frangı',en:'Swiss Franc'} },
+  'İsviçre': { symbol:'CHF', code:'CHF', rate:1.13, name:{tr:'İsviçre Frangı',en:'Swiss Franc'} },
+  'Qatar': { symbol:'﷼', code:'QAR', rate:0.275, name:{tr:'Katar Riyali',en:'Qatari Riyal'} },
+  'Katar': { symbol:'﷼', code:'QAR', rate:0.275, name:{tr:'Katar Riyali',en:'Qatari Riyal'} },
+  'Saudi Arabia': { symbol:'﷼', code:'SAR', rate:0.267, name:{tr:'Suudi Riyali',en:'Saudi Riyal'} },
+  'S. Arabistan': { symbol:'﷼', code:'SAR', rate:0.267, name:{tr:'Suudi Riyali',en:'Saudi Riyal'} },
+  'Singapore': { symbol:'S$', code:'SGD', rate:0.74, name:{tr:'Singapur Doları',en:'Singapore Dollar'} },
+  'Singapur': { symbol:'S$', code:'SGD', rate:0.74, name:{tr:'Singapur Doları',en:'Singapore Dollar'} },
+  'Hong Kong': { symbol:'HK$', code:'HKD', rate:0.128, name:{tr:'Hong Kong Doları',en:'HK Dollar'} },
+  'Egypt': { symbol:'E£', code:'EGP', rate:0.02, name:{tr:'Mısır Poundu',en:'Egyptian Pound'} },
+  'Mısır': { symbol:'E£', code:'EGP', rate:0.02, name:{tr:'Mısır Poundu',en:'Egyptian Pound'} },
+  'Brazil': { symbol:'R$', code:'BRL', rate:0.18, name:{tr:'Brezilya Reali',en:'Brazilian Real'} },
+  'Brezilya': { symbol:'R$', code:'BRL', rate:0.18, name:{tr:'Brezilya Reali',en:'Brazilian Real'} },
+  'Mexico': { symbol:'$', code:'MXN', rate:0.052, name:{tr:'Meksika Pesosu',en:'Mexican Peso'} },
+  'Meksika': { symbol:'$', code:'MXN', rate:0.052, name:{tr:'Meksika Pesosu',en:'Mexican Peso'} },
+  'S. Africa': { symbol:'R', code:'ZAR', rate:0.054, name:{tr:'Güney Afrika Randı',en:'South African Rand'} },
+  'G. Afrika': { symbol:'R', code:'ZAR', rate:0.054, name:{tr:'Güney Afrika Randı',en:'South African Rand'} },
+};
+
 function getCurrencyForCity(cityName) {
-  return currencyDB[cityName] || { symbol:'$', code:'USD', rate:1, name:{tr:'Amerikan Doları',en:'US Dollar'} };
+  // Önce şehir bazlı bak
+  if (currencyDB[cityName]) return currencyDB[cityName];
+
+  // Şehir bulunamazsa currentCountry'den ülke bazlı bak
+  if (currentCountry) {
+    const byEn = countryCurrencyDB[currentCountry.en];
+    if (byEn) return byEn;
+    const byTr = countryCurrencyDB[currentCountry.tr];
+    if (byTr) return byTr;
+  }
+
+  // popularCities'den şehrin ülkesini bul
+  const popCity = popularCities.find(p => p.name.toLowerCase() === (cityName||'').toLowerCase());
+  if (popCity) {
+    const byEn = countryCurrencyDB[popCity.country.en];
+    if (byEn) return byEn;
+  }
+
+  return { symbol:'$', code:'USD', rate:1, name:{tr:'Amerikan Doları',en:'US Dollar'} };
 }
 
 function formatLocalPrice(usdPrice, currency) {
@@ -5400,9 +5477,12 @@ function onCustomCityInput(val) {
   if (city) {
     currentCity = city;
     const citySelect = document.getElementById('select-city-add');
-    if (citySelect) citySelect.value = ''; // dropdown seçimini temizle
+    if (citySelect) citySelect.value = '';
     const display = document.getElementById('selected-city-display');
     if (display) display.textContent = `${currentFlag} ${city} · ${currentCountry?.[lang]||''}`;
+    // Para birimini güncelle
+    currentCurrency = getCurrencyForCity(city);
+    updateCurrencyBadge(city);
   }
 }
 
