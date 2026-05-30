@@ -2980,6 +2980,10 @@ function goTo(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.getElementById(id).scrollTop = 0;
+  // Telefon geri tuşu için history'e ekle
+  if (id !== 'screen-splash' && id !== 'screen-login') {
+    history.pushState({ screen: id }, '', '');
+  }
   if (id === 'screen-home' && !locationDetected) {
     locationDetected = true;
     useCurrentLocation();
@@ -4370,6 +4374,55 @@ async function processQueueItem(item) {
   // Bilinmeyen tip — queue'dan çıkar
   return true;
 }
+
+// ── TELEFON GERİ TUŞU ────────────────────────────────────────────────────────
+window.addEventListener('popstate', (event) => {
+  // Mevcut aktif ekranı bul
+  const activeScreen = document.querySelector('.screen.active');
+  if (!activeScreen) return;
+  const currentId = activeScreen.id;
+
+  // Ekran hiyerarşisi — her ekranın "geri" gideceği yer
+  const backMap = {
+    'screen-home':         null,           // Ana ekran — çıkış yok
+    'screen-city':         'screen-home',
+    'screen-saved':        'screen-home',
+    'screen-notif':        'screen-home',
+    'screen-profile-view': 'screen-home',
+    'screen-add':          'screen-home',
+    'screen-settings':     'screen-profile-view',
+    'screen-detail':       'screen-home',
+    'screen-invite':       'screen-splash',
+    'screen-register':     'screen-invite',
+    'screen-welcome':      'screen-home',
+    'screen-login':        'screen-splash',
+  };
+
+  const backTarget = backMap[currentId];
+
+  if (backTarget) {
+    // History'e tekrar ekle ki bir sonraki geri tuşu çalışsın
+    history.pushState({ screen: backTarget }, '', '');
+    goTo(backTarget);
+  } else if (currentId === 'screen-home') {
+    // Ana ekrandaysa ve modal/detail açıksa kapat
+    const detailActive = document.getElementById('screen-detail')?.classList.contains('active');
+    if (detailActive) {
+      history.pushState({ screen: 'screen-home' }, '', '');
+      goTo('screen-home');
+    } else {
+      // Ana ekranda — geri tuşunu engelle, uygulamadan çıkma
+      history.pushState({ screen: 'screen-home' }, '', '');
+    }
+  } else {
+    // Bilinmeyen ekran — home'a git
+    history.pushState({ screen: 'screen-home' }, '', '');
+    goTo('screen-home');
+  }
+});
+
+// Başlangıçta history'e bir entry ekle
+history.pushState({ screen: 'screen-home' }, '', '');
 
 // Internet gelince sync başlat
 window.addEventListener('online', () => {
