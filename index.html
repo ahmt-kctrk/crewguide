@@ -3767,9 +3767,9 @@ async function processQueue() {
       ? `✅ ${synced} kayıt senkronize edildi!`
       : `✅ ${synced} item synced!`);
     console.log('[Queue] Sync tamamlandı:', synced, 'item');
-    // Yerleri yeniden yükle
+    // places dizisini temizle ve Supabase'den taze yükle
+    places.length = 0;
     await loadPlaces(currentCity);
-    renderCards();
   }
   if (remaining > 0) {
     console.warn('[Queue] Gönderilemedi:', remaining, 'item');
@@ -3793,8 +3793,9 @@ async function processQueueItem(item) {
       headers: { ...headers, 'Prefer': 'resolution=ignore-duplicates,return=minimal' },
       body: JSON.stringify(item.payload)
     });
-    if (res.ok || res.status === 409) {
-      // Push bildirimi gönder
+    const resText = await res.text();
+    console.log('[Queue] place_insert response:', res.status, resText.slice(0, 200));
+    if (res.ok || res.status === 201 || res.status === 409) {
       sendPushForNewPlace({
         city: item.payload.city,
         name: item.payload.name,
@@ -3803,6 +3804,7 @@ async function processQueueItem(item) {
       }).catch(() => {});
       return true;
     }
+    console.error('[Queue] place_insert başarısız:', res.status, resText);
     return false;
   }
 
