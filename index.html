@@ -1230,7 +1230,7 @@
       <div class="bnav-item active"><div class="bnav-icon">🏠</div><div class="bnav-label" id="bnav-home">Keşfet</div></div>
       <div class="bnav-item" onclick="goTo('screen-saved')"><div class="bnav-icon">🔖</div><div class="bnav-label" id="bnav-saved">Kayıtlı</div></div>
       <div class="bnav-item" onclick="goTo('screen-add')"><div class="bnav-add">＋</div></div>
-      <div class="bnav-item" onclick="openNotifScreen()" style="position:relative;"><div class="bnav-icon">🔔</div><div id="notif-badge" style="display:none;position:absolute;top:2px;right:calc(50% - 14px);background:#ef4444;color:#fff;border-radius:50%;width:16px;height:16px;font-size:10px;font-family:'Syne',sans-serif;font-weight:700;display:none;align-items:center;justify-content:center;">0</div><div class="bnav-label" id="bnav-notif">Bildirim</div></div>
+      <div class="bnav-item" onclick="openNotifScreen()" style="position:relative;"><div class="bnav-icon">🔔</div><div id="notif-badge" style="display:none;position:absolute;top:2px;right:calc(50% - 14px);background:#ef4444;color:#fff;border-radius:50%;width:16px;height:16px;font-size:10px;font-family:'Syne',sans-serif;font-weight:700;display:none;align-items:center;justify-content:center;">0</div><div class="bnav-label" id="bnav-notif" data-i18n="bnav-notif">Bildirim</div></div>
       <div class="bnav-item" onclick="goTo('screen-profile-view')"><div class="bnav-icon">👤</div><div class="bnav-label" id="bnav-profile">Profil</div></div>
     </div>
   </div>
@@ -1814,6 +1814,7 @@ const translations = {
     'btn-go-register': 'Hesabın yok mu? Kayıt ol',
     'settings-notif-title': 'Bildirimler',
     'settings-notif-sub': 'Yeni yerler ve yorumlar için',
+    'notif-title': 'Bildirimler', 'notif-sub': 'Son eklenen yerler',
     'btn-notif-text': 'İzin Ver',
     'settings-username-title': 'Kullanıcı Adı',
     'settings-username-sub': 'Diğer kullanıcılara bu ad görünür',
@@ -1890,6 +1891,7 @@ const translations = {
     'btn-sign-in': 'Anmelden →',
     'btn-go-register': 'Kein Konto? Registrieren',
     'settings-notif-title': 'Benachrichtigungen',
+    'notif-title': 'Benachrichtigungen', 'notif-sub': 'Zuletzt hinzugefügte Orte',
     'settings-notif-sub': 'Für neue Orte und Bewertungen',
     'btn-notif-text': 'Erlauben',
     'settings-username-title': 'Benutzername',
@@ -1966,6 +1968,7 @@ const translations = {
     'btn-sign-in': 'Se connecter →',
     'btn-go-register': "Pas de compte ? S'inscrire",
     'settings-notif-title': 'Notifications',
+    'notif-title': 'Notifications', 'notif-sub': 'Lieux récemment ajoutés',
     'settings-notif-sub': 'Pour les nouveaux lieux et avis',
     'btn-notif-text': 'Autoriser',
     'settings-username-title': "Nom d'utilisateur",
@@ -2042,6 +2045,7 @@ const translations = {
     'btn-sign-in': 'Iniciar sesión →',
     'btn-go-register': '¿Sin cuenta? Regístrate',
     'settings-notif-title': 'Notificaciones',
+    'notif-title': 'Notificaciones', 'notif-sub': 'Últimos lugares añadidos',
     'settings-notif-sub': 'Para nuevos lugares y reseñas',
     'btn-notif-text': 'Permitir',
     'settings-username-title': 'Nombre de usuario',
@@ -2118,6 +2122,7 @@ const translations = {
     'btn-sign-in': 'تسجيل الدخول →',
     'btn-go-register': 'ليس لديك حساب؟ سجّل',
     'settings-notif-title': 'الإشعارات',
+    'notif-title': 'الإشعارات', 'notif-sub': 'أحدث الأماكن المضافة',
     'settings-notif-sub': 'للأماكن والمراجعات الجديدة',
     'btn-notif-text': 'السماح',
     'settings-username-title': 'اسم المستخدم',
@@ -2193,6 +2198,7 @@ const translations = {
     'btn-sign-in': '登录 →',
     'btn-go-register': '没有账户？注册',
     'settings-notif-title': '通知',
+    'notif-title': '通知', 'notif-sub': '最近添加的地点',
     'settings-notif-sub': '用于新地点和评论',
     'btn-notif-text': '允许',
     'settings-username-title': '用户名',
@@ -2209,6 +2215,7 @@ const translations = {
     'btn-sign-in': 'ログイン →',
     'btn-go-register': 'アカウントなし？登録する',
     'settings-notif-title': '通知',
+    'notif-title': '通知', 'notif-sub': '最近追加された場所',
     'settings-notif-sub': '新しい場所やレビューのため',
     'btn-notif-text': '許可する',
     'settings-username-title': 'ユーザー名',
@@ -2283,6 +2290,7 @@ const translations = {
     'label-login-email': '이메일', 'label-login-pass': '비밀번호',
     'btn-sign-in': '로그인 →', 'btn-go-register': '계정 없음? 가입하기',
     'settings-notif-title': '알림', 'settings-notif-sub': '새로운 장소 및 리뷰를 위해',
+    'notif-title': '알림', 'notif-sub': '최근 추가된 장소',
     'btn-notif-text': '허용',
     'settings-username-title': '사용자 이름', 'settings-username-sub': '다른 사용자에게 표시됩니다',
     'btn-save-username-text': '저장', 'btn-sign-out': '🚪 로그아웃',
@@ -2413,6 +2421,7 @@ const translations = {
     'btn-sign-in': 'Log In →',
     'btn-go-register': 'No account? Register',
     'settings-notif-title': 'Notifications',
+    'notif-title': 'Notifications', 'notif-sub': 'Recently added places',
     'settings-notif-sub': 'For new places and reviews',
     'btn-notif-text': 'Allow',
     'settings-username-title': 'Username',
@@ -5705,6 +5714,11 @@ function processNotifQueue() {
 let notifReadIds = JSON.parse(localStorage.getItem('notif_read_ids') || '[]');
 
 async function openNotifScreen() {
+  // Dile göre başlık güncelle
+  const titleEl = document.getElementById('notif-title');
+  const subEl = document.getElementById('notif-sub');
+  if (titleEl) titleEl.textContent = translations[lang]?.['notif-title'] || (lang==='tr' ? 'Bildirimler' : 'Notifications');
+  if (subEl) subEl.textContent = translations[lang]?.['notif-sub'] || (lang==='tr' ? 'Son eklenen yerler' : 'Recently added places');
   goTo('screen-notif');
   await loadNotifs();
 }
