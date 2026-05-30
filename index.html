@@ -3767,19 +3767,23 @@ async function processQueue() {
       ? `✅ ${synced} kayıt senkronize edildi!`
       : `✅ ${synced} item synced!`);
     console.log('[Queue] Sync tamamlandı:', synced, 'item');
-    // places dizisini temizle ve Supabase'den taze yükle
-    // Sync edilen item'ların şehirlerini de kontrol et
+    // Sync edilen item'ların şehirlerini bul
     const syncedCities = [...new Set(items.filter(i => i.payload?.city).map(i => i.payload.city))];
-    const cityToLoad = syncedCities.length === 1 && syncedCities[0] !== currentCity
-      ? syncedCities[0]  // sync edilen şehir farklıysa onu yükle
+    const cityToLoad = (syncedCities.length > 0 && syncedCities[0] !== currentCity)
+      ? syncedCities[0]
       : currentCity;
-    places.length = 0;
-    await loadPlaces(cityToLoad);
+
+    // Şehri güncelle ve yerleri yükle
     if (cityToLoad !== currentCity) {
       currentCity = cityToLoad;
       const cityEl = document.getElementById('current-city');
       if (cityEl) cityEl.textContent = cityToLoad;
+      // Currency güncelle
+      currentCurrency = getCurrencyForCity(cityToLoad);
+      updateCurrencyBadge(cityToLoad);
     }
+    places.length = 0;
+    await loadPlaces(cityToLoad);
   }
   if (remaining > 0) {
     console.warn('[Queue] Gönderilemedi:', remaining, 'item');
