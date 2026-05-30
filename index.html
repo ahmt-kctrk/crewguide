@@ -3768,8 +3768,18 @@ async function processQueue() {
       : `✅ ${synced} item synced!`);
     console.log('[Queue] Sync tamamlandı:', synced, 'item');
     // places dizisini temizle ve Supabase'den taze yükle
+    // Sync edilen item'ların şehirlerini de kontrol et
+    const syncedCities = [...new Set(items.filter(i => i.payload?.city).map(i => i.payload.city))];
+    const cityToLoad = syncedCities.length === 1 && syncedCities[0] !== currentCity
+      ? syncedCities[0]  // sync edilen şehir farklıysa onu yükle
+      : currentCity;
     places.length = 0;
-    await loadPlaces(currentCity);
+    await loadPlaces(cityToLoad);
+    if (cityToLoad !== currentCity) {
+      currentCity = cityToLoad;
+      const cityEl = document.getElementById('current-city');
+      if (cityEl) cityEl.textContent = cityToLoad;
+    }
   }
   if (remaining > 0) {
     console.warn('[Queue] Gönderilemedi:', remaining, 'item');
