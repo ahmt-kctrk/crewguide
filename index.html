@@ -4533,23 +4533,18 @@ async function translateComment(commentId, btn) {
   const targetLang = langNames[lang] || 'English';
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const userToken = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token') || SUPABASE_KEY;
+    const response = await fetch('https://nuebqtzeirpyyxtoptlp.supabase.co/functions/v1/translate', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 300,
-        messages: [{
-          role: 'user',
-          content: `Translate this text to ${targetLang}. Return ONLY the translation, nothing else:
-
-${originalText}`
-        }]
-      })
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + userToken
+      },
+      body: JSON.stringify({ text: originalText, targetLang })
     });
 
     const data = await response.json();
-    const translation = data.content?.[0]?.text?.trim();
+    const translation = data.translation?.trim();
 
     if (translation) {
       commentTranslations[commentId] = translation;
