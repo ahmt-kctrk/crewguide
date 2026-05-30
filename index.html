@@ -1469,7 +1469,7 @@
       <div class="bnav-item" onclick="goTo('screen-home')"><div class="bnav-icon">🏠</div><div class="bnav-label">Keşfet</div></div>
       <div class="bnav-item" onclick="goTo('screen-saved')"><div class="bnav-icon">🔖</div><div class="bnav-label">Kayıtlı</div></div>
       <div class="bnav-item" onclick="goTo('screen-add')"><div class="bnav-add">＋</div></div>
-      <div class="bnav-item active"><div class="bnav-icon">🔔</div><div class="bnav-label">Bildirimler</div></div>
+      <div class="bnav-item active"><div class="bnav-icon">🔔</div><div class="bnav-label" id="bnav-notif-active"></div></div>
       <div class="bnav-item" onclick="goTo('screen-profile-view')"><div class="bnav-icon">👤</div><div class="bnav-label">Profil</div></div>
     </div>
   </div>
@@ -5717,8 +5717,11 @@ async function openNotifScreen() {
   // Dile göre başlık güncelle
   const titleEl = document.getElementById('notif-title');
   const subEl = document.getElementById('notif-sub');
-  if (titleEl) titleEl.textContent = translations[lang]?.['notif-title'] || (lang==='tr' ? 'Bildirimler' : 'Notifications');
-  if (subEl) subEl.textContent = translations[lang]?.['notif-sub'] || (lang==='tr' ? 'Son eklenen yerler' : 'Recently added places');
+  const t = translations[lang] || translations['en'];
+  if (titleEl) titleEl.textContent = t?.['notif-title'] || (lang==='tr' ? 'Bildirimler' : 'Notifications');
+  if (subEl) subEl.textContent = t?.['notif-sub'] || (lang==='tr' ? 'Son eklenen yerler' : 'Recently added places');
+  const activeNavEl = document.getElementById('bnav-notif-active');
+  if (activeNavEl) activeNavEl.textContent = t?.['bnav-notif'] || (lang==='tr' ? 'Bildirim' : 'Notifs');
   goTo('screen-notif');
   await loadNotifs();
 }
@@ -5878,19 +5881,52 @@ function getTimeAgo(isoDate) {
   const mins = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
+
+  const timeFormats = {
+    tr: { now:'Az önce', min:'dk önce', hour:'sa önce', day:'g önce', locale:'tr-TR' },
+    de: { now:'Gerade eben', min:'Min. vor', hour:'Std. vor', day:'T. vor', locale:'de-DE' },
+    fr: { now:'À l'instant', min:'min', hour:'h', day:'j', locale:'fr-FR' },
+    es: { now:'Ahora mismo', min:'min', hour:'h', day:'d', locale:'es-ES' },
+    ar: { now:'الآن', min:'د', hour:'س', day:'ي', locale:'ar-SA' },
+    zh: { now:'刚刚', min:'分钟前', hour:'小时前', day:'天前', locale:'zh-CN' },
+    'zh-tw': { now:'剛剛', min:'分鐘前', hour:'小時前', day:'天前', locale:'zh-TW' },
+    ja: { now:'たった今', min:'分前', hour:'時間前', day:'日前', locale:'ja-JP' },
+    ko: { now:'방금', min:'분 전', hour:'시간 전', day:'일 전', locale:'ko-KR' },
+    pt: { now:'Agora mesmo', min:'min', hour:'h', day:'d', locale:'pt-PT' },
+    en: { now:'Just now', min:'m ago', hour:'h ago', day:'d ago', locale:'en-US' },
+  };
+
+  const f = timeFormats[lang] || timeFormats.en;
+
+  if (mins < 1) return f.now;
+
   if (lang === 'tr') {
-    if (mins < 1) return 'Az önce';
-    if (mins < 60) return `${mins} dakika önce`;
-    if (hours < 24) return `${hours} saat önce`;
-    if (days < 7) return `${days} gün önce`;
-    return new Date(isoDate).toLocaleDateString('tr-TR');
+    if (mins < 60) return `${mins} ${f.min}`;
+    if (hours < 24) return `${hours} ${f.hour}`;
+    if (days < 7) return `${days} ${f.day}`;
+  } else if (lang === 'de') {
+    if (mins < 60) return `vor ${mins} ${f.min}`;
+    if (hours < 24) return `vor ${hours} ${f.hour}`;
+    if (days < 7) return `vor ${days} ${f.day}`;
+  } else if (lang === 'fr') {
+    if (mins < 60) return `il y a ${mins} ${f.min}`;
+    if (hours < 24) return `il y a ${hours} ${f.hour}`;
+    if (days < 7) return `il y a ${days} ${f.day}`;
+  } else if (lang === 'es') {
+    if (mins < 60) return `hace ${mins} ${f.min}`;
+    if (hours < 24) return `hace ${hours} ${f.hour}`;
+    if (days < 7) return `hace ${days} ${f.day}`;
+  } else if (['zh', 'zh-tw', 'ja', 'ko'].includes(lang)) {
+    if (mins < 60) return `${mins}${f.min}`;
+    if (hours < 24) return `${hours}${f.hour}`;
+    if (days < 7) return `${days}${f.day}`;
   } else {
-    if (mins < 1) return 'Just now';
-    if (mins < 60) return `${mins}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days < 7) return `${days}d ago`;
-    return new Date(isoDate).toLocaleDateString('en-US');
+    if (mins < 60) return `${mins}${f.min}`;
+    if (hours < 24) return `${hours}${f.hour}`;
+    if (days < 7) return `${days}${f.day}`;
   }
+
+  return new Date(isoDate).toLocaleDateString(f.locale);
 }
 
 // ── ÜLKE/ŞEHİR DROPDOWN (Yer Ekleme) ─────────────────────────────────────────
