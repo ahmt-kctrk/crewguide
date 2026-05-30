@@ -3181,7 +3181,16 @@ function getCurrencyForCity(cityName) {
   // Önce şehir bazlı bak
   if (currencyDB[cityName]) return currencyDB[cityName];
 
-  // Şehir bulunamazsa currentCountry'den ülke bazlı bak
+  // popularCities'den şehrin ülkesini bul (en güvenilir yol)
+  const popCity = popularCities.find(p => p.name.toLowerCase() === (cityName||'').toLowerCase());
+  if (popCity) {
+    const byEn = countryCurrencyDB[popCity.country.en];
+    if (byEn) return byEn;
+    const byTr = countryCurrencyDB[popCity.country.tr];
+    if (byTr) return byTr;
+  }
+
+  // currentCountry'den ülke bazlı bak
   if (currentCountry) {
     const byEn = countryCurrencyDB[currentCountry.en];
     if (byEn) return byEn;
@@ -3189,10 +3198,10 @@ function getCurrencyForCity(cityName) {
     if (byTr) return byTr;
   }
 
-  // popularCities'den şehrin ülkesini bul
-  const popCity = popularCities.find(p => p.name.toLowerCase() === (cityName||'').toLowerCase());
-  if (popCity) {
-    const byEn = countryCurrencyDB[popCity.country.en];
+  // dynamicCities'den bak
+  const dynCity = dynamicCities.find(p => p.name.toLowerCase() === (cityName||'').toLowerCase());
+  if (dynCity) {
+    const byEn = countryCurrencyDB[dynCity.country.en];
     if (byEn) return byEn;
   }
 
@@ -5747,17 +5756,37 @@ async function openNotifPlace(placeId, city) {
     return;
   }
 
-  // Bulamazsak şehri değiştirip yükle
+  // Supabase'den bu yerin tam bilgisini çek (country, flag dahil)
+  try {
+    const userToken = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token') || SUPABASE_KEY;
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/places?id=eq.${placeId}&select=city,country_tr,country_en,flag`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + userToken } }
+    );
+    const data = await res.json();
+    if (data && data[0]) {
+      const placeInfo = data[0];
+      city = placeInfo.city || city;
+
+      // Ülke ve para birimini güncelle
+      if (placeInfo.country_en || placeInfo.country_tr) {
+        currentCountry = { en: placeInfo.country_en || '', tr: placeInfo.country_tr || '' };
+        currentFlag = placeInfo.flag || '';
+      } else {
+        // popularCities'den bul
+        const popCity = popularCities.find(c => c.name.toLowerCase() === (city||'').toLowerCase());
+        if (popCity) { currentCountry = popCity.country; currentFlag = popCity.flag; }
+      }
+    }
+  } catch(e) {
+    console.warn('[openNotifPlace] Bilgi çekme hatası:', e);
+  }
+
+  // Şehri değiştir ve yerleri yükle
   if (city && city !== currentCity) {
     currentCity = city;
     const cityEl = document.getElementById('current-city');
     if (cityEl) cityEl.textContent = city;
-    // popularCities'den ülke bilgisini bul
-    const popCity = popularCities.find(c => c.name.toLowerCase() === city.toLowerCase());
-    if (popCity) {
-      currentCountry = popCity.country;
-      currentFlag = popCity.flag;
-    }
     currentCurrency = getCurrencyForCity(city);
     updateCurrencyBadge(city);
     places.length = 0;
