@@ -2528,9 +2528,10 @@ function goTo(id) {
     // Okunmamış bildirim sayısını güncelle
     setTimeout(async () => {
       try {
+        const userToken2 = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token') || SUPABASE_KEY;
         const res = await fetch(
           SUPABASE_URL + '/rest/v1/places?is_hidden=eq.false&select=id&order=created_at.desc&limit=20',
-          { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } }
+          { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + userToken2 } }
         );
         const items = await res.json();
         if (Array.isArray(items)) updateNotifBadge(items);
@@ -5620,9 +5621,10 @@ async function loadNotifs() {
   list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:13px;">Yükleniyor...</div>`;
 
   try {
+    const userToken = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token') || SUPABASE_KEY;
     const res = await fetch(
       SUPABASE_URL + '/rest/v1/places?is_hidden=eq.false&select=id,name,emoji,city,country_tr,country_en,flag,cat,created_at&order=created_at.desc&limit=20',
-      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } }
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + userToken } }
     );
     const places = await res.json();
     if (!Array.isArray(places) || places.length === 0) {
