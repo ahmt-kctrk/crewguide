@@ -1,4 +1,5 @@
 // CrewGuide Service Worker v3.0 — Offline-first
+// BUILD: 202605301421
 const STATIC_CACHE = 'crewguide-static-v3';
 const DYNAMIC_CACHE = 'crewguide-dynamic-v3';
 
