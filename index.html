@@ -2547,6 +2547,30 @@ function goTo(id) {
   // Ayarlar ekranı açılınca mevcut durumu göster
   if (id === 'screen-settings') {
     checkNotifStatus();
+    // Mevcut tema ayarlarını göster
+    const savedAccent = localStorage.getItem('theme_accent') || '#c9a84c';
+    const savedBg = localStorage.getItem('theme_bg') || '#f5f0e8';
+    const savedMode = localStorage.getItem('theme_mode') || 'light';
+    const accentPicker = document.getElementById('accent-picker');
+    const bgPicker = document.getElementById('bg-picker');
+    const accentPreview = document.getElementById('accent-preview');
+    const bgPreview = document.getElementById('bg-preview');
+    if (accentPicker) accentPicker.value = savedAccent;
+    if (bgPicker) bgPicker.value = savedBg;
+    if (accentPreview) accentPreview.style.background = savedAccent;
+    if (bgPreview) bgPreview.style.background = savedBg;
+    // Mod butonlarını güncelle
+    const btnLight = document.getElementById('btn-light');
+    const btnDark = document.getElementById('btn-dark');
+    if (btnLight && btnDark) {
+      if (savedMode === 'dark') {
+        btnDark.style.border = '2px solid var(--gold)';
+        btnLight.style.border = '1.5px solid var(--border)';
+      } else {
+        btnLight.style.border = '2px solid var(--gold)';
+        btnDark.style.border = '1.5px solid var(--border)';
+      }
+    }
   }
   // Her ekran değişiminde çevirileri uygula
   applyTranslations();
@@ -3437,19 +3461,24 @@ function useCurrentLocation() {
 function applyAccent(color) {
   document.documentElement.style.setProperty('--gold', color);
   document.documentElement.style.setProperty('--gold-light', color);
-  document.getElementById('accent-preview').style.background = color;
-  // Update all primary buttons
+  const preview = document.getElementById('accent-preview');
+  if (preview) preview.style.background = color;
   document.querySelectorAll('.btn-primary').forEach(b => { b.style.background = color; });
   document.querySelectorAll('.copy-btn-small[style*="gold"]').forEach(b => { b.style.background = color; });
+  localStorage.setItem('theme_accent', color);
 }
 
 function applyBg(color) {
   document.documentElement.style.setProperty('--cream', color);
-  document.getElementById('bg-preview').style.background = color;
-  document.getElementById('app').style.background = color;
+  const preview = document.getElementById('bg-preview');
+  if (preview) preview.style.background = color;
+  const app = document.getElementById('app');
+  if (app) app.style.background = color;
+  localStorage.setItem('theme_bg', color);
 }
 
 function setMode(mode) {
+  localStorage.setItem('theme_mode', mode);
   const app = document.getElementById('app');
   const btnLight = document.getElementById('btn-light');
   const btnDark = document.getElementById('btn-dark');
@@ -3652,8 +3681,13 @@ function resetTheme() {
   applyAccent('#c9a84c');
   applyBg('#f5f0e8');
   setMode('light');
-  document.getElementById('accent-picker').value = '#c9a84c';
-  document.getElementById('bg-picker').value = '#f5f0e8';
+  const accentPicker = document.getElementById('accent-picker');
+  const bgPicker = document.getElementById('bg-picker');
+  if (accentPicker) accentPicker.value = '#c9a84c';
+  if (bgPicker) bgPicker.value = '#f5f0e8';
+  localStorage.removeItem('theme_accent');
+  localStorage.removeItem('theme_bg');
+  localStorage.removeItem('theme_mode');
   showToast(lang==='tr' ? 'Tema sıfırlandı.' : 'Theme reset.');
 }
 
@@ -3871,6 +3905,24 @@ window.addEventListener('offline', () => {
 });
 
 // ── SUPABASE ─────────────────────────────────────────────────────────────────
+// ── TEMA YÜKLEME (sayfa açılınca) ────────────────────────────────────────────
+(function loadSavedTheme() {
+  const accent = localStorage.getItem('theme_accent');
+  const bg = localStorage.getItem('theme_bg');
+  const mode = localStorage.getItem('theme_mode');
+  if (accent) document.documentElement.style.setProperty('--gold', accent);
+  if (bg) document.documentElement.style.setProperty('--cream', bg);
+  if (mode === 'dark') {
+    document.documentElement.style.setProperty('--cream', bg || '#1a1a2e');
+    document.documentElement.style.setProperty('--cream-dark', '#16213e');
+    document.documentElement.style.setProperty('--white', '#0f3460');
+    document.documentElement.style.setProperty('--text-primary', '#e2e8f0');
+    document.documentElement.style.setProperty('--text-secondary', '#94a3b8');
+    document.documentElement.style.setProperty('--text-muted', '#64748b');
+    document.documentElement.style.setProperty('--border', 'rgba(255,255,255,0.1)');
+  }
+})();
+
 const SUPABASE_URL = 'https://nuebqtzeirpyyxtoptlp.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51ZWJxdHplaXJweXl4dG9wdGxwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NDI0NzgsImV4cCI6MjA5NTExODQ3OH0.Yw_8t-PVCDfFZPzV4F5jZjratLkAIE9X9sRdq2qme9Y';
 
@@ -6171,6 +6223,16 @@ if ('serviceWorker' in navigator) {
         });
       })
       .catch(err => console.warn('[PWA] SW kaydı başarısız:', err));
+
+    // Yeni SW aktif olunca otomatik yenile
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        refreshing = true;
+        console.log('[PWA] Yeni SW aktif, sayfa yenileniyor...');
+        window.location.reload();
+      }
+    });
 
     navigator.serviceWorker.addEventListener('message', event => {
       if (event.data && event.data.type === 'CITY_CACHED') {
