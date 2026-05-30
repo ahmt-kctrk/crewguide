@@ -2518,6 +2518,13 @@ function goTo(id) {
       await updateQueueBadge();
       if (navigator.onLine) await processQueue();
     }, 2000);
+
+    // Pending şehir geçişi var mı?
+    const pendingCity = localStorage.getItem('pending_city_switch');
+    if (pendingCity) {
+      localStorage.removeItem('pending_city_switch');
+      setTimeout(() => selectCity(pendingCity, '', ''), 1500);
+    }
     // Okunmamış bildirim sayısını güncelle
     setTimeout(async () => {
       try {
@@ -3773,17 +3780,12 @@ async function processQueue() {
       ? syncedCities[0]
       : currentCity;
 
-    // Şehri güncelle ve yerleri yükle
+    // Şehri localStorage'a kaydet, sonra yenile
     if (cityToLoad !== currentCity) {
-      currentCity = cityToLoad;
-      const cityEl = document.getElementById('current-city');
-      if (cityEl) cityEl.textContent = cityToLoad;
-      // Currency güncelle
-      currentCurrency = getCurrencyForCity(cityToLoad);
-      updateCurrencyBadge(cityToLoad);
+      localStorage.setItem('pending_city_switch', cityToLoad);
     }
-    places.length = 0;
-    await loadPlaces(cityToLoad);
+    // Sayfayı yenile — en garantili yol
+    setTimeout(() => window.location.reload(), 800);
   }
   if (remaining > 0) {
     console.warn('[Queue] Gönderilemedi:', remaining, 'item');
