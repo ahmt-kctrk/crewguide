@@ -5767,8 +5767,17 @@ function renderNotifs(items) {
   list.innerHTML = items.map(p => {
     const isRead = notifReadIds.includes(p.id);
     const timeAgo = getTimeAgo(p.created_at);
-    const country = lang==='tr' ? (p.country_tr||p.city||'') : (p.country_en||p.city||'');
-    const flag = p.flag || '🌍';
+    // country boşsa popularCities'den bul
+    let country = lang==='tr' ? (p.country_tr||'') : (p.country_en||'');
+    let flag = p.flag || '';
+    if (!country || !flag) {
+      const pop = popularCities.find(c => c.name.toLowerCase() === (p.city||'').toLowerCase());
+      if (pop) {
+        if (!country) country = pop.country[lang] || pop.country.en || '';
+        if (!flag) flag = pop.flag;
+      }
+    }
+    if (!flag) flag = '🌍';
 
     return `<div onclick="markNotifRead('${p.id}'); openNotifPlace('${p.id}', '${(p.city||'').replace(/'/g, "\\'")}')" style="
       display:flex;align-items:center;gap:12px;
