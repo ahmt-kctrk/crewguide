@@ -5752,6 +5752,12 @@ async function openNotifPlace(placeId, city) {
     currentCity = city;
     const cityEl = document.getElementById('current-city');
     if (cityEl) cityEl.textContent = city;
+    // popularCities'den ülke bilgisini bul
+    const popCity = popularCities.find(c => c.name.toLowerCase() === city.toLowerCase());
+    if (popCity) {
+      currentCountry = popCity.country;
+      currentFlag = popCity.flag;
+    }
     currentCurrency = getCurrencyForCity(city);
     updateCurrencyBadge(city);
     places.length = 0;
