@@ -2498,10 +2498,16 @@ function setLangFromSettings(l) {
 
 function applyTranslations() {
   const t = translations[lang];
+  // ID bazlı güncelleme
   for (const [id, val] of Object.entries(t)) {
     const el = document.getElementById(id);
     if (el) el.innerHTML = val;
   }
+  // data-i18n attribute bazlı güncelleme (bildirimler nav gibi ekranlar için)
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (t[key]) el.textContent = t[key];
+  });
   renderCards();
   renderSubCats();
   updateFilterChips();
