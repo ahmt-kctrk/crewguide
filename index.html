@@ -5653,7 +5653,7 @@ function renderNotifs(items) {
     const country = lang==='tr' ? (p.country_tr||p.city||'') : (p.country_en||p.city||'');
     const flag = p.flag || '🌍';
 
-    return `<div onclick="markNotifRead('${p.id}'); openNotifPlace('${p.id}')" style="
+    return `<div onclick="markNotifRead('${p.id}'); openNotifPlace('${p.id}', '${(p.city||'').replace(/'/g, "\\'")}')" style="
       display:flex;align-items:center;gap:12px;
       padding:12px 14px;border-radius:12px;
       background:${isRead ? 'var(--white)' : 'rgba(201,168,76,0.08)'};
@@ -5705,12 +5705,35 @@ function updateNotifBadge(items) {
   }
 }
 
-function openNotifPlace(placeId) {
-  const p = places.find(x => x.id === placeId);
+async function openNotifPlace(placeId, city) {
+  // Önce mevcut places listesinde ara
+  let p = places.find(x => x.id === placeId);
   if (p) {
+    goTo('screen-home');
     openDetail(p);
+    return;
+  }
+
+  // Bulamazsak şehri değiştirip yükle
+  if (city && city !== currentCity) {
+    currentCity = city;
+    const cityEl = document.getElementById('current-city');
+    if (cityEl) cityEl.textContent = city;
+    currentCurrency = getCurrencyForCity(city);
+    updateCurrencyBadge(city);
+    places.length = 0;
+    await loadPlaces(city);
   } else {
-    // places listesinde yoksa home'a dön
+    places.length = 0;
+    await loadPlaces(currentCity);
+  }
+
+  // Tekrar ara
+  p = places.find(x => x.id === placeId);
+  if (p) {
+    goTo('screen-home');
+    setTimeout(() => openDetail(p), 300);
+  } else {
     goTo('screen-home');
   }
 }
