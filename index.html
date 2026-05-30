@@ -4468,6 +4468,12 @@ function renderComments(comments) {
           </div>
         </div>
         <div class="comment-text" id="comment-text-${c.id}">${c.text}</div>
+        <div id="comment-translation-${c.id}" style="display:none;margin-top:6px;padding:6px 8px;background:rgba(201,168,76,0.08);border-radius:8px;border-left:2px solid var(--gold);font-size:11px;color:var(--text-secondary);line-height:1.5;"></div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+          <button onclick="translateComment('${c.id}', this)" style="background:none;border:none;padding:2px 6px;cursor:pointer;font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:3px;border-radius:4px;transition:background 0.15s;" onmouseover="this.style.background='var(--cream-dark)'" onmouseout="this.style.background='none'">
+            🌐 <span>${lang==='tr'?'Çevir':'Translate'}</span>
+          </button>
+        </div>
         ${isOwn ? `
           <div class="comment-actions">
             <button class="comment-action-btn edit" onclick="startEditComment('${c.id}', '${c.text.replace(/'/g, "\'")}')">
@@ -4484,6 +4490,83 @@ function renderComments(comments) {
   const box = document.getElementById('comment-input-box');
   const section = listEl.parentNode;
   if (box && section) section.appendChild(box);
+}
+
+// ── YORUM ÇEVİRİ (Claude API) ───────────────────────────────────────────────
+const commentTranslations = {}; // cache
+
+async function translateComment(commentId, btn) {
+  const textEl = document.getElementById('comment-text-' + commentId);
+  const translEl = document.getElementById('comment-translation-' + commentId);
+  if (!textEl || !translEl) return;
+
+  const originalText = textEl.dataset.original || textEl.textContent;
+  textEl.dataset.original = originalText;
+
+  // Çeviri görünüyorsa gizle (toggle)
+  if (translEl.style.display !== 'none') {
+    translEl.style.display = 'none';
+    const spanEl = btn.querySelector('span');
+    if (spanEl) spanEl.textContent = lang==='tr' ? 'Çevir' : 'Translate';
+    return;
+  }
+
+  // Cache'de varsa direkt göster
+  if (commentTranslations[commentId]) {
+    translEl.textContent = commentTranslations[commentId];
+    translEl.style.display = 'block';
+    const spanEl = btn.querySelector('span');
+    if (spanEl) spanEl.textContent = lang==='tr' ? 'Gizle' : 'Hide';
+    return;
+  }
+
+  // Yükleniyor
+  const spanEl = btn.querySelector('span');
+  if (spanEl) spanEl.textContent = '...';
+  btn.disabled = true;
+
+  // Hedef dil
+  const langNames = {
+    tr: 'Türkçe', en: 'English', de: 'Deutsch', fr: 'Français',
+    es: 'Español', ar: 'العربية', ja: '日本語', ko: '한국어', zh: '中文'
+  };
+  const targetLang = langNames[lang] || 'English';
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        messages: [{
+          role: 'user',
+          content: `Translate this text to ${targetLang}. Return ONLY the translation, nothing else:
+
+${originalText}`
+        }]
+      })
+    });
+
+    const data = await response.json();
+    const translation = data.content?.[0]?.text?.trim();
+
+    if (translation) {
+      commentTranslations[commentId] = translation;
+      translEl.textContent = translation;
+      translEl.style.display = 'block';
+      if (spanEl) spanEl.textContent = lang==='tr' ? 'Gizle' : 'Hide';
+    } else {
+      if (spanEl) spanEl.textContent = lang==='tr' ? 'Çevir' : 'Translate';
+      showToast(lang==='tr' ? 'Çeviri başarısız' : 'Translation failed');
+    }
+  } catch(e) {
+    console.warn('[Translate]', e);
+    if (spanEl) spanEl.textContent = lang==='tr' ? 'Çevir' : 'Translate';
+    showToast(lang==='tr' ? 'Çeviri başarısız' : 'Translation failed');
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 function prefillCommentUsername() {
