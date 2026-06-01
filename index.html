@@ -364,8 +364,9 @@
   .star-bar-track { flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
   .star-bar-fill { height: 100%; background: #f59e0b; border-radius: 3px; transition: width 0.4s ease; }
   .star-bar-num { font-size: 10px; color: var(--text-muted); width: 16px; flex-shrink: 0; }
-  .star-input-row { display: flex; align-items: center; gap: 8px; padding-top: 10px; border-top: 1px solid var(--border); }
-  .star-input-label { font-size: 12px; color: var(--text-secondary); flex-shrink: 0; }
+  .star-input-row { display: flex; align-items: center; gap: 8px; padding-top: 12px; border-top: 1.5px solid var(--border); margin-top: 4px; }
+  .star-input-label { font-size: 12px; font-weight: 600; color: var(--text-primary); flex-shrink: 0; }
+  .star-input-cta { font-size: 11px; color: var(--text-muted); padding: 4px 8px; background: var(--cream-dark); border-radius: 6px; }
   .star-input { display: flex; gap: 4px; }
   .star-input span { font-size: 24px; cursor: pointer; transition: transform 0.15s; filter: grayscale(1) opacity(0.4); }
   .star-input span:hover, .star-input span.active { filter: none; transform: scale(1.2); }
@@ -1459,6 +1460,12 @@
       <div class="nav-back" onclick="goTo('screen-home')">← </div>
       <div class="header-title font-display" id="notif-title">Bildirimler</div>
       <div class="header-sub" id="notif-sub">Son eklenen yerler</div>
+    </div>
+    <!-- Ziyaret edilen şehirler özeti -->
+    <div id="visited-cities-bar" style="margin:0 16px;margin-top:12px;padding:10px 12px;background:var(--navy);border-radius:var(--radius-sm);display:none;">
+      <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:600;color:rgba(255,255,255,0.5);margin-bottom:6px;" id="visited-bar-label">✈️ GİTTİĞİN ŞEHİRLER</div>
+      <div id="visited-cities-list" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:6px;" id="visited-bar-hint">Bu şehirlere yeni yer eklenince bildirim alırsın</div>
     </div>
     <div style="flex:1;overflow-y:auto;padding:12px 16px 80px;">
       <div id="notif-list" style="display:flex;flex-direction:column;gap:8px;">
@@ -2981,6 +2988,11 @@ function goTo(id) {
   document.getElementById(id).classList.add('active');
   document.getElementById(id).scrollTop = 0;
 
+  // Bildirim ekranı açılınca ziyaret edilen şehirleri render et
+  if (id === 'screen-notif') {
+    renderVisitedCitiesBar();
+  }
+
   if (id === 'screen-home' && !locationDetected) {
     locationDetected = true;
     useCurrentLocation();
@@ -3195,12 +3207,23 @@ function renderRatingBar(p) {
   const avg = p.rating || 0;
   const count = p.ratingCount || 0;
   document.getElementById('rating-avg').textContent = avg > 0 ? avg.toFixed(1) : '—';
+  // Kullanıcı zaten oy verdiyse label değiştir
+  const userRatedAlready = p.userRating && p.userRating > 0;
   const ratingTitles = {tr:'Puan',en:'Rating',de:'Bewertung',fr:'Note',es:'Calificación',ar:'التقييم',ja:'評価',ko:'평점',zh:'评分'};
   const ratePrompts = {tr:'Puanla:',en:'Rate:',de:'Bewerten:',fr:'Noter:',es:'Calificar:',ar:'قيّم:',ja:'評価する:',ko:'평가:',zh:'评分:'};
   const _l = lang || 'tr';
   document.getElementById('rating-title').textContent = ratingTitles[_l] || ratingTitles.en;
-  document.getElementById('rate-prompt').textContent = ratePrompts[_l] || ratePrompts.en;
-  document.getElementById('btn-rate').textContent = lang === 'tr' ? 'Oyla' : 'Rate';
+  const ratePromptEl = document.getElementById('rate-prompt');
+  if (ratePromptEl) {
+    if (userRatedAlready) {
+      ratePromptEl.textContent = lang==='tr' ? `✓ ${p.userRating} yıldız verdin` : `✓ You rated ${p.userRating} ★`;
+      ratePromptEl.style.color = 'var(--gold)';
+    } else {
+      ratePromptEl.textContent = ratePrompts[_l] || ratePrompts.en;
+      ratePromptEl.style.color = '';
+    }
+  }
+  document.getElementById('btn-rate').textContent = lang === 'tr' ? (userRatedAlready ? 'Güncelle' : 'Oyla') : (userRatedAlready ? 'Update' : 'Rate');
   document.getElementById('rating-count').textContent = count > 0
     ? `${count} ${lang === 'tr' ? 'değerlendirme' : 'ratings'}`
     : (lang === 'tr' ? 'Henüz puan yok' : 'No ratings yet');
@@ -3910,8 +3933,33 @@ function filterCities(q) {
 }
 
 let currentCity = 'Seoul';
+
+// ── ZIYARET EDİLEN ŞEHİRLER (Bildirim için) ──────────────────────────────────
+function getVisitedCities() {
+  try {
+    return JSON.parse(localStorage.getItem('cg_visited_cities') || '[]');
+  } catch { return []; }
+}
+
+function addVisitedCity(cityName) {
+  if (!cityName) return;
+  const cities = getVisitedCities();
+  if (!cities.includes(cityName)) {
+    cities.push(cityName);
+    // En fazla 30 şehir tut
+    if (cities.length > 30) cities.shift();
+    localStorage.setItem('cg_visited_cities', JSON.stringify(cities));
+  }
+}
+
+function hasVisitedCity(cityName) {
+  return getVisitedCities().some(c => c.toLowerCase() === (cityName||'').toLowerCase());
+}
+
 function selectCity(name, country, flag) {
   currentCity = name;
+  // Ziyaret edilen şehre ekle
+  addVisitedCity(name);
   const dot = document.getElementById('location-dot');
   const text = document.getElementById('location-text');
   dot.style.background = '#10b981';
@@ -4604,9 +4652,34 @@ async function translateComment(commentId, btn) {
 
 function prefillCommentUsername() {
   const input = document.getElementById('comment-username');
-  if (input && !input.value && currentProfile && currentProfile.username) {
+  if (!input) return;
+
+  if (currentProfile && currentProfile.username) {
+    // Giriş yapılmış → otomatik doldur, readonly yap, görsel ipucu
     input.value = currentProfile.username;
-    input.style.color = 'var(--text-muted)'; // görsel ipucu
+    input.readOnly = true;
+    input.style.background = 'var(--cream-dark)';
+    input.style.color = 'var(--text-secondary)';
+    input.style.cursor = 'default';
+    input.title = lang==='tr' ? 'Profil adın kullanılıyor' : 'Using your profile name';
+
+    // Küçük "profil" etiketi
+    const row = input.parentNode;
+    if (row && !row.querySelector('.comment-profile-badge')) {
+      const badge = document.createElement('span');
+      badge.className = 'comment-profile-badge';
+      badge.style.cssText = 'font-size:10px;color:var(--gold);font-weight:600;white-space:nowrap;flex-shrink:0;';
+      badge.textContent = '✓ ' + (lang==='tr' ? 'Profil' : 'Profile');
+      row.insertBefore(badge, input.nextSibling);
+    }
+  } else {
+    // Giriş yapılmamış → düzenlenebilir
+    input.readOnly = false;
+    input.style.background = '';
+    input.style.color = '';
+    input.style.cursor = '';
+    const badge = input.parentNode && input.parentNode.querySelector('.comment-profile-badge');
+    if (badge) badge.remove();
   }
 }
 
@@ -6191,12 +6264,18 @@ function startRealtimeNotifications() {
               }
             });
           } else if (name && placeCity) {
-            // Farklı şehirse daha sessiz bildirim
-            showInAppNotification({
-              title: lang==='tr' ? `✈️ ${placeCity} için yeni yer!` : `✈️ New place in ${placeCity}!`,
-              body: `${emoji} ${name}`,
-              quiet: true
-            });
+            // Farklı şehir — daha önce gittiyse bildirim ver, gitmediyse sessiz geç
+            const wasVisited = hasVisitedCity(placeCity);
+            if (wasVisited) {
+              showInAppNotification({
+                title: lang==='tr'
+                  ? `✈️ Gittiğin ${placeCity}'a yeni yer eklendi!`
+                  : `✈️ New place in ${placeCity} — you've been there!`,
+                body: `${emoji} ${name}`,
+                quiet: true
+              });
+            }
+            // Hiç gitmemişse bildirim gösterme
           }
         }
       } catch(e) {
@@ -6775,6 +6854,8 @@ if (savedLang && translations[savedLang]) {
 renderCards();
 renderSubCats();
 updateCurrencyBadge('Seoul');
+// Default şehri ziyaret edilenler listesine ekle
+addVisitedCity('Seoul');
 // Supabase'den Seoul yerlerini yükle
 loadPlaces('Seoul');
 // Sayfa yüklenince session kontrol et
@@ -6782,8 +6863,45 @@ window.addEventListener('load', () => {
   checkSession();
 });
 
+// ── CANLI KUR SİSTEMİ ────────────────────────────────────────────────────────
+// open.er-api.com — ücretsiz, kayıt gerektirmez, 1500 istek/ay
+let liveRatesCache = null;      // { USD: 1, EUR: 0.92, ... }
+let liveRatesFetchedAt = 0;     // timestamp (ms)
+const LIVE_RATES_TTL = 3600000; // 1 saat cache
+
+async function fetchLiveRates() {
+  // Cache geçerliyse tekrar çekme
+  if (liveRatesCache && Date.now() - liveRatesFetchedAt < LIVE_RATES_TTL) {
+    return liveRatesCache;
+  }
+  try {
+    const res = await fetch('https://open.er-api.com/v6/latest/USD', { cache: 'force-cache' });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data && data.rates) {
+      liveRatesCache = data.rates;
+      liveRatesFetchedAt = Date.now();
+      console.log('[Currency] Canlı kurlar alındı:', Object.keys(data.rates).length, 'para birimi');
+      return liveRatesCache;
+    }
+  } catch(e) {
+    console.warn('[Currency] Canlı kur alınamadı, yerel kurlar kullanılıyor:', e.message);
+  }
+  return null;
+}
+
+function applyLiveRate(cur, rates) {
+  if (!rates || !cur.code) return cur;
+  const liveRate = rates[cur.code];
+  if (liveRate && liveRate > 0) {
+    // 1 USD = liveRate birim yerel para → 1 yerel = 1/liveRate USD
+    return { ...cur, rate: 1 / liveRate, _live: true };
+  }
+  return cur;
+}
+
 function updateCurrencyBadge(cityName) {
-  const cur = getCurrencyForCity(cityName);
+  let cur = getCurrencyForCity(cityName);
   currentCurrency = cur;
   const symEl = document.getElementById('currency-symbol');
   const codeEl = document.getElementById('currency-code');
@@ -6792,17 +6910,80 @@ function updateCurrencyBadge(cityName) {
 
   // Badge'e kur bilgisi tooltip ekle
   const badge = document.getElementById('currency-badge');
-  if (badge) {
-    const rate = (1 / cur.rate).toFixed(cur.rate < 0.01 ? 0 : cur.rate < 0.1 ? 1 : 2);
-    badge.title = `1 USD ≈ ${rate} ${cur.symbol}`;
+  const rateEl = document.getElementById('currency-rate-hint');
+  function displayRate(c) {
+    const rate = (1 / c.rate).toFixed(c.rate < 0.01 ? 0 : c.rate < 0.1 ? 1 : 2);
+    const liveTag = c._live ? ' ●' : '';
+    if (badge) badge.title = `1 USD ≈ ${rate} ${c.symbol}${liveTag}`;
+    if (rateEl) rateEl.textContent = `1 USD ≈ ${rate} ${c.symbol}${liveTag}`;
   }
 
-  // Kur bilgi satırı varsa güncelle
-  const rateEl = document.getElementById('currency-rate-hint');
-  if (rateEl) {
-    const rate = (1 / cur.rate).toFixed(cur.rate < 0.01 ? 0 : cur.rate < 0.1 ? 1 : 2);
-    rateEl.textContent = `1 USD ≈ ${rate} ${cur.symbol}`;
+  // Önce yerel kurla göster (anında)
+  displayRate(cur);
+
+  // Arka planda canlı kur çek ve güncelle
+  fetchLiveRates().then(rates => {
+    if (!rates) return;
+    const liveCur = applyLiveRate(cur, rates);
+    currentCurrency = liveCur;
+    displayRate(liveCur);
+    if (symEl) symEl.textContent = liveCur.symbol;
+    if (codeEl) codeEl.textContent = liveCur.code;
+  }).catch(() => {});
+}
+
+// ── ZİYARET EDİLEN ŞEHİRLER RENDER ──────────────────────────────────────────
+function renderVisitedCitiesBar() {
+  const cities = getVisitedCities();
+  const bar = document.getElementById('visited-cities-bar');
+  const list = document.getElementById('visited-cities-list');
+  const label = document.getElementById('visited-bar-label');
+  const hint = document.getElementById('visited-bar-hint');
+  if (!bar || !list) return;
+
+  // Çeviri
+  if (label) label.textContent = lang==='tr' ? '✈️ GİTTİĞİN ŞEHİRLER' : '✈️ CITIES YOU'VE VISITED';
+  if (hint) hint.textContent = lang==='tr'
+    ? 'Bu şehirlere yeni yer eklenince bildirim alırsın'
+    : 'You'll be notified when new places are added';
+
+  if (!cities.length) {
+    bar.style.display = 'none';
+    return;
   }
+
+  bar.style.display = 'block';
+  list.innerHTML = cities.map(city => `
+    <span onclick="selectCityFromNotif('${city.replace(/'/g, "\'")}')" style="
+      display:inline-flex;align-items:center;gap:4px;
+      background:rgba(255,255,255,0.1);color:#fff;
+      border-radius:20px;padding:3px 9px;
+      font-size:11px;font-family:'Syne',sans-serif;font-weight:500;cursor:pointer;
+      border:1px solid rgba(255,255,255,0.15);
+      transition:background 0.15s;">
+      ✈️ ${city}
+      <span onclick="removeVisitedCity(event, '${city.replace(/'/g, "\'")}')"
+        style="font-size:10px;opacity:0.5;margin-left:2px;cursor:pointer;" title="${lang==='tr'?'Kaldır':'Remove'}">✕</span>
+    </span>`).join('');
+}
+
+function selectCityFromNotif(cityName) {
+  // Şehir seç ve ana sayfaya git
+  const cur = getCurrencyForCity(cityName);
+  currentCity = cityName;
+  currentCurrency = cur;
+  updateCurrencyBadge(cityName);
+  loadPlaces(cityName);
+  const text = document.getElementById('location-text');
+  if (text) text.textContent = cityName;
+  goTo('screen-home');
+}
+
+function removeVisitedCity(event, cityName) {
+  event.stopPropagation();
+  const cities = getVisitedCities().filter(c => c !== cityName);
+  localStorage.setItem('cg_visited_cities', JSON.stringify(cities));
+  renderVisitedCitiesBar();
 }
 
 function showCurrencyInfo() {
@@ -6851,7 +7032,13 @@ function showCurrencyModal(cur) {
       </div>
       <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--text-secondary);margin:16px 0 4px;">${lang==='tr'?'Yaklaşık Fiyat Rehberi':'Approximate Price Guide'}</div>
       ${rows}
-      <div style="font-size:10px;color:var(--text-muted);margin-top:10px;text-align:center;">${lang==='tr'?'Kurlar yaklaşık değerdir, değişebilir.':'Rates are approximate and may vary.'}</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:10px;text-align:center;" id="currency-modal-info">
+        ${liveRatesCache
+          ? (lang==='tr'
+              ? '● Canlı kur · ' + new Date(liveRatesFetchedAt).toLocaleTimeString(lang==='tr'?'tr-TR':'en-US', {hour:'2-digit',minute:'2-digit'}) + ' itibarıyla'
+              : '● Live rate · as of ' + new Date(liveRatesFetchedAt).toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'}))
+          : (lang==='tr'?'Kurlar yaklaşık değerdir, değişebilir.':'Rates are approximate and may vary.')}
+      </div>
       <button onclick="document.getElementById('currency-modal').remove()" style="width:100%;margin-top:14px;padding:13px;border-radius:14px;background:var(--navy);color:var(--white);font-family:'Syne',sans-serif;font-size:14px;font-weight:600;border:none;cursor:pointer;">${lang==='tr'?'Tamam':'OK'}</button>
     </div>`;
   modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
