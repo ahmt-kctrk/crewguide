@@ -4332,11 +4332,12 @@ async function savePushSubscription(sub) {
         'Prefer': 'resolution=merge-duplicates,return=minimal'
       },
       body: JSON.stringify({
-        user_id:  currentUser.id,
-        endpoint: endpoint,
-        p256dh:   p256dh,
-        auth:     auth,
-        city:     currentCity || 'Seoul'
+        user_id:      currentUser.id,
+        endpoint:     endpoint,
+        p256dh:       p256dh,
+        auth:         auth,
+        city:         currentCity || 'Seoul',
+        subscription: JSON.stringify(subJson)
       })
     });
     if (res.ok) {
