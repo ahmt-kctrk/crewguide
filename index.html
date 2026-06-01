@@ -1520,7 +1520,7 @@
       <div class="profile-since" id="profile-since">Üye · Mart 2025</div>
       <div class="profile-stats">
         <div class="p-stat"><div class="p-stat-num" id="stat-places">12</div><div class="p-stat-label" id="stat-places-label">Eklenen yer</div></div>
-        <div class="p-stat"><div class="p-stat-num">38</div><div class="p-stat-label" id="stat-likes-label">Beğeni aldı</div></div>
+        <div class="p-stat"><div class="p-stat-num" id="stat-likes">—</div><div class="p-stat-label" id="stat-likes-label">Beğeni aldı</div></div>
         <div class="p-stat"><div class="p-stat-num">1/3</div><div class="p-stat-label" id="stat-invite-label">Davet</div></div>
       </div>
     </div>
@@ -1542,57 +1542,22 @@
       <div class="profile-section">
         <div class="profile-section-header">
           <div class="profile-section-title" id="section-my-places">Eklediğim Yerler</div>
+          <div id="my-places-count" style="font-size:11px;color:var(--text-muted);"></div>
         </div>
-        <div class="place-row-profile" onclick="openDetail('mukbang')">
-          <div class="place-icon-profile" style="background:#fef3c7;">🥩</div>
-          <div class="place-row-info">
-            <div class="place-row-name">Mukbang BBQ</div>
-            <div class="place-row-meta">Seoul · <span id="cat-food-badge">Yemek</span></div>
+        <div id="my-places-list">
+          <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">
+            ⏳
           </div>
-          <div class="place-row-likes">♥ 21</div>
-        </div>
-        <div class="place-row-profile" onclick="openDetail('dongdaemun')">
-          <div class="place-icon-profile" style="background:#e0e7ff;">👜</div>
-          <div class="place-row-info">
-            <div class="place-row-name">Dongdaemun Market</div>
-            <div class="place-row-meta">Seoul · <span id="cat-shop-badge">Alışveriş</span></div>
-          </div>
-          <div class="place-row-likes">♥ 17</div>
         </div>
       </div>
 
       <div class="profile-section">
         <div class="profile-section-header">
-          <div class="profile-section-title" id="section-offline">Çevrimdışı Şehirler</div>
+          <div class="profile-section-title" id="section-visited">Gittiğim Şehirler</div>
         </div>
-        <div class="city-row-profile">
-          <div class="city-flag-big">🇰🇷</div>
-          <div class="city-info">
-            <div class="city-name-text">Seoul</div>
-            <div class="city-meta-text" id="city1-meta">47 yer · 2.3 MB · Fotoğrafsız</div>
-          </div>
-          <div class="city-right-profile">
-            <button class="city-delete" onclick="showToast(lang==='tr'?'Seoul silindi.':'Seoul removed.')">✕</button>
-          </div>
-        </div>
-        <div class="city-row-profile">
-          <div class="city-flag-big">🇯🇵</div>
-          <div class="city-info">
-            <div class="city-name-text">Tokyo</div>
-            <div class="city-meta-text" id="city2-meta">61 yer · 18 MB · Fotoğraflı</div>
-          </div>
-          <div class="city-right-profile">
-            <button class="city-delete" onclick="showToast(lang==='tr'?'Tokyo silindi.':'Tokyo removed.')">✕</button>
-          </div>
-        </div>
-        <div class="city-row-profile" style="cursor:pointer;" onclick="openDownloadModal('Paris', 'FR')">
-          <div class="city-flag-big">🇫🇷</div>
-          <div class="city-info">
-            <div class="city-name-text">Paris</div>
-            <div class="city-meta-text" id="city3-meta">34 yer · Henüz indirilmedi</div>
-          </div>
-          <div class="city-right-profile">
-            <button class="copy-btn-small" style="background:var(--gold);color:var(--navy);" onclick="event.stopPropagation();openDownloadModal('Paris','FR')" id="btn-download-paris">⬇ İndir</button>
+        <div id="profile-visited-cities" style="padding:4px 0;">
+          <div style="padding:12px 16px;color:var(--text-muted);font-size:13px;" id="profile-visited-empty">
+            Henüz şehir seçmedin
           </div>
         </div>
       </div>
@@ -1895,6 +1860,7 @@ const translations = {
     'section-my-places': 'Eklediğim Yerler',
     'cat-food-badge': 'Yemek',
     'cat-shop-badge': 'Alışveriş',
+    'section-visited': 'Gittiğim Şehirler',
     'section-offline': 'Çevrimdışı Şehirler',
     'city1-meta': '47 yer · 2.3 MB · Fotoğrafsız',
     'city2-meta': '61 yer · 18 MB · Fotoğraflı',
@@ -2911,6 +2877,7 @@ const translations = {
     'section-my-places': 'My Added Places',
     'cat-food-badge': 'Food',
     'cat-shop-badge': 'Shopping',
+    "section-visited": "Cities I've Visited",
     'section-offline': 'Offline Cities',
     'city1-meta': '47 places · 2.3 MB · No photos',
     'city2-meta': '61 places · 18 MB · With photos',
@@ -2991,6 +2958,12 @@ function goTo(id) {
   // Bildirim ekranı açılınca ziyaret edilen şehirleri render et
   if (id === 'screen-notif') {
     renderVisitedCitiesBar();
+  }
+
+  // Profil ekranı açılınca gerçek veriyi yükle
+  if (id === 'screen-profile-view') {
+    loadMyPlaces();
+    renderProfileVisitedCities();
   }
 
   if (id === 'screen-home' && !locationDetected) {
@@ -5112,48 +5085,69 @@ async function uploadPhotos(placeId) {
   const fill = document.getElementById('photo-progress-fill');
   if (progress) progress.style.display = 'block';
 
+  const photoToken = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token') || SUPABASE_KEY;
+
   const urls = [];
   for (let i = 0; i < selectedPhotos.length; i++) {
     const { file } = selectedPhotos[i];
-    const ext = file.name.split('.').pop() || 'jpg';
-    const path = `${placeId}/${Date.now()}_${i}.${ext}`;
+
+    // Uzantı ve Content-Type — mobilde file.type bazen bos gelir
+    const extFromName = (file.name.split('.').pop() || 'jpg').toLowerCase();
+    const mimeMap = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif', heic: 'image/heic' };
+    const contentType = file.type || mimeMap[extFromName] || 'image/jpeg';
+    const safeExt = extFromName === 'heic' ? 'jpg' : extFromName;
+    const filePath = `${placeId}/${Date.now()}_${i}.${safeExt}`;
+
+    console.log(`[Photo ${i+1}] Yukleniyor: ${file.name} (${contentType}, ${(file.size/1024).toFixed(0)} KB)`);
 
     try {
-      // Supabase Storage upload
-      const photoToken = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token') || SUPABASE_KEY;
       const res = await fetch(
-        `${SUPABASE_URL}/storage/v1/object/place-photos/${path}`,
+        `${SUPABASE_URL}/storage/v1/object/place-photos/${filePath}`,
         {
           method: 'POST',
           headers: {
             'apikey': SUPABASE_KEY,
             'Authorization': 'Bearer ' + photoToken,
-            'Content-Type': file.type,
+            'Content-Type': contentType,
             'x-upsert': 'true'
           },
           body: file
         }
       );
-      if (!res.ok) throw new Error(await res.text());
 
-      const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/place-photos/${path}`;
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error(`[Photo ${i+1}] Storage hatasi ${res.status}:`, errText);
+        showToast(lang==='tr' ? `Fotograf ${i+1} yuklenemedi (${res.status})` : `Photo ${i+1} failed (${res.status})`);
+        if (fill) fill.style.width = `${((i+1)/selectedPhotos.length)*100}%`;
+        continue;
+      }
+
+      const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/place-photos/${filePath}`;
       urls.push(publicUrl);
+      console.log(`[Photo ${i+1}] Storage OK ->`, publicUrl);
 
-      // photos tablosuna kaydet
-      await sbFetch('photos', {
-        method: 'POST',
-        body: JSON.stringify({ place_id: placeId, url: publicUrl })
-      });
+      // photos tablosuna kaydet — tablo yoksa hata yakala ama uploadi bozma
+      try {
+        await sbFetch('photos', {
+          method: 'POST',
+          prefer: 'return=minimal',
+          body: JSON.stringify({ place_id: placeId, url: publicUrl, created_at: new Date().toISOString() })
+        });
+      } catch(dbErr) {
+        console.warn(`[Photo ${i+1}] DB kaydi basarisiz (photos tablosu var mi?):`, dbErr);
+      }
 
     } catch(e) {
-      console.warn('[Photo upload]', e);
-      showToast(lang==='tr' ? `Fotoğraf ${i+1} yüklenemedi` : `Photo ${i+1} failed`);
+      console.error(`[Photo ${i+1}] Beklenmedik hata:`, e);
+      showToast(lang==='tr' ? `Fotograf ${i+1} yuklenemedi` : `Photo ${i+1} failed`);
     }
 
     if (fill) fill.style.width = `${((i+1)/selectedPhotos.length)*100}%`;
   }
 
   if (progress) setTimeout(() => { progress.style.display = 'none'; if(fill) fill.style.width='0%'; }, 800);
+  console.log(`[Photos] Tamamlandi: ${urls.length}/${selectedPhotos.length} yuklendi`);
   return urls;
 }
 
@@ -5553,6 +5547,12 @@ function updateProfileUI() {
   if (!currentProfile) return;
   const username = currentProfile.username || 'Crew';
   const inviteCode = currentProfile.invite_code || 'CRW-XXX';
+
+  // Stat sayaçlarını sıfırla — loadMyPlaces dolduracak
+  const spEl = document.getElementById('stat-places');
+  const slEl = document.getElementById('stat-likes');
+  if (spEl) spEl.textContent = '—';
+  if (slEl) slEl.textContent = '—';
 
   // Avatar baş harfi
   const avatarEls = document.querySelectorAll('.home-avatar, .profile-avatar');
@@ -6930,6 +6930,112 @@ function updateCurrencyBadge(cityName) {
     if (symEl) symEl.textContent = liveCur.symbol;
     if (codeEl) codeEl.textContent = liveCur.code;
   }).catch(() => {});
+}
+
+// ── PROFİL: EKLEDİĞİM YERLER ────────────────────────────────────────────────
+const catColors = {
+  food:        { bg: '#fef3c7', emoji: '🍜' },
+  shopping:    { bg: '#e0e7ff', emoji: '🛍' },
+  sightseeing: { bg: '#dcfce7', emoji: '🗺' }
+};
+
+const catLabels = {
+  food:        { tr: 'Yemek',     en: 'Food' },
+  shopping:    { tr: 'Alışveriş', en: 'Shopping' },
+  sightseeing: { tr: 'Gezi',      en: 'Sightseeing' }
+};
+
+async function loadMyPlaces() {
+  if (!currentUser) {
+    document.getElementById('my-places-list').innerHTML =
+      `<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:13px;">${lang==='tr'?'Giriş yapman gerekiyor':'Please sign in'}</div>`;
+    return;
+  }
+
+  const listEl = document.getElementById('my-places-list');
+  const countEl = document.getElementById('my-places-count');
+  if (!listEl) return;
+
+  listEl.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">⏳ ${lang==='tr'?'Yükleniyor...':'Loading...'}</div>`;
+
+  try {
+    const token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token') || SUPABASE_KEY;
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/places?user_id=eq.${currentUser.id}&is_hidden=eq.false&order=created_at.desc&limit=50&select=id,name,emoji,city,cat,likes,rating`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + token } }
+    );
+
+    if (!res.ok) throw new Error(await res.text());
+    const myPlaces = await res.json();
+
+    // Stat sayaçlarını güncelle
+    const placeCountEl = document.getElementById('stat-places');
+    if (placeCountEl) placeCountEl.textContent = myPlaces.length;
+    if (countEl) countEl.textContent = myPlaces.length > 0 ? `${myPlaces.length} ${lang==='tr'?'yer':'places'}` : '';
+
+    // Toplam beğeni
+    const totalLikes = myPlaces.reduce((sum, p) => sum + (p.likes || 0), 0);
+    const likesEl = document.getElementById('stat-likes');
+    if (likesEl) likesEl.textContent = totalLikes;
+
+    if (!myPlaces.length) {
+      listEl.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">
+        📍 ${lang==='tr'?'Henüz yer eklemedin. İlk yerini ekle!':'No places added yet. Add your first one!'}
+      </div>`;
+      return;
+    }
+
+    listEl.innerHTML = myPlaces.map(p => {
+      const cat = catColors[p.cat] || { bg: '#f0f3f9', emoji: p.emoji || '📍' };
+      const catLabel = catLabels[p.cat] ? catLabels[p.cat][lang] || catLabels[p.cat].tr : '';
+      const stars = p.rating > 0 ? `<span style="color:#f59e0b;font-size:10px;">${'★'.repeat(Math.round(p.rating))}</span> ` : '';
+      return `
+        <div class="place-row-profile" onclick="openDetail('${p.id}')">
+          <div class="place-icon-profile" style="background:${cat.bg};">${p.emoji || cat.emoji}</div>
+          <div class="place-row-info">
+            <div class="place-row-name">${p.name}</div>
+            <div class="place-row-meta">${p.city || ''} · ${catLabel}</div>
+          </div>
+          <div class="place-row-likes">${stars}♥ ${p.likes || 0}</div>
+        </div>`;
+    }).join('');
+
+  } catch(e) {
+    console.warn('[loadMyPlaces]', e);
+    listEl.innerHTML = `<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:13px;">⚠️ ${lang==='tr'?'Yüklenemedi':'Could not load'}</div>`;
+  }
+}
+
+// ── PROFİL: GİTTİĞİM ŞEHİRLER ────────────────────────────────────────────────
+function renderProfileVisitedCities() {
+  const container = document.getElementById('profile-visited-cities');
+  const emptyEl = document.getElementById('profile-visited-empty');
+  const titleEl = document.getElementById('section-visited');
+  if (!container) return;
+
+  if (titleEl) titleEl.textContent = lang==='tr' ? 'Gittiğim Şehirler' : "Cities I've Visited";
+
+  const cities = getVisitedCities();
+  if (!cities.length) {
+    if (emptyEl) emptyEl.textContent = lang==='tr' ? 'Henüz şehir seçmedin' : 'No cities visited yet';
+    return;
+  }
+
+  if (emptyEl) emptyEl.style.display = 'none';
+
+  container.innerHTML = cities.map(city => {
+    const cur = getCurrencyForCity(city);
+    return `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);cursor:pointer;"
+           onclick="selectCityFromNotif('${city.replace(/'/g, "\'")}')">
+        <div style="width:36px;height:36px;border-radius:10px;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">✈️</div>
+        <div style="flex:1;">
+          <div style="font-weight:600;font-size:13px;color:var(--text-primary);">${city}</div>
+          <div style="font-size:11px;color:var(--text-muted);">${cur.symbol} ${cur.code}</div>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);">→</div>
+      </div>`;
+  }).join('');
 }
 
 // ── ZİYARET EDİLEN ŞEHİRLER RENDER ──────────────────────────────────────────
