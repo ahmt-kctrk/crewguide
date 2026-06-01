@@ -1,7 +1,7 @@
 // CrewGuide Service Worker v3.0 — Offline-first
-// BUILD: 202605302311
-const STATIC_CACHE = 'crewguide-static-202605302311';
-const DYNAMIC_CACHE = 'crewguide-dynamic-202605302311';
+// BUILD: 202606010858
+const STATIC_CACHE = 'crewguide-static-202606010858';
+const DYNAMIC_CACHE = 'crewguide-dynamic-202606010858';
 
 const STATIC_ASSETS = [
   './',

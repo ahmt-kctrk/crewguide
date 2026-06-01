@@ -2980,12 +2980,7 @@ function goTo(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.getElementById(id).scrollTop = 0;
-  // Hash değiştir — Android geri tuşu için
-  if (id !== 'screen-splash' && id !== 'screen-login') {
-    location.hash = id;
-  } else {
-    location.hash = '';
-  }
+
   if (id === 'screen-home' && !locationDetected) {
     locationDetected = true;
     useCurrentLocation();
@@ -3525,10 +3520,14 @@ async function submitPlace() {
       renderPhotoPreviews();
       if (btn) { btn.textContent = lang==='tr'?'Paylaş →':'Share →'; btn.disabled = false; }
       showToast(lang==='tr'?`Yer eklendi! 🎉`:`Place added! 🎉`);
+      // Yeni şehri dynamicCities'e ekle
+      addCityToDynamic(currentCity, currentCountry, currentFlag);
       setTimeout(() => { goTo('screen-home'); renderCards(); }, 1000);
     });
   } else {
     showToast(lang==='tr'?'Yer başarıyla eklendi! 🎉':'Place added successfully! 🎉');
+    // Yeni şehri dynamicCities'e ekle
+    addCityToDynamic(currentCity, currentCountry, currentFlag);
     setTimeout(() => { goTo('screen-home'); renderCards(); }, 1000);
   }
 }
@@ -3748,6 +3747,17 @@ const popularCities = [
   {name:'Florence', country:{tr:'İtalya',en:'Italy'}, flag:'🇮🇹'},
   {name:'Sydney', country:{tr:'Avustralya',en:'Australia'}, flag:'🇦🇺'},
   {name:'Los Angeles', country:{tr:'ABD',en:'USA'}, flag:'🇺🇸'},
+  {name:'Chicago', country:{tr:'ABD',en:'USA'}, flag:'🇺🇸'},
+  {name:'Miami', country:{tr:'ABD',en:'USA'}, flag:'🇺🇸'},
+  {name:'Denver', country:{tr:'ABD',en:'USA'}, flag:'🇺🇸'},
+  {name:'Las Vegas', country:{tr:'ABD',en:'USA'}, flag:'🇺🇸'},
+  {name:'San Francisco', country:{tr:'ABD',en:'USA'}, flag:'🇺🇸'},
+  {name:'Boston', country:{tr:'ABD',en:'USA'}, flag:'🇺🇸'},
+  {name:'Seattle', country:{tr:'ABD',en:'USA'}, flag:'🇺🇸'},
+  {name:'Atlanta', country:{tr:'ABD',en:'USA'}, flag:'🇺🇸'},
+  {name:'Houston', country:{tr:'ABD',en:'USA'}, flag:'🇺🇸'},
+  {name:'Dallas', country:{tr:'ABD',en:'USA'}, flag:'🇺🇸'},
+  {name:'Washington DC', country:{tr:'ABD',en:'USA'}, flag:'🇺🇸'},
   {name:'Toronto', country:{tr:'Kanada',en:'Canada'}, flag:'🇨🇦'},
   {name:'Kuala Lumpur', country:{tr:'Malezya',en:'Malaysia'}, flag:'🇲🇾'},
   {name:'Mumbai', country:{tr:'Hindistan',en:'India'}, flag:'🇮🇳'},
@@ -3807,6 +3817,24 @@ async function loadDynamicCities() {
   } catch(e) {
     console.warn('[loadDynamicCities]', e);
   }
+}
+
+// Yeni eklenen şehri dynamicCities'e ekle
+function addCityToDynamic(cityName, country, flag) {
+  if (!cityName) return;
+  // Zaten var mı?
+  const exists = dynamicCities.find(c => c.name.toLowerCase() === cityName.toLowerCase());
+  if (exists) return;
+  // popularCities'de de yoksa ekle
+  const inPopular = popularCities.find(c => c.name.toLowerCase() === cityName.toLowerCase());
+  if (inPopular) return;
+
+  dynamicCities.push({
+    name: cityName,
+    country: country || { tr: cityName, en: cityName },
+    flag: flag || '🌍'
+  });
+  console.log('[Dynamic Cities] Yeni şehir eklendi:', cityName);
 }
 
 function getMergedCities() {
@@ -4378,39 +4406,7 @@ async function processQueueItem(item) {
 }
 
 // ── TELEFON GERİ TUŞU ────────────────────────────────────────────────────────
-// Hash değişince ekranı güncelle (Android geri tuşu)
-window.addEventListener('hashchange', () => {
-  const hash = location.hash.replace('#', '');
-  const backMap = {
-    'screen-home':         null,
-    'screen-city':         'screen-home',
-    'screen-saved':        'screen-home',
-    'screen-notif':        'screen-home',
-    'screen-profile-view': 'screen-home',
-    'screen-add':          'screen-home',
-    'screen-settings':     'screen-profile-view',
-    'screen-detail':       'screen-home',
-    'screen-invite':       'screen-splash',
-    'screen-register':     'screen-invite',
-    'screen-welcome':      'screen-home',
-    'screen-login':        'screen-splash',
-  };
 
-  const activeScreen = document.querySelector('.screen.active');
-  const currentId = activeScreen?.id;
-
-  if (!hash && currentId && currentId !== 'screen-home') {
-    // Hash boşaldı — geri tuşuna basıldı
-    const backTarget = backMap[currentId] || 'screen-home';
-    location.hash = backTarget;
-    // goTo'nun hash set etmesini önlemek için kısa gecikme
-    setTimeout(() => {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      const el = document.getElementById(backTarget);
-      if (el) { el.classList.add('active'); el.scrollTop = 0; }
-    }, 10);
-  }
-});
 
 // Internet gelince sync başlat
 window.addEventListener('online', () => {
@@ -5571,6 +5567,12 @@ async function openMapModal() {
         'Cape Town': [-33.9249, 18.4241], 'Sydney': [-33.8688, 151.2093],
         'Melbourne': [-37.8136, 144.9631], 'Toronto': [43.6532, -79.3832],
         'Vancouver': [49.2827, -123.1207], 'Mexico City': [19.4326, -99.1332],
+        'Denver': [39.7392, -104.9903], 'Chicago': [41.8781, -87.6298],
+        'Miami': [25.7617, -80.1918], 'Las Vegas': [36.1699, -115.1398],
+        'San Francisco': [37.7749, -122.4194], 'Boston': [42.3601, -71.0589],
+        'Seattle': [47.6062, -122.3321], 'Atlanta': [33.7490, -84.3880],
+        'Houston': [29.7604, -95.3698], 'Dallas': [32.7767, -96.7970],
+        'Washington DC': [38.9072, -77.0369],
         'Buenos Aires': [-34.6037, -58.3816], 'Rio': [-22.9068, -43.1729],
         'Doha': [25.2854, 51.5310], 'Abu Dhabi': [24.4539, 54.3773],
         'Riyadh': [24.7136, 46.6753], 'Riyad': [24.7136, 46.6753],
