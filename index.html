@@ -6204,18 +6204,6 @@ async function saveOpeningHours(placeId, googlePlaceId, oh) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ── ÇALIŞMA SAATİ ────────────────────────────────────────────────────────────
-
-const HOURS_TTL = 6 * 60 * 60 * 1000; // 6 saat cache
-
-// Günün adları (Pazar=0)
-const DAY_NAMES = {
-  tr: ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'],
-  en: ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
-  de: ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'],
-  fr: ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'],
-  es: ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'],
-};
 
 function getDayNames() {
   return DAY_NAMES[lang] || DAY_NAMES.en;
