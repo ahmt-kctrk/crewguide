@@ -1,11 +1,7 @@
 #!/usr/bin/env python3
-# CrewGuide patch22.py — Admin Paneli
-#   1. screen-admin HTML ekranı
-#   2. Admin paneli CSS
-#   3. loadAdminPlaces() + renderAdminPlaces() fonksiyonları
-#   4. Settings ekranına "Admin Paneli" butonu (sadece admin görür)
-#   5. goTo → screen-admin tetikleyicisi
-#   6. Şehre göre filtre + arama
+# CrewGuide patch22.py — Çalışma saati + "Şu an açık" badge
+# Google Places API entegrasyonu (Text Search → Place Details)
+# Uygulama: python patch22.py
 
 import os, sys
 
@@ -20,345 +16,444 @@ with open(fname, 'r', encoding='utf-8') as f:
 original = html
 patches = []
 
-# ── PATCH 1: Admin paneli ekranı HTML ─────────────────────────────────────────
-old1 = "</div>\n\n</div>\n\n<script>"
+# ══════════════════════════════════════════════════════════════════════════════
+# PATCH 1 — CSS: Hours badge stilleri
+# map-placeholder'ın hemen üstüne oturur
+# ══════════════════════════════════════════════════════════════════════════════
+old1 = "  .map-placeholder { width: 100%; height: 80px; background: #e8f4f0; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 13px; color: #2d6a4f; margin-bottom: 16px; gap: 6px; border: 1px solid #b7e4c7; cursor: pointer; }"
+new1 = """  .map-placeholder { width: 100%; height: 80px; background: #e8f4f0; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 13px; color: #2d6a4f; margin-bottom: 16px; gap: 6px; border: 1px solid #b7e4c7; cursor: pointer; }
 
-new1 = """</div>
-
-  <!-- SCREEN: ADMIN PANELİ -->
-  <div class="screen" id="screen-admin">
-    <div class="status-bar">
-      <span class="status-time">09:41</span>
-      <div class="status-icons"><div class="status-icon signal"></div><div class="status-icon battery"></div></div>
-    </div>
-    <div class="navy-header">
-      <div class="nav-back" onclick="goTo('screen-settings')">← </div>
-      <div class="header-title font-display">Admin Paneli</div>
-      <div class="header-sub" id="admin-panel-sub">Tüm yerler</div>
-    </div>
-
-    <!-- Arama + filtre -->
-    <div style="padding:10px 16px;display:flex;gap:8px;flex-shrink:0;">
-      <div style="position:relative;flex:1;">
-        <input type="text" id="admin-search" placeholder="Yer veya kullanıcı ara..."
-          style="width:100%;padding:9px 12px 9px 32px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:'DM Sans',sans-serif;background:var(--white);outline:none;"
-          oninput="filterAdminPlaces()">
-        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;opacity:0.4;">🔍</span>
-      </div>
-      <select id="admin-city-filter" onchange="filterAdminPlaces()"
-        style="padding:9px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-family:'DM Sans',sans-serif;background:var(--white);color:var(--text-primary);outline:none;cursor:pointer;">
-        <option value="all">Tüm Şehirler</option>
-      </select>
-    </div>
-
-    <!-- Stat bar -->
-    <div style="display:flex;gap:0;padding:0 16px 10px;flex-shrink:0;">
-      <div class="admin-stat-chip" id="admin-stat-total">— yer</div>
-      <div class="admin-stat-chip" style="color:#10b981;" id="admin-stat-visible">— görünür</div>
-      <div class="admin-stat-chip" style="color:#f59e0b;" id="admin-stat-hidden">— gizli</div>
-    </div>
-
-    <!-- Liste -->
-    <div style="flex:1;overflow-y:auto;padding-bottom:20px;" id="admin-list">
-      <div style="text-align:center;padding:40px;color:var(--text-muted);">⏳ Yükleniyor...</div>
-    </div>
-  </div>
-
-</div>
-
-<script>"""
+  /* ── ÇALIŞMA SAATİ BADGE ── */
+  .hours-badge {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px; border-radius: var(--radius-sm);
+    margin-bottom: 12px; font-size: 13px;
+    border: 1px solid; cursor: default;
+    transition: opacity 0.2s;
+  }
+  .hours-badge.open {
+    background: #f0fdf4; border-color: #86efac; color: #166534;
+  }
+  .hours-badge.closed {
+    background: #fef2f2; border-color: #fca5a5; color: #991b1b;
+  }
+  .hours-badge.unknown {
+    background: #f8fafc; border-color: var(--border); color: var(--text-muted);
+  }
+  .hours-badge.loading {
+    background: #fefce8; border-color: #fde047; color: #854d0e;
+    animation: pulse-soft 1.5s infinite;
+  }
+  @keyframes pulse-soft {
+    0%,100% { opacity:1; } 50% { opacity:0.6; }
+  }
+  .hours-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .hours-badge.open .hours-dot { background: #22c55e; }
+  .hours-badge.closed .hours-dot { background: #ef4444; }
+  .hours-badge.unknown .hours-dot { background: #9ca3af; }
+  .hours-badge.loading .hours-dot { background: #eab308; }
+  .hours-main { font-weight: 600; }
+  .hours-detail { color: inherit; opacity: 0.75; font-size: 12px; }
+  .hours-toggle {
+    margin-left: auto; font-size: 11px; opacity: 0.6;
+    background: none; border: none; cursor: pointer; color: inherit;
+    padding: 2px 6px; border-radius: 4px;
+    transition: background 0.15s;
+  }
+  .hours-toggle:hover { background: rgba(0,0,0,0.06); }
+  .hours-week {
+    display: none; flex-direction: column; gap: 3px;
+    padding: 8px 14px 10px; border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    background: #f8fafc; border: 1px solid var(--border); border-top: none;
+    font-size: 12px; margin-top: -12px; margin-bottom: 12px;
+  }
+  .hours-week.visible { display: flex; }
+  .hours-week-row { display: flex; justify-content: space-between; color: var(--text-secondary); }
+  .hours-week-row.today { color: var(--text-primary); font-weight: 600; }"""
 
 if old1 in html:
     html = html.replace(old1, new1)
-    patches.append("✓ Patch 1: screen-admin HTML eklendi")
+    patches.append("✓ Patch 1: CSS hours badge eklendi")
 else:
-    patches.append("✗ Patch 1 BULUNAMADI (</div></div><script>)")
+    patches.append("✗ Patch 1 BULUNAMADI — CSS satırı değişmiş olabilir")
 
-# ── PATCH 2: Admin paneli CSS ──────────────────────────────────────────────────
-old2 = "  .saved-filter-btn { flex-shrink:0;"
-new2 = """  /* Admin paneli */
-  .admin-stat-chip { font-size:11px; font-weight:600; color:var(--text-muted); padding:4px 10px 4px 0; }
-  .admin-place-row { display:flex; align-items:flex-start; gap:10px; padding:12px 16px; border-bottom:1px solid var(--border); background:var(--white); }
-  .admin-place-row:active { background:var(--cream-dark); }
-  .admin-place-emoji { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
-  .admin-place-body { flex:1; min-width:0; }
-  .admin-place-name { font-weight:600; font-size:13px; color:var(--text-primary); }
-  .admin-place-meta { font-size:11px; color:var(--text-muted); margin-top:2px; line-height:1.5; }
-  .admin-place-actions { display:flex; flex-direction:column; gap:5px; flex-shrink:0; }
-  .admin-btn { padding:5px 10px; border-radius:8px; font-size:11px; font-family:'Syne',sans-serif; font-weight:600; border:none; cursor:pointer; white-space:nowrap; }
-  .admin-btn-view  { background:#f0f3f9; color:var(--navy); }
-  .admin-btn-hide  { background:#fef9ec; color:#92400e; border:1px solid #fde68a; }
-  .admin-btn-show  { background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; }
-  .admin-btn-del   { background:#fef2f2; color:#ef4444; border:1px solid #fca5a5; }
-  .admin-hidden-badge { display:inline-block; font-size:9px; padding:2px 6px; background:#fef9ec; color:#92400e; border-radius:4px; font-weight:600; margin-left:4px; vertical-align:middle; }
-  .saved-filter-btn { flex-shrink:0;"""
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PATCH 2 — HTML: Detay sayfasına hours-badge ve hours-week div'leri ekle
+# map-placeholder'ın hemen üstüne
+# ══════════════════════════════════════════════════════════════════════════════
+old2 = '      <div class="map-placeholder" id="map-placeholder-btn" onclick="openMapModal()">🗺 <span id="map-text">Haritada Göster</span></div>'
+new2 = """      <!-- Çalışma saati badge -->
+      <div class="hours-badge unknown" id="hours-badge" style="display:none;">
+        <div class="hours-dot"></div>
+        <span class="hours-main" id="hours-main">—</span>
+        <span class="hours-detail" id="hours-detail"></span>
+        <button class="hours-toggle" id="hours-toggle" onclick="toggleWeeklyHours()" style="display:none;">▾ Tümü</button>
+      </div>
+      <div class="hours-week" id="hours-week"></div>
+
+      <div class="map-placeholder" id="map-placeholder-btn" onclick="openMapModal()">🗺 <span id="map-text">Haritada Göster</span></div>"""
 
 if old2 in html:
     html = html.replace(old2, new2)
-    patches.append("✓ Patch 2: Admin CSS eklendi")
+    patches.append("✓ Patch 2: HTML hours-badge eklendi")
 else:
-    patches.append("✗ Patch 2 BULUNAMADI (saved-filter-btn CSS)")
+    patches.append("✗ Patch 2 BULUNAMADI")
 
-# ── PATCH 3: Admin fonksiyonları ──────────────────────────────────────────────
-old3 = "async function adminDeletePlace() {"
-new3 = """// ── ADMİN PANELİ ─────────────────────────────────────────────────────────────
-let allAdminPlaces = [];
-let adminFilteredPlaces = [];
 
-async function loadAdminPlaces() {
-  if (!isAdmin()) { showToast('Yetkisiz!'); goTo('screen-home'); return; }
+# ══════════════════════════════════════════════════════════════════════════════
+# PATCH 3 — JS: Google Places API anahtarı ve hours cache
+# SUPABASE sabitleri bloğunun hemen altına
+# ══════════════════════════════════════════════════════════════════════════════
+old3 = "const SUPABASE_URL = 'https://nuebqtzeirpyyxtoptlp.supabase.co';"
+new3 = """const SUPABASE_URL = 'https://nuebqtzeirpyyxtoptlp.supabase.co';
 
-  const listEl = document.getElementById('admin-list');
-  if (listEl) listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">⏳ Yükleniyor...</div>';
+// ── GOOGLE PLACES API ────────────────────────────────────────────────────────
+// Kendi API anahtarınızı buraya girin (Places API + Maps JavaScript API aktif olmalı)
+// https://console.cloud.google.com → APIs & Services → Places API (New) etkinleştir
+const GOOGLE_PLACES_KEY = '';  // ← Buraya API key girin
 
-  try {
-    const token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token') || SUPABASE_KEY;
-    // is_hidden filtresi YOK — hem görünür hem gizli çek
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/places?order=created_at.desc&limit=300&select=id,name,emoji,city,cat,price,likes,rating,is_hidden,user_id,created_at,addr`,
-      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + token } }
-    );
-    if (!res.ok) throw new Error(await res.text());
-    allAdminPlaces = await res.json();
-
-    // Şehir filtresini doldur
-    const cities = [...new Set(allAdminPlaces.map(p => p.city).filter(Boolean))].sort();
-    const sel = document.getElementById('admin-city-filter');
-    if (sel) {
-      sel.innerHTML = '<option value="all">Tüm Şehirler</option>' +
-        cities.map(c => `<option value="${c}">${c}</option>`).join('');
-    }
-
-    filterAdminPlaces();
-  } catch(e) {
-    console.error('[Admin] Yükleme hatası:', e);
-    if (listEl) listEl.innerHTML = `<div style="text-align:center;padding:40px;color:#ef4444;">⚠️ Yüklenemedi: ${e.message}</div>`;
-  }
-}
-
-function filterAdminPlaces() {
-  const search = (document.getElementById('admin-search')?.value || '').toLowerCase().trim();
-  const city   = document.getElementById('admin-city-filter')?.value || 'all';
-
-  adminFilteredPlaces = allAdminPlaces.filter(p => {
-    if (city !== 'all' && p.city !== city) return false;
-    if (search) {
-      const haystack = `${p.name} ${p.city} ${p.addr || ''}`.toLowerCase();
-      if (!haystack.includes(search)) return false;
-    }
-    return true;
-  });
-
-  renderAdminPlaces();
-}
-
-function renderAdminPlaces() {
-  const listEl = document.getElementById('admin-list');
-  if (!listEl) return;
-
-  const total   = allAdminPlaces.length;
-  const visible = allAdminPlaces.filter(p => !p.is_hidden).length;
-  const hidden  = allAdminPlaces.filter(p =>  p.is_hidden).length;
-
-  const totalEl   = document.getElementById('admin-stat-total');
-  const visibleEl = document.getElementById('admin-stat-visible');
-  const hiddenEl  = document.getElementById('admin-stat-hidden');
-  if (totalEl)   totalEl.textContent   = `${total} yer`;
-  if (visibleEl) visibleEl.textContent = `${visible} görünür`;
-  if (hiddenEl)  hiddenEl.textContent  = `${hidden} gizli`;
-
-  const subEl = document.getElementById('admin-panel-sub');
-  if (subEl) subEl.textContent = adminFilteredPlaces.length !== total
-    ? `${adminFilteredPlaces.length} / ${total} yer`
-    : `${total} yer`;
-
-  if (!adminFilteredPlaces.length) {
-    listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">Sonuç yok</div>';
-    return;
-  }
-
-  const catBg = { food:'#fef3c7', shopping:'#e0e7ff', sightseeing:'#dcfce7' };
-
-  listEl.innerHTML = adminFilteredPlaces.map(p => {
-    const bg = catBg[p.cat] || '#f0f3f9';
-    const date = new Date(p.created_at).toLocaleDateString('tr-TR', { day:'numeric', month:'short', year:'numeric' });
-    const catLabel = p.cat==='food'?'Yemek':p.cat==='shopping'?'Alışveriş':'Gezi';
-    const hiddenBadge = p.is_hidden ? '<span class="admin-hidden-badge">GİZLİ</span>' : '';
-
-    return `
-      <div class="admin-place-row">
-        <div class="admin-place-emoji" style="background:${bg};">${p.emoji || '📍'}</div>
-        <div class="admin-place-body">
-          <div class="admin-place-name">${p.name} ${hiddenBadge}</div>
-          <div class="admin-place-meta">
-            📍 ${p.city || '—'} · ${catLabel} · ${p.price || '$'}<br>
-            ♥ ${p.likes || 0} · ⭐ ${p.rating ? parseFloat(p.rating).toFixed(1) : '—'} · 📅 ${date}
-          </div>
-        </div>
-        <div class="admin-place-actions">
-          <button class="admin-btn admin-btn-view" onclick="adminViewPlace('${p.id}')">👁 Gör</button>
-          ${p.is_hidden
-            ? `<button class="admin-btn admin-btn-show" onclick="adminToggleHide('${p.id}', false, this)">✓ Göster</button>`
-            : `<button class="admin-btn admin-btn-hide" onclick="adminToggleHide('${p.id}', true, this)">🚫 Gizle</button>`
-          }
-          <button class="admin-btn admin-btn-del" onclick="adminPermanentDelete('${p.id}', '${p.name.replace(/'/g, "\\'")}', this)">🗑 Sil</button>
-        </div>
-      </div>`;
-  }).join('');
-}
-
-function adminViewPlace(placeId) {
-  // places dizisinde varsa direkt aç, yoksa admin listesinden bul
-  const existing = places.find(p => String(p.id) === String(placeId));
-  if (existing) {
-    openDetail(placeId);
-    return;
-  }
-  // Admin listesinden al, geçici olarak places'e ekle
-  const ap = allAdminPlaces.find(p => String(p.id) === String(placeId));
-  if (!ap) return;
-  const pn = { '$':{tr:'Uygun',en:'Budget'}, '$$':{tr:'Orta',en:'Mid-range'}, '$$$':{tr:'Pahalı',en:'Expensive'} };
-  places.push({
-    id: ap.id, cat: ap.cat, subcat: ap.subcat || '', emoji: ap.emoji || '📍',
-    name: ap.name, addr: ap.addr || '', city: ap.city || '',
-    price: ap.price || '$', priceName: pn[ap.price] || {tr:'Uygun',en:'Budget'},
-    likes: ap.likes || 0, rating: parseFloat(ap.rating) || 0,
-    ratingCount: ap.rating_count || 0, ratings: {5:0,4:0,3:0,2:0,1:0},
-    userRating: 0, isAdult: false, userId: ap.user_id || null,
-    desc: { tr: ap.desc_tr || '', en: ap.desc_en || '' }
-  });
-  openDetail(placeId);
-}
-
-async function adminToggleHide(placeId, hide, btn) {
-  if (!isAdmin()) return;
-  if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
-
-  try {
-    const token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token') || SUPABASE_KEY;
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/places?id=eq.${placeId}`, {
-      method: 'PATCH',
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ is_hidden: hide })
-    });
-    if (!res.ok) throw new Error(await res.text());
-
-    // Local güncelle
-    const ap = allAdminPlaces.find(p => String(p.id) === String(placeId));
-    if (ap) ap.is_hidden = hide;
-    const lp = places.find(p => String(p.id) === String(placeId));
-    if (lp && hide) {
-      places.splice(places.indexOf(lp), 1);
-      renderCards();
-    }
-
-    showToast(hide ? '🚫 Yer gizlendi.' : '✓ Yer gösterildi.');
-    renderAdminPlaces();
-  } catch(e) {
-    console.error('[adminToggleHide]', e);
-    showToast('Hata: ' + e.message);
-    if (btn) { btn.disabled = false; btn.textContent = hide ? '🚫 Gizle' : '✓ Göster'; }
-  }
-}
-
-async function adminPermanentDelete(placeId, placeName, btn) {
-  if (!isAdmin()) return;
-  const confirmed = confirm(`"${placeName}" yerini kalıcı olarak silmek istediğinden emin misin?\n\nBu işlem geri alınamaz.`);
-  if (!confirmed) return;
-
-  if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
-
-  try {
-    const token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token') || SUPABASE_KEY;
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/places?id=eq.${placeId}`, {
-      method: 'DELETE',
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + token }
-    });
-    if (!res.ok) throw new Error(await res.text());
-
-    allAdminPlaces = allAdminPlaces.filter(p => String(p.id) !== String(placeId));
-    const lp = places.find(p => String(p.id) === String(placeId));
-    if (lp) { places.splice(places.indexOf(lp), 1); renderCards(); }
-
-    showToast(`🗑 "${placeName}" silindi.`);
-    filterAdminPlaces();
-  } catch(e) {
-    console.error('[adminPermanentDelete]', e);
-    showToast('Hata: ' + e.message);
-    if (btn) { btn.disabled = false; btn.textContent = '🗑 Sil'; }
-  }
-}
-
-async function adminDeletePlace() {"""
+// Çalışma saati cache: place_id → { fetched_at, is_open, badge_text, detail_text, weekly }
+const hoursCache = {};"""
 
 if old3 in html:
     html = html.replace(old3, new3)
-    patches.append("✓ Patch 3: Admin panel fonksiyonları eklendi")
+    patches.append("✓ Patch 3: GOOGLE_PLACES_KEY ve hoursCache eklendi")
 else:
-    patches.append("✗ Patch 3 BULUNAMADI (adminDeletePlace)")
+    patches.append("✗ Patch 3 BULUNAMADI")
 
-# ── PATCH 4: Settings ekranına Admin butonu ───────────────────────────────────
-old4 = """      <button onclick="resetTheme()" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid var(--border);background:transparent;font-size:13px;color:var(--text-muted);cursor:pointer;font-family:'DM Sans',sans-serif;" id="btn-reset-theme">↺ Varsayılana Sıfırla</button>
-      <button onclick="signOut()" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid #fca5a5;background:transparent;font-size:13px;color:#ef4444;cursor:pointer;font-family:'DM Sans',sans-serif;" id="btn-sign-out">🚪 Çıkış Yap</button>"""
 
-new4 = """      <button onclick="resetTheme()" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid var(--border);background:transparent;font-size:13px;color:var(--text-muted);cursor:pointer;font-family:'DM Sans',sans-serif;" id="btn-reset-theme">↺ Varsayılana Sıfırla</button>
-      <div id="admin-panel-btn-wrap" style="display:none;">
-        <button onclick="goTo('screen-admin')" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid var(--navy);background:var(--navy);font-size:13px;color:#fff;cursor:pointer;font-family:'Syne',sans-serif;font-weight:600;">🛡 Admin Paneli</button>
-      </div>
-      <button onclick="signOut()" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid #fca5a5;background:transparent;font-size:13px;color:#ef4444;cursor:pointer;font-family:'DM Sans',sans-serif;" id="btn-sign-out">🚪 Çıkış Yap</button>"""
+# ══════════════════════════════════════════════════════════════════════════════
+# PATCH 4 — JS: openDetail içine fetchPlaceHours çağrısı
+# loadComments çağrısının hemen arkasına
+# ══════════════════════════════════════════════════════════════════════════════
+old4 = """  loadComments(p.id);
+  setTimeout(prefillCommentUsername, 300);
+  loadPlacePhotos(p.id);"""
+new4 = """  loadComments(p.id);
+  setTimeout(prefillCommentUsername, 300);
+  loadPlacePhotos(p.id);
+  fetchPlaceHours(p);  // çalışma saati badge"""
 
 if old4 in html:
     html = html.replace(old4, new4)
-    patches.append("✓ Patch 4: Settings ekranına Admin butonu eklendi")
+    patches.append("✓ Patch 4: openDetail'e fetchPlaceHours çağrısı eklendi")
 else:
-    patches.append("✗ Patch 4 BULUNAMADI (resetTheme / signOut butonları)")
+    patches.append("✗ Patch 4 BULUNAMADI")
 
-# ── PATCH 5: goTo → screen-admin + settings admin butonu göster ───────────────
-old5 = """  // Kayıtlı ekranı açılınca listeyi render et
-  if (id === 'screen-saved') {
-    renderSavedScreen();
-  }"""
 
-new5 = """  // Kayıtlı ekranı açılınca listeyi render et
-  if (id === 'screen-saved') {
-    renderSavedScreen();
-  }
-
-  // Admin paneli açılınca yükle
-  if (id === 'screen-admin') {
-    loadAdminPlaces();
-  }
-
-  // Settings açılınca admin butonunu göster/gizle
-  if (id === 'screen-settings') {
-    const adminWrap = document.getElementById('admin-panel-btn-wrap');
-    if (adminWrap) adminWrap.style.display = isAdmin() ? 'block' : 'none';
-  }"""
+# ══════════════════════════════════════════════════════════════════════════════
+# PATCH 5 — JS: loadPlaces'te opening_hours alanını map'le
+# ══════════════════════════════════════════════════════════════════════════════
+old5 = """        isAdult: row.is_adult || false,
+        userId: row.user_id || null,
+        desc: { tr: row.desc_tr || '', en: row.desc_en || '' }"""
+new5 = """        isAdult: row.is_adult || false,
+        userId: row.user_id || null,
+        desc: { tr: row.desc_tr || '', en: row.desc_en || '' },
+        googlePlaceId: row.google_place_id || null,
+        openingHours: row.opening_hours || null"""
 
 if old5 in html:
     html = html.replace(old5, new5)
-    patches.append("✓ Patch 5: goTo screen-admin + settings admin butonu")
+    patches.append("✓ Patch 5: loadPlaces'e googlePlaceId + openingHours eklendi")
 else:
-    patches.append("✗ Patch 5 BULUNAMADI (screen-saved goTo)")
+    patches.append("✗ Patch 5 BULUNAMADI")
 
-# ── SONUÇ ─────────────────────────────────────────────────────────────────────
-print("\n" + "="*60)
-print("CrewGuide Patch 22 Sonuçları")
-print("="*60)
-for p in patches:
-    print(p)
 
+# ══════════════════════════════════════════════════════════════════════════════
+# PATCH 6 — JS: fetchPlaceHours + renderHoursBadge + toggleWeeklyHours
+# closeMapModal fonksiyonunun hemen üstüne ekle
+# ══════════════════════════════════════════════════════════════════════════════
+old6 = "async function openMapModal() {"
+new6 = """// ── ÇALIŞMA SAATİ ────────────────────────────────────────────────────────────
+
+const HOURS_TTL = 6 * 60 * 60 * 1000; // 6 saat cache
+
+// Günün adları (Pazar=0)
+const DAY_NAMES = {
+  tr: ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'],
+  en: ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
+  de: ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'],
+  fr: ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'],
+  es: ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'],
+};
+
+function getDayNames() {
+  return DAY_NAMES[lang] || DAY_NAMES.en;
+}
+
+async function fetchPlaceHours(p) {
+  const badge = document.getElementById('hours-badge');
+  const weekEl = document.getElementById('hours-week');
+  if (!badge) return;
+
+  // Badge'i gizle, week panelini kapat
+  badge.style.display = 'none';
+  if (weekEl) { weekEl.classList.remove('visible'); weekEl.innerHTML = ''; }
+
+  // 1) Önce cache'e bak
+  const cacheKey = p.googlePlaceId || p.id;
+  const cached = hoursCache[cacheKey];
+  if (cached && Date.now() - cached.fetchedAt < HOURS_TTL) {
+    renderHoursBadge(cached);
+    return;
+  }
+
+  // 2) Supabase'de kayıtlı opening_hours var mı?
+  if (p.openingHours) {
+    const parsed = parseStoredHours(p.openingHours, p.googlePlaceId || p.id);
+    hoursCache[cacheKey] = parsed;
+    renderHoursBadge(parsed);
+    // Arka planda taze çek (6 saat geçmişse)
+    if (!cached) fetchFromGoogle(p);
+    return;
+  }
+
+  // 3) API key yoksa sessizce çık
+  if (!GOOGLE_PLACES_KEY) return;
+
+  // 4) Google'dan çek
+  fetchFromGoogle(p);
+}
+
+async function fetchFromGoogle(p) {
+  const badge = document.getElementById('hours-badge');
+  if (!badge) return;
+
+  // Loading göster
+  badge.className = 'hours-badge loading';
+  badge.style.display = 'flex';
+  document.getElementById('hours-main').textContent = lang === 'tr' ? 'Saatler yükleniyor...' : 'Loading hours...';
+  document.getElementById('hours-detail').textContent = '';
+  const toggleBtn = document.getElementById('hours-toggle');
+  if (toggleBtn) toggleBtn.style.display = 'none';
+
+  try {
+    // Step 1: Text Search ile place_id bul (zaten yoksa)
+    let placeId = p.googlePlaceId;
+    if (!placeId) {
+      const searchQuery = encodeURIComponent(`${p.name} ${p.addr}`);
+      const searchRes = await fetch(
+        `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${searchQuery}&inputtype=textquery&fields=place_id&key=${GOOGLE_PLACES_KEY}`,
+        { mode: 'cors' }
+      );
+      const searchData = await searchRes.json();
+      if (searchData.candidates && searchData.candidates[0]) {
+        placeId = searchData.candidates[0].place_id;
+        // Supabase'e kaydet
+        saveGooglePlaceId(p.id, placeId);
+        p.googlePlaceId = placeId;
+      }
+    }
+
+    if (!placeId) {
+      badge.style.display = 'none';
+      return;
+    }
+
+    // Step 2: Place Details ile opening_hours çek
+    const detailRes = await fetch(
+      `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=opening_hours,utc_offset_minutes&key=${GOOGLE_PLACES_KEY}`,
+      { mode: 'cors' }
+    );
+    const detailData = await detailRes.json();
+    const oh = detailData.result?.opening_hours;
+
+    if (!oh) {
+      badge.style.display = 'none';
+      return;
+    }
+
+    // Supabase'e kaydet
+    saveOpeningHours(p.id, placeId, oh);
+    p.openingHours = oh;
+
+    const cacheKey = placeId || p.id;
+    const result = parseGoogleHours(oh, cacheKey);
+    hoursCache[cacheKey] = result;
+    renderHoursBadge(result);
+
+  } catch(e) {
+    console.warn('[Hours] Google Places hatası:', e);
+    badge.style.display = 'none';
+  }
+}
+
+function parseGoogleHours(oh, cacheKey) {
+  const isOpen = oh.open_now;
+  const periods = oh.periods || [];
+  const weekdayText = oh.weekday_text || [];
+
+  // Bugün kapanış saatini bul
+  const now = new Date();
+  const todayIdx = now.getDay(); // 0=Pazar
+  const todayPeriod = periods.find(per => per.open && per.open.day === todayIdx);
+
+  let detailText = '';
+  if (isOpen && todayPeriod && todayPeriod.close) {
+    const closeH = todayPeriod.close.time.slice(0,2);
+    const closeM = todayPeriod.close.time.slice(2,4);
+    const closeStr = `${closeH}:${closeM}`;
+    detailText = lang === 'tr' ? `· ${closeStr}'e kadar` : `· Until ${closeStr}`;
+  } else if (!isOpen && todayPeriod) {
+    // Kapalıysa açılış saatini göster
+    const openH = todayPeriod.open.time.slice(0,2);
+    const openM = todayPeriod.open.time.slice(2,4);
+    const openStr = `${openH}:${openM}`;
+    detailText = lang === 'tr' ? `· ${openStr}'de açılıyor` : `· Opens at ${openStr}`;
+  }
+
+  return {
+    fetchedAt: Date.now(),
+    cacheKey,
+    isOpen,
+    badgeText: isOpen
+      ? (lang === 'tr' ? 'Açık' : 'Open')
+      : (lang === 'tr' ? 'Kapalı' : 'Closed'),
+    detailText,
+    weeklyText: weekdayText,
+    periods
+  };
+}
+
+function parseStoredHours(oh, cacheKey) {
+  // Supabase'den gelen JSONB objesini parse et
+  try {
+    const parsed = typeof oh === 'string' ? JSON.parse(oh) : oh;
+    return parseGoogleHours(parsed, cacheKey);
+  } catch(e) {
+    return null;
+  }
+}
+
+function renderHoursBadge(data) {
+  if (!data) return;
+  const badge = document.getElementById('hours-badge');
+  const mainEl = document.getElementById('hours-main');
+  const detailEl = document.getElementById('hours-detail');
+  const toggleBtn = document.getElementById('hours-toggle');
+  if (!badge || !mainEl) return;
+
+  badge.style.display = 'flex';
+  badge.className = 'hours-badge ' + (data.isOpen ? 'open' : 'closed');
+  mainEl.textContent = data.badgeText;
+  if (detailEl) detailEl.textContent = data.detailText || '';
+
+  // Haftalık program varsa toggle göster
+  if (toggleBtn) {
+    if (data.weeklyText && data.weeklyText.length > 0) {
+      toggleBtn.style.display = 'block';
+      // Haftalık listeyi hazırla ama gizli tut
+      const weekEl = document.getElementById('hours-week');
+      if (weekEl) {
+        const todayIdx = new Date().getDay();
+        const dayNames = getDayNames();
+        // Google weekday_text Pazartesi başlıyor (0=Pzt), JS getDay() Pazar=0
+        // weekday_text[0]=Monday, weekday_text[6]=Sunday
+        const googleTodayIdx = todayIdx === 0 ? 6 : todayIdx - 1;
+        weekEl.innerHTML = data.weeklyText.map((txt, i) => {
+          const isToday = i === googleTodayIdx;
+          return `<div class="hours-week-row${isToday ? ' today' : ''}">${txt}</div>`;
+        }).join('');
+      }
+    } else {
+      toggleBtn.style.display = 'none';
+    }
+  }
+}
+
+function toggleWeeklyHours() {
+  const weekEl = document.getElementById('hours-week');
+  const toggleBtn = document.getElementById('hours-toggle');
+  if (!weekEl) return;
+  const visible = weekEl.classList.toggle('visible');
+  if (toggleBtn) toggleBtn.textContent = visible
+    ? (lang === 'tr' ? '▴ Kapat' : '▴ Less')
+    : (lang === 'tr' ? '▾ Tümü' : '▾ All');
+}
+
+async function saveGooglePlaceId(placeId, googlePlaceId) {
+  try {
+    const token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token');
+    if (!token) return;
+    await fetch(`${SUPABASE_URL}/rest/v1/places?id=eq.${placeId}`, {
+      method: 'PATCH',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ google_place_id: googlePlaceId })
+    });
+  } catch(e) { console.warn('[Hours] saveGooglePlaceId hatası:', e); }
+}
+
+async function saveOpeningHours(placeId, googlePlaceId, oh) {
+  try {
+    const token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token');
+    if (!token) return;
+    await fetch(`${SUPABASE_URL}/rest/v1/places?id=eq.${placeId}`, {
+      method: 'PATCH',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ google_place_id: googlePlaceId, opening_hours: oh })
+    });
+  } catch(e) { console.warn('[Hours] saveOpeningHours hatası:', e); }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function openMapModal() {"""
+
+if "async function openMapModal() {" in html:
+    html = html.replace("async function openMapModal() {", new6)
+    patches.append("✓ Patch 6: fetchPlaceHours + renderHoursBadge + yardımcı fonksiyonlar eklendi")
+else:
+    patches.append("✗ Patch 6 BULUNAMADI")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Kaydet
+# ══════════════════════════════════════════════════════════════════════════════
 if html != original:
-    with open('index.html.backup22', 'w', encoding='utf-8') as f:
-        f.write(original)
     with open(fname, 'w', encoding='utf-8') as f:
         f.write(html)
-    applied = len([p for p in patches if p.startswith("✓")])
-    failed  = len([p for p in patches if p.startswith("✗")])
-    print(f"\n✅ {applied} patch uygulandı!")
+    print(f"\n{'='*55}")
+    print("CrewGuide patch22 — Çalışma saati + Açık badge")
+    print('='*55)
+    for p in patches:
+        print(f"  {p}")
+    changed = sum(1 for p in patches if p.startswith("✓"))
+    failed  = sum(1 for p in patches if p.startswith("✗"))
+    print(f"\n  Başarılı: {changed}/{len(patches)}")
     if failed:
-        print(f"⚠️  {failed} patch bulunamadı")
-    print("📦 Yedek: index.html.backup22")
+        print(f"  ⚠️  {failed} patch uygulanamadı — kod değişmiş olabilir")
+    print(f"\n✅ index.html güncellendi!")
+    print("\n── Sonraki adımlar ─────────────────────────────────────")
+    print("  1. Supabase SQL editöre gir ve şu sorguyu çalıştır:")
+    print()
+    print("     ALTER TABLE places")
+    print("       ADD COLUMN IF NOT EXISTS google_place_id TEXT,")
+    print("       ADD COLUMN IF NOT EXISTS opening_hours JSONB;")
+    print()
+    print("  2. index.html içinde GOOGLE_PLACES_KEY = '' satırını")
+    print("     kendi API key'inle doldur.")
+    print()
+    print("  3. Google Cloud Console'da şu API'ları etkinleştir:")
+    print("     • Places API (New)")
+    print("     • Maps JavaScript API")
+    print()
+    print("  4. python deploy.py \"patch22: çalışma saati + açık badge\"")
+    print('='*55 + '\n')
 else:
-    print("\n⚠ Değişiklik yapılmadı")
-print("="*60 + "\n")
+    print("\n⚠️  Hiçbir değişiklik yapılmadı.")
+    for p in patches:
+        print(f"  {p}")
