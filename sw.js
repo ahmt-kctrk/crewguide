@@ -1,7 +1,18 @@
+<<<<<<< HEAD
 // CrewGuide Service Worker v3.0 — Offline-first
-// BUILD: 202606030440
-const STATIC_CACHE = 'crewguide-static-202606030440';
-const DYNAMIC_CACHE = 'crewguide-dynamic-202606030440';
+// BUILD: 202606030443
+const STATIC_CACHE = 'crewguide-static-202606030443';
+const DYNAMIC_CACHE = 'crewguide-dynamic-202606030443';
+=======
+// CrewGuide Service Worker v4.0 — Offline-first + Supabase Cache
+// BUILD: 202606030443
+const STATIC_CACHE  = 'crewguide-static-202506020001';
+const DYNAMIC_CACHE = 'crewguide-dynamic-202606030443';
+const SUPABASE_CACHE = 'crewguide-supabase-202506020001';
+
+// Supabase cache süresi: 30 dakika
+const SUPABASE_TTL = 30 * 60 * 1000;
+>>>>>>> 1fa18e2c24a7a70b681f17d77f6884001657171d
 
 const STATIC_ASSETS = [
   './',
@@ -11,7 +22,7 @@ const STATIC_ASSETS = [
 
 // ── INSTALL ──────────────────────────────────────────────────────────────────
 self.addEventListener('install', event => {
-  console.log('[SW] Installing v3...');
+  console.log('[SW] Installing v4...');
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then(cache => cache.addAll(STATIC_ASSETS))
@@ -26,26 +37,34 @@ self.addEventListener('activate', event => {
     caches.keys().then(keys =>
       Promise.all(
         keys
-          .filter(k => k !== STATIC_CACHE && k !== DYNAMIC_CACHE && !k.startsWith('crewguide-city-'))
-          .map(k => caches.delete(k))
+          .filter(k =>
+            k !== STATIC_CACHE &&
+            k !== DYNAMIC_CACHE &&
+            k !== SUPABASE_CACHE &&
+            !k.startsWith('crewguide-city-')
+          )
+          .map(k => {
+            console.log('[SW] Eski cache siliniyor:', k);
+            return caches.delete(k);
+          })
       )
     ).then(() => self.clients.claim())
   );
 });
 
-// ── FETCH ─────────────────────────────────────────────────────────────────────
+// ── FETCH ────────────────────────────────────────────────────────────────────
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // Supabase API — direkt network
+  // ── Supabase GET istekleri — network-first, cache fallback ────────────────
   if (url.hostname.includes('supabase.co')) {
-    event.respondWith(
-      fetch(event.request).catch(() =>
-        new Response(JSON.stringify({ error: 'offline' }), {
-          headers: { 'Content-Type': 'application/json' }
-        })
-      )
-    );
+    // POST/PATCH/DELETE/PUT — network only, cache'e dokunma
+    if (event.request.method !== 'GET') return;
+
+    // Auth endpoint'leri — asla cache'leme
+    if (url.pathname.startsWith('/auth/')) return;
+
+    event.respondWith(supabaseNetworkFirst(event.request));
     return;
   }
 
@@ -73,7 +92,64 @@ self.addEventListener('fetch', event => {
   event.respondWith(networkFirst(event.request));
 });
 
-// ── STRATEJİLER ───────────────────────────────────────────────────────────────
+// ── SUPABASe NETWORK-FIRST ────────────────────────────────────────────────────
+// Önce network'e gider, başarılıysa cache'e yazar.
+// Offline'da cache'ten döner. Cache'te de yoksa boş dizi döner.
+async function supabaseNetworkFirst(request) {
+  const cache = await caches.open(SUPABASE_CACHE);
+
+  try {
+    const response = await fetch(request.clone());
+
+    if (response.ok) {
+      // Cache'e yaz — TTL bilgisini header'a göm
+      const cloned = response.clone();
+      const body = await cloned.text();
+      const cachedResponse = new Response(body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: {
+          ...Object.fromEntries(response.headers.entries()),
+          'x-sw-cached-at': Date.now().toString(),
+        }
+      });
+      cache.put(request, cachedResponse);
+      // Orijinal response'u döndür
+      return new Response(body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers,
+      });
+    }
+
+    return response;
+
+  } catch (err) {
+    // Offline — cache'e bak
+    console.log('[SW] Offline, Supabase cache kontrol ediliyor...');
+    const cached = await cache.match(request);
+
+    if (cached) {
+      const cachedAt = parseInt(cached.headers.get('x-sw-cached-at') || '0');
+      const age = Date.now() - cachedAt;
+      const ageMin = Math.round(age / 60000);
+      console.log(`[SW] Cache hit — ${ageMin} dakika önce kaydedilmiş`);
+      return cached;
+    }
+
+    // Cache'te yok — boş dizi dön (uygulama bunu handle ediyor)
+    console.warn('[SW] Cache miss — boş dizi dönülüyor');
+    return new Response('[]', {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-sw-offline': 'true',
+      }
+    });
+  }
+}
+
+// ── STRATEJİLER ──────────────────────────────────────────────────────────────
 async function cacheFirst(request) {
   const cached = await caches.match(request);
   if (cached) return cached;
@@ -108,7 +184,7 @@ async function networkFirst(request) {
   }
 }
 
-// ── BACKGROUND SYNC ───────────────────────────────────────────────────────────
+// ── BACKGROUND SYNC ──────────────────────────────────────────────────────────
 self.addEventListener('sync', event => {
   if (event.tag === 'crewguide-sync') {
     console.log('[SW] Background sync tetiklendi');
@@ -184,12 +260,17 @@ self.addEventListener('message', async event => {
     self.skipWaiting();
   }
 
-  // Background sync kaydı
   if (type === 'REGISTER_SYNC') {
     try {
       await self.registration.sync.register('crewguide-sync');
     } catch(e) {
       console.warn('[SW] Sync register hatası:', e);
     }
+  }
+
+  // Supabase cache'i manuel temizle (şehir değişince çağrılabilir)
+  if (type === 'CLEAR_SUPABASE_CACHE') {
+    await caches.delete(SUPABASE_CACHE).catch(() => {});
+    console.log('[SW] Supabase cache temizlendi');
   }
 });
