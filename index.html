@@ -568,6 +568,9 @@
   .invite-code-pill.used { background:#f0f3f9; color:var(--text-muted); text-decoration:line-through; }
   .invite-code-pill.free { background:#fef3c7; color:#92400e; }
   .invite-add-btn { font-size:11px; background:var(--navy); color:#fff; border:none; border-radius:6px; padding:4px 10px; cursor:pointer; font-family:'Syne',sans-serif; font-weight:600; }
+  .invite-delete-btn { font-size:11px; background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; border-radius:6px; padding:4px 10px; cursor:pointer; font-family:'Syne',sans-serif; font-weight:600; margin-left:4px; }
+  .invite-user-row.disabled { opacity:0.5; }
+  .disabled-badge { font-size:10px; background:#fee2e2; color:#991b1b; padding:1px 6px; border-radius:4px; margin-left:4px; }
   /* Admin paneli */
   .admin-stat-chip { font-size:11px; font-weight:600; color:var(--text-muted); padding:4px 10px 4px 0; }
   .admin-place-row { display:flex; align-items:flex-start; gap:10px; padding:12px 16px; border-bottom:1px solid var(--border); background:var(--white); }
@@ -6785,7 +6788,7 @@ async function loadAdminInvites() {
 
     // Tüm profilleri çek
     const profRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/profiles?order=created_at.desc&select=id,username,invite_code,invited_by,created_at,role`,
+      `${SUPABASE_URL}/rest/v1/profiles?order=created_at.desc&select=id,username,invite_code,invited_by,created_at,role,is_disabled`,
       { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + token } }
     );
     if (!profRes.ok) throw new Error(await profRes.text());
@@ -6883,6 +6886,7 @@ function renderAdminInvites() {
             <div class="invite-user-name">
               ${u.username || 'İsimsiz'}
               ${u.role === 'admin' ? '<span style="font-size:10px;background:var(--navy);color:#fff;padding:1px 6px;border-radius:4px;margin-left:4px;">ADMIN</span>' : ''}
+              ${u.is_disabled ? '<span class="disabled-badge">Devre Dışı</span>' : ''}
             </div>
             <div class="invite-user-meta">
               Katıldı: ${joined}
@@ -6916,6 +6920,89 @@ async function adminAddInviteCode(userId, username) {
     await loadAdminInvites();
   } catch(e) {
     console.error('[adminAddInviteCode]', e);
+    showToast('Hata: ' + e.message);
+  }
+}
+
+// ── KULLANICI YÖNETİMİ ──────────────────────────────────────────────────────
+
+async function manageUserAction(action, targetUserId) {
+  const token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token');
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/manage-user`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token,
+      'apikey': SUPABASE_KEY,
+    },
+    body: JSON.stringify({ action, targetUserId })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'İşlem başarısız');
+  return data;
+}
+
+async function adminDeleteUser(userId, username) {
+  if (!isAdmin()) return;
+  const confirmed = confirm(`"${username}" kullanıcısı kalıcı olarak silinecek!
+
+Eklediği yerler gizlenecek, davet kodları silinecek.
+
+Devam etmek istiyor musun?`);
+  if (!confirmed) return;
+
+  try {
+    showToast(lang === 'tr' ? '⏳ Siliniyor...' : '⏳ Deleting...');
+    await manageUserAction('delete', userId);
+    showToast(`✓ "${username}" silindi`);
+    allAdminUsers = [];
+    await loadAdminInvites();
+  } catch(e) {
+    console.error('[adminDeleteUser]', e);
+    showToast('Hata: ' + e.message);
+  }
+}
+
+async function adminEnableUser(userId, username) {
+  if (!isAdmin()) return;
+  const confirmed = confirm(`"${username}" hesabı yeniden aktif edilsin mi?`);
+  if (!confirmed) return;
+
+  try {
+    await manageUserAction('enable', userId);
+    showToast(`✓ "${username}" aktif edildi`);
+    allAdminUsers = [];
+    await loadAdminInvites();
+  } catch(e) {
+    console.error('[adminEnableUser]', e);
+    showToast('Hata: ' + e.message);
+  }
+}
+
+// Kullanıcı kendi hesabını devre dışı bırakır
+async function disableMyAccount() {
+  const confirmed = confirm(
+    lang === 'tr'
+      ? 'Hesabın devre dışı bırakılacak. Tekrar giriş yapamayacaksın.
+Devam etmek istiyor musun?'
+      : 'Your account will be disabled. You will not be able to sign in again.
+Continue?'
+  );
+  if (!confirmed) return;
+
+  try {
+    await manageUserAction('disable', currentUser.id);
+    showToast(lang === 'tr' ? 'Hesabın devre dışı bırakıldı.' : 'Account disabled.');
+    // Çıkış yap
+    sessionStorage.clear();
+    localStorage.removeItem('sb_access_token');
+    localStorage.removeItem('sb_refresh_token');
+    localStorage.removeItem('sb_user');
+    currentUser = null;
+    currentProfile = null;
+    setTimeout(() => goTo('screen-home'), 1500);
+  } catch(e) {
+    console.error('[disableMyAccount]', e);
     showToast('Hata: ' + e.message);
   }
 }
