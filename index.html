@@ -6989,10 +6989,8 @@ async function adminEnableUser(userId, username) {
 async function disableMyAccount() {
   const confirmed = confirm(
     lang === 'tr'
-      ? 'Hesabın devre dışı bırakılacak. Tekrar giriş yapamayacaksın.
-Devam etmek istiyor musun?'
-      : 'Your account will be disabled. You will not be able to sign in again.
-Continue?'
+      ? "Hesabın devre dışı bırakılacak. Devam etmek istiyor musun?"
+      : "Your account will be disabled. Continue?"
   );
   if (!confirmed) return;
 
