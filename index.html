@@ -6894,7 +6894,13 @@ function renderAdminInvites() {
               · ${usedCount}/${u.codes.length} kullanıldı
             </div>
           </div>
-          <button class="invite-add-btn" onclick="adminAddInviteCode('${u.id}', '${(u.username||'').replace(/'/g,"\'")}')">+ Kod Ver</button>
+          <div style="display:flex;gap:4px;align-items:center;">
+            <button class="invite-add-btn" onclick="adminAddInviteCode('${u.id}', '${(u.username||'').replace(/'/g,"\'")}')">+ Kod Ver</button>
+            ${u.is_disabled
+              ? `<button class="invite-delete-btn" onclick="adminEnableUser('${u.id}','${(u.username||'').replace(/'/g,"\'")}')">✓ Aktif Et</button>`
+              : `<button class="invite-delete-btn" onclick="adminDeleteUser('${u.id}','${(u.username||'').replace(/'/g,"\'")}')">🗑 Sil</button>`
+            }
+          </div>
         </div>
         <div style="padding-left:4px;">${codesHtml}</div>
       </div>`;
