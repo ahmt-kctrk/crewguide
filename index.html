@@ -6917,8 +6917,8 @@ function renderAdminInvites() {
           <div style="display:flex;gap:4px;align-items:center;">
             <button class="invite-add-btn" onclick="adminAddInviteCode('${u.id}', '${(u.username||'').replace(/'/g,"\'")}')">+ Kod Ver</button>
             ${u.is_disabled
-              ? `<button class="invite-delete-btn" onclick="adminEnableUser('${u.id}','${(u.username||'').replace(/'/g,"\'")}')">✓ Aktif Et</button>`
-              : `<button class="invite-delete-btn" onclick="adminDeleteUser('${u.id}','${(u.username||'').replace(/'/g,"\'")}')">🗑 Sil</button>`
+              ? `<button class="invite-delete-btn" onclick="adminEnableUser('${u.id}', this)">✓ Aktif Et</button>`
+              : `<button class="invite-delete-btn" onclick="adminDeleteUser('${u.id}', this)">🗑 Sil</button>`
             }
           </div>
         </div>
@@ -6968,8 +6968,9 @@ async function manageUserAction(action, targetUserId) {
   return data;
 }
 
-async function adminDeleteUser(userId, username) {
+async function adminDeleteUser(userId, btn) {
   if (!isAdmin()) return;
+  const username = btn?.closest('.invite-user-row')?.querySelector('.invite-user-name')?.textContent?.trim()?.split(' ')[0] || userId;
   const confirmed = confirm(`"${username}" kullanıcısı kalıcı olarak silinecek!
 
 Eklediği yerler gizlenecek, davet kodları silinecek.
@@ -6989,8 +6990,9 @@ Devam etmek istiyor musun?`);
   }
 }
 
-async function adminEnableUser(userId, username) {
+async function adminEnableUser(userId, btn) {
   if (!isAdmin()) return;
+  const username = btn?.closest('.invite-user-row')?.querySelector('.invite-user-name')?.textContent?.trim()?.split(' ')[0] || userId;
   const confirmed = confirm(`"${username}" hesabı yeniden aktif edilsin mi?`);
   if (!confirmed) return;
 
