@@ -4226,7 +4226,7 @@ function filterCities(q) {
   list.innerHTML = html;
 }
 
-let currentCity = 'Seoul';
+let currentCity = localStorage.getItem('cg_last_city') || null;
 
 // ── ZIYARET EDİLEN ŞEHİRLER (Bildirim için) ──────────────────────────────────
 function getVisitedCities() {
@@ -4252,6 +4252,8 @@ function hasVisitedCity(cityName) {
 
 function selectCity(name, country, flag) {
   currentCity = name;
+  // Son şehri kaydet
+  localStorage.setItem('cg_last_city', name);
   // Ziyaret edilen şehre ekle
   addVisitedCity(name);
   const dot = document.getElementById('location-dot');
@@ -8194,7 +8196,8 @@ updateCurrencyBadge('Seoul');
 // Default şehri ziyaret edilenler listesine ekle
 addVisitedCity('Seoul');
 // Supabase'den Seoul yerlerini yükle
-loadPlaces('Seoul');
+// Başlangıçta şehir seçilmeden yükleme yapma — kullanıcı şehir seçince yüklenir
+if (currentCity && currentCity !== 'Seoul') loadPlaces(currentCity);
 // Sayfa yüklenince session kontrol et
 window.addEventListener('load', () => {
   checkSession();
