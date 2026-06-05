@@ -1,5 +1,5 @@
 // CrewGuide Service Worker v4.1 — Offline-first + Supabase Cache
-// BUILD: 202606052121
+// BUILD: 202606052127
 const STATIC_CACHE   = 'crewguide-static-202506030001';
 const DYNAMIC_CACHE  = 'crewguide-dynamic-202506030001';
 const SUPABASE_CACHE = 'crewguide-supabase-202506030001';

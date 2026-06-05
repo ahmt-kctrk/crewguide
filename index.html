@@ -6799,11 +6799,24 @@ async function loadAdminInvites() {
     if (!invRes.ok) throw new Error(await invRes.text());
     const inviteCodes = await invRes.json();
 
-    // Her profile'a kodlarını eşleştir
-    allAdminUsers = profiles.map(p => ({
-      ...p,
-      codes: inviteCodes.filter(c => c.created_by === p.id)
-    }));
+    // id → username hızlı lookup
+    const idToUsername = {};
+    profiles.forEach(p => { idToUsername[p.id] = p.username; });
+
+    // Her profile'a kodlarını ve davet eden bilgisini eşleştir
+    allAdminUsers = profiles.map(p => {
+      // invited_by kodu invite_codes tablosunda kim tarafından oluşturulmuş?
+      const usedCode = inviteCodes.find(c => c.code === p.invited_by);
+      const invitedByUsername = usedCode?.created_by
+        ? (idToUsername[usedCode.created_by] || 'Bilinmiyor')
+        : (p.invited_by ? p.invited_by : null); // CRW-MASTER gibi hardcoded kodlar
+
+      return {
+        ...p,
+        codes: inviteCodes.filter(c => c.created_by === p.id),
+        invitedByUsername,
+      };
+    });
 
     // İstatistikler
     const totalCodes = inviteCodes.length;
@@ -6849,7 +6862,8 @@ function renderAdminInvites() {
     const joined = u.created_at ? new Date(u.created_at).toLocaleDateString('tr-TR', {day:'numeric',month:'short',year:'numeric'}) : '—';
     const usedCount = u.codes.filter(c => c.used_by).length;
     const freeCount = u.codes.filter(c => !c.used_by).length;
-    const invitedByUser = u.invited_by ? allAdminUsers.find(x => x.invite_code === u.invited_by) : null;
+    // invitedByUsername loadAdminInvites'ta hesaplandı
+    const invitedByLabel = u.invitedByUsername || null;
 
     const codesHtml = u.codes.length
       ? u.codes.map(c => `
@@ -6872,7 +6886,7 @@ function renderAdminInvites() {
             </div>
             <div class="invite-user-meta">
               Katıldı: ${joined}
-              ${invitedByUser ? ` · Davet eden: <b>${invitedByUser.username}</b>` : ' · (Kurucu/Master)'}
+              ${invitedByLabel ? ` · Davet eden: <b>${invitedByLabel}</b>` : ''}
               · ${usedCount}/${u.codes.length} kullanıldı
             </div>
           </div>
