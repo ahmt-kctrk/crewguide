@@ -1511,6 +1511,16 @@
         <button class="action-btn" id="btn-save-detail" onclick="toggleSave()">🔖 <span id="save-label">Kaydet</span></button>
         <button class="action-btn primary" id="btn-comment" onclick="scrollToCommentInput()">💬 <span id="comment-label">Yorum</span></button>
       </div>
+      <!-- Düzenle butonu — yerin sahibi veya admin görebilir -->
+      <div id="edit-place-action" style="display:none;margin-top:4px;">
+        <button onclick="openEditPlace()" style="
+          width:100%;padding:11px;border-radius:var(--radius-sm);
+          background:#eff6ff;border:1.5px solid #93c5fd;
+          color:#1d4ed8;font-size:13px;font-weight:600;
+          font-family:'Syne',sans-serif;cursor:pointer;">
+          ✏️ <span id="edit-place-label">Yeri Düzenle</span>
+        </button>
+      </div>
       <!-- Admin silme butonu — sadece admin görebilir -->
       <div id="admin-actions" style="display:none;margin-top:4px;">
         <button onclick="adminDeletePlace()" style="
@@ -3324,6 +3334,13 @@ function goTo(id) {
   }
   // Yer ekleme ekranı açılınca ülke dropdown doldur
   if (id === 'screen-add') {
+    // Eğer edit modundan gelmediyse formu sıfırla
+    if (!window._editingPlaceId) {
+      const addTitle = document.getElementById('add-title');
+      const submitBtn = document.getElementById('btn-submit');
+      if (addTitle) addTitle.textContent = lang==='tr' ? 'Yeni Yer Ekle' : 'Add Place';
+      if (submitBtn) submitBtn.textContent = lang==='tr' ? 'Paylaş →' : 'Share →';
+    }
     setTimeout(() => {
       loadDynamicCities().then(() => buildCountryOptions());
     }, 100);
@@ -3791,6 +3808,46 @@ function toggleShowAdult(el) {
   renderCards();
 }
 
+// ── YER DÜZENLEME ────────────────────────────────────────────────────────────
+function openEditPlace() {
+  const p = places.find(x => x.id === currentDetailId);
+  if (!p) return;
+
+  // Edit modunu işaretle
+  window._editingPlaceId = p.id;
+
+  // Formu doldur
+  document.getElementById('input-place-name').value = p.name || '';
+  document.getElementById('input-place-addr').value = p.addr || '';
+  document.getElementById('input-desc').value = p.desc?.[lang] || p.desc?.tr || p.desc?.en || '';
+
+  // Kategori seç
+  const catMap = { food: 'cat-food', shopping: 'cat-shopping', sightseeing: 'cat-sight-btn' };
+  document.querySelectorAll('.main-cat-btn').forEach(b => b.classList.remove('selected'));
+  const catBtn = document.getElementById(catMap[p.cat] || 'cat-food');
+  if (catBtn) { catBtn.classList.add('selected'); selectedMainCat = p.cat || 'food'; }
+
+  // Fiyat seç
+  document.querySelectorAll('.price-opt').forEach(opt => {
+    opt.classList.toggle('selected', opt.querySelector('.price-sym')?.textContent === p.price);
+  });
+
+  // Adult toggle
+  isAdultContent = p.isAdult || false;
+  const adultToggle = document.getElementById('toggle-adult');
+  if (adultToggle) adultToggle.className = isAdultContent ? 'toggle on' : 'toggle off';
+
+  // Form başlığını ve butonu güncelle
+  const addTitle = document.getElementById('add-title');
+  const submitBtn = document.getElementById('btn-submit');
+  if (addTitle) addTitle.textContent = lang==='tr' ? 'Yeri Düzenle' : 'Edit Place';
+  if (submitBtn) submitBtn.textContent = lang==='tr' ? 'Güncelle →' : 'Update →';
+
+  goTo('screen-add');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 async function submitPlace() {
   const name = document.getElementById('input-place-name').value.trim();
   const addr = document.getElementById('input-place-addr').value.trim();
@@ -3805,7 +3862,10 @@ async function submitPlace() {
   const catEmojis = { food:'🍜', shopping:'🛍', sightseeing:'🗺' };
   const priceName = { '$':{tr:'Uygun',en:'Budget'}, '$$':{tr:'Orta',en:'Mid-range'}, '$$$':{tr:'Pahalı',en:'Expensive'} };
 
-  const placeId = 'place_' + Date.now();
+  // Edit modu kontrolü
+  const editMode = !!window._editingPlaceId;
+  const placeId = editMode ? window._editingPlaceId : 'place_' + Date.now();
+
   const newPlace = {
     id: placeId,
     cat: selectedMainCat,
@@ -3845,14 +3905,32 @@ async function submitPlace() {
 
   if (navigator.onLine) {
     try {
-      await sbFetch('places', { method: 'POST', body: JSON.stringify(placePayload) });
-      sendPushForNewPlace({ city: currentCity||'Seoul', name, emoji: catEmojis[selectedMainCat]||'📍', placeId }).catch(()=>{});
+      if (editMode) {
+        // PATCH — güncelle
+        const token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token') || SUPABASE_KEY;
+        await fetch(`${SUPABASE_URL}/rest/v1/places?id=eq.${placeId}`, {
+          method: 'PATCH',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify(placePayload)
+        });
+      } else {
+        // POST — yeni ekle
+        await sbFetch('places', { method: 'POST', body: JSON.stringify(placePayload) });
+        sendPushForNewPlace({ city: currentCity||'Seoul', name, emoji: catEmojis[selectedMainCat]||'📍', placeId }).catch(()=>{});
+      }
     } catch(e) {
-      console.warn('[submitPlace] Online gönderim başarısız, queue ya alındı:', e);
-      await addToQueue('place_insert', placePayload);
-      await updateQueueBadge();
+      console.warn('[submitPlace] Online gönderim başarısız:', e);
+      if (!editMode) {
+        await addToQueue('place_insert', placePayload);
+        await updateQueueBadge();
+      }
     }
-  } else {
+  } else if (!editMode) {
     await addToQueue('place_insert', placePayload);
     await updateQueueBadge();
     console.log('[submitPlace] Offline — queue ya eklendi');
@@ -3882,9 +3960,17 @@ async function submitPlace() {
       setTimeout(() => { goTo('screen-home'); renderCards(); }, 1000);
     });
   } else {
-    showToast(lang==='tr'?'Yer başarıyla eklendi! 🎉':'Place added successfully! 🎉');
-    // Yeni şehri dynamicCities'e ekle
-    addCityToDynamic(currentCity, currentCountry, currentFlag);
+    const successMsg = editMode
+      ? (lang==='tr' ? 'Yer güncellendi! ✓' : 'Place updated! ✓')
+      : (lang==='tr' ? 'Yer başarıyla eklendi! 🎉' : 'Place added successfully! 🎉');
+    showToast(successMsg);
+    if (!editMode) addCityToDynamic(currentCity, currentCountry, currentFlag);
+    window._editingPlaceId = null;
+    // Form başlığını sıfırla
+    const addTitle = document.getElementById('add-title');
+    const submitBtn = document.getElementById('btn-submit');
+    if (addTitle) addTitle.textContent = lang==='tr' ? 'Yeni Yer Ekle' : 'Add Place';
+    if (submitBtn) submitBtn.textContent = lang==='tr' ? 'Paylaş →' : 'Share →';
     setTimeout(() => { goTo('screen-home'); renderCards(); }, 1000);
   }
 }
