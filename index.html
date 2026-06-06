@@ -1521,6 +1521,16 @@
           ✏️ <span id="edit-place-label">Yeri Düzenle</span>
         </button>
       </div>
+      <!-- Düzenle butonu — yerin sahibi veya admin görebilir -->
+      <div id="edit-place-action" style="display:none;margin-top:4px;">
+        <button onclick="openEditPlace()" style="
+          width:100%;padding:11px;border-radius:var(--radius-sm);
+          background:#eff6ff;border:1.5px solid #93c5fd;
+          color:#1d4ed8;font-size:13px;font-weight:600;
+          font-family:'Syne',sans-serif;cursor:pointer;">
+          ✏️ <span id="edit-place-label">Yeri Düzenle</span>
+        </button>
+      </div>
       <!-- Admin silme butonu — sadece admin görebilir -->
       <div id="admin-actions" style="display:none;margin-top:4px;">
         <button onclick="adminDeletePlace()" style="
@@ -3341,6 +3351,13 @@ function goTo(id) {
       if (addTitle) addTitle.textContent = lang==='tr' ? 'Yeni Yer Ekle' : 'Add Place';
       if (submitBtn) submitBtn.textContent = lang==='tr' ? 'Paylaş →' : 'Share →';
     }
+    // Eğer edit modundan gelmediyse formu sıfırla
+    if (!window._editingPlaceId) {
+      const addTitle = document.getElementById('add-title');
+      const submitBtn = document.getElementById('btn-submit');
+      if (addTitle) addTitle.textContent = lang==='tr' ? 'Yeni Yer Ekle' : 'Add Place';
+      if (submitBtn) submitBtn.textContent = lang==='tr' ? 'Paylaş →' : 'Share →';
+    }
     setTimeout(() => {
       loadDynamicCities().then(() => buildCountryOptions());
     }, 100);
@@ -3807,6 +3824,46 @@ function toggleShowAdult(el) {
   showAdultContent = el.classList.contains('on');
   renderCards();
 }
+
+// ── YER DÜZENLEME ────────────────────────────────────────────────────────────
+function openEditPlace() {
+  const p = places.find(x => x.id === currentDetailId);
+  if (!p) return;
+
+  // Edit modunu işaretle
+  window._editingPlaceId = p.id;
+
+  // Formu doldur
+  document.getElementById('input-place-name').value = p.name || '';
+  document.getElementById('input-place-addr').value = p.addr || '';
+  document.getElementById('input-desc').value = p.desc?.[lang] || p.desc?.tr || p.desc?.en || '';
+
+  // Kategori seç
+  const catMap = { food: 'cat-food', shopping: 'cat-shopping', sightseeing: 'cat-sight-btn' };
+  document.querySelectorAll('.main-cat-btn').forEach(b => b.classList.remove('selected'));
+  const catBtn = document.getElementById(catMap[p.cat] || 'cat-food');
+  if (catBtn) { catBtn.classList.add('selected'); selectedMainCat = p.cat || 'food'; }
+
+  // Fiyat seç
+  document.querySelectorAll('.price-opt').forEach(opt => {
+    opt.classList.toggle('selected', opt.querySelector('.price-sym')?.textContent === p.price);
+  });
+
+  // Adult toggle
+  isAdultContent = p.isAdult || false;
+  const adultToggle = document.getElementById('toggle-adult');
+  if (adultToggle) adultToggle.className = isAdultContent ? 'toggle on' : 'toggle off';
+
+  // Form başlığını ve butonu güncelle
+  const addTitle = document.getElementById('add-title');
+  const submitBtn = document.getElementById('btn-submit');
+  if (addTitle) addTitle.textContent = lang==='tr' ? 'Yeri Düzenle' : 'Edit Place';
+  if (submitBtn) submitBtn.textContent = lang==='tr' ? 'Güncelle →' : 'Update →';
+
+  goTo('screen-add');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 // ── YER DÜZENLEME ────────────────────────────────────────────────────────────
 function openEditPlace() {
