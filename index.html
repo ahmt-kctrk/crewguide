@@ -556,46 +556,6 @@
 
 
   /* YORUM DÜZENLE / SİL */
-  /* Konum seçici modal */
-  .location-picker-modal {
-    position: fixed; inset: 0; z-index: 9999;
-    background: var(--white);
-    display: flex; flex-direction: column;
-    animation: slideUp 0.25s ease;
-  }
-  .location-picker-header {
-    display: flex; align-items: center; gap: 12px;
-    padding: 14px 16px; border-bottom: 1px solid var(--border);
-    flex-shrink: 0; background: var(--white);
-  }
-  .location-picker-title {
-    font-size: 15px; font-weight: 700; color: var(--navy);
-    font-family: 'Syne', sans-serif; flex: 1;
-  }
-  .location-picker-subtitle {
-    font-size: 11px; color: var(--text-muted); margin-top: 2px;
-  }
-  #location-picker-map {
-    flex: 1; min-height: 0;
-  }
-  .location-picker-footer {
-    padding: 12px 16px; border-top: 1px solid var(--border);
-    background: var(--white); flex-shrink: 0;
-  }
-  .location-picker-addr {
-    font-size: 12px; color: var(--text-secondary);
-    margin-bottom: 10px; min-height: 16px;
-    display: flex; align-items: center; gap: 6px;
-    transition: opacity 0.2s;
-  }
-  .location-picker-addr.loading { opacity: 0.5; }
-  .picker-confirm-btn {
-    width: 100%; padding: 14px; border-radius: var(--radius);
-    background: var(--navy); color: #fff; border: none;
-    font-size: 15px; font-weight: 700; font-family: 'Syne', sans-serif;
-    cursor: pointer; transition: opacity 0.2s;
-  }
-  .picker-confirm-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   /* Admin sekmeleri */
   .admin-tab { flex:1; padding:11px 0; border:none; background:none; font-size:13px; font-family:'DM Sans',sans-serif; font-weight:500; color:var(--text-muted); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; transition:all 0.15s; }
   .admin-tab.active { color:var(--navy); font-weight:700; border-bottom-color:var(--navy); }
@@ -608,9 +568,6 @@
   .invite-code-pill.used { background:#f0f3f9; color:var(--text-muted); text-decoration:line-through; }
   .invite-code-pill.free { background:#fef3c7; color:#92400e; }
   .invite-add-btn { font-size:11px; background:var(--navy); color:#fff; border:none; border-radius:6px; padding:4px 10px; cursor:pointer; font-family:'Syne',sans-serif; font-weight:600; }
-  .invite-delete-btn { font-size:11px; background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; border-radius:6px; padding:4px 10px; cursor:pointer; font-family:'Syne',sans-serif; font-weight:600; margin-left:4px; }
-  .invite-user-row.disabled { opacity:0.5; }
-  .disabled-badge { font-size:10px; background:#fee2e2; color:#991b1b; padding:1px 6px; border-radius:4px; margin-left:4px; }
   /* Admin paneli */
   .admin-stat-chip { font-size:11px; font-weight:600; color:var(--text-muted); padding:4px 10px 4px 0; }
   .admin-place-row { display:flex; align-items:flex-start; gap:10px; padding:12px 16px; border-bottom:1px solid var(--border); background:var(--white); }
@@ -1511,26 +1468,6 @@
         <button class="action-btn" id="btn-save-detail" onclick="toggleSave()">🔖 <span id="save-label">Kaydet</span></button>
         <button class="action-btn primary" id="btn-comment" onclick="scrollToCommentInput()">💬 <span id="comment-label">Yorum</span></button>
       </div>
-      <!-- Düzenle butonu — yerin sahibi veya admin görebilir -->
-      <div id="edit-place-action" style="display:none;margin-top:4px;">
-        <button onclick="openEditPlace()" style="
-          width:100%;padding:11px;border-radius:var(--radius-sm);
-          background:#eff6ff;border:1.5px solid #93c5fd;
-          color:#1d4ed8;font-size:13px;font-weight:600;
-          font-family:'Syne',sans-serif;cursor:pointer;">
-          ✏️ <span id="edit-place-label">Yeri Düzenle</span>
-        </button>
-      </div>
-      <!-- Düzenle butonu — yerin sahibi veya admin görebilir -->
-      <div id="edit-place-action" style="display:none;margin-top:4px;">
-        <button onclick="openEditPlace()" style="
-          width:100%;padding:11px;border-radius:var(--radius-sm);
-          background:#eff6ff;border:1.5px solid #93c5fd;
-          color:#1d4ed8;font-size:13px;font-weight:600;
-          font-family:'Syne',sans-serif;cursor:pointer;">
-          ✏️ <span id="edit-place-label">Yeri Düzenle</span>
-        </button>
-      </div>
       <!-- Admin silme butonu — sadece admin görebilir -->
       <div id="admin-actions" style="display:none;margin-top:4px;">
         <button onclick="adminDeletePlace()" style="
@@ -1608,11 +1545,11 @@
         <div class="field-label" id="label-place-addr">ADRES / KONUM</div>
         <div style="display:flex;gap:8px;align-items:center;">
           <input class="field-input" type="text" id="input-place-addr" placeholder="Mapo-gu, Seoul" style="flex:1;margin:0;">
-          <button onclick="openLocationPicker()" id="btn-gps-location" title="Haritadan konum seç" style="
+          <button onclick="fillCurrentLocation()" id="btn-gps-location" title="Mevcut konumu kullan" style="
             flex-shrink:0; width:44px; height:44px; border-radius:var(--radius-sm);
             background:var(--navy); color:#fff; border:none; cursor:pointer;
             font-size:18px; display:flex; align-items:center; justify-content:center;
-            transition:opacity 0.2s;">🗺</button>
+            transition:opacity 0.2s;">📍</button>
         </div>
         <div id="gps-status" style="font-size:11px;color:var(--text-muted);margin-top:4px;display:none;"></div>
       </div>
@@ -3344,20 +3281,6 @@ function goTo(id) {
   }
   // Yer ekleme ekranı açılınca ülke dropdown doldur
   if (id === 'screen-add') {
-    // Eğer edit modundan gelmediyse formu sıfırla
-    if (!window._editingPlaceId) {
-      const addTitle = document.getElementById('add-title');
-      const submitBtn = document.getElementById('btn-submit');
-      if (addTitle) addTitle.textContent = lang==='tr' ? 'Yeni Yer Ekle' : 'Add Place';
-      if (submitBtn) submitBtn.textContent = lang==='tr' ? 'Paylaş →' : 'Share →';
-    }
-    // Eğer edit modundan gelmediyse formu sıfırla
-    if (!window._editingPlaceId) {
-      const addTitle = document.getElementById('add-title');
-      const submitBtn = document.getElementById('btn-submit');
-      if (addTitle) addTitle.textContent = lang==='tr' ? 'Yeni Yer Ekle' : 'Add Place';
-      if (submitBtn) submitBtn.textContent = lang==='tr' ? 'Paylaş →' : 'Share →';
-    }
     setTimeout(() => {
       loadDynamicCities().then(() => buildCountryOptions());
     }, 100);
@@ -3825,86 +3748,6 @@ function toggleShowAdult(el) {
   renderCards();
 }
 
-// ── YER DÜZENLEME ────────────────────────────────────────────────────────────
-function openEditPlace() {
-  const p = places.find(x => x.id === currentDetailId);
-  if (!p) return;
-
-  // Edit modunu işaretle
-  window._editingPlaceId = p.id;
-
-  // Formu doldur
-  document.getElementById('input-place-name').value = p.name || '';
-  document.getElementById('input-place-addr').value = p.addr || '';
-  document.getElementById('input-desc').value = p.desc?.[lang] || p.desc?.tr || p.desc?.en || '';
-
-  // Kategori seç
-  const catMap = { food: 'cat-food', shopping: 'cat-shopping', sightseeing: 'cat-sight-btn' };
-  document.querySelectorAll('.main-cat-btn').forEach(b => b.classList.remove('selected'));
-  const catBtn = document.getElementById(catMap[p.cat] || 'cat-food');
-  if (catBtn) { catBtn.classList.add('selected'); selectedMainCat = p.cat || 'food'; }
-
-  // Fiyat seç
-  document.querySelectorAll('.price-opt').forEach(opt => {
-    opt.classList.toggle('selected', opt.querySelector('.price-sym')?.textContent === p.price);
-  });
-
-  // Adult toggle
-  isAdultContent = p.isAdult || false;
-  const adultToggle = document.getElementById('toggle-adult');
-  if (adultToggle) adultToggle.className = isAdultContent ? 'toggle on' : 'toggle off';
-
-  // Form başlığını ve butonu güncelle
-  const addTitle = document.getElementById('add-title');
-  const submitBtn = document.getElementById('btn-submit');
-  if (addTitle) addTitle.textContent = lang==='tr' ? 'Yeri Düzenle' : 'Edit Place';
-  if (submitBtn) submitBtn.textContent = lang==='tr' ? 'Güncelle →' : 'Update →';
-
-  goTo('screen-add');
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-
-// ── YER DÜZENLEME ────────────────────────────────────────────────────────────
-function openEditPlace() {
-  const p = places.find(x => x.id === currentDetailId);
-  if (!p) return;
-
-  // Edit modunu işaretle
-  window._editingPlaceId = p.id;
-
-  // Formu doldur
-  document.getElementById('input-place-name').value = p.name || '';
-  document.getElementById('input-place-addr').value = p.addr || '';
-  document.getElementById('input-desc').value = p.desc?.[lang] || p.desc?.tr || p.desc?.en || '';
-
-  // Kategori seç
-  const catMap = { food: 'cat-food', shopping: 'cat-shopping', sightseeing: 'cat-sight-btn' };
-  document.querySelectorAll('.main-cat-btn').forEach(b => b.classList.remove('selected'));
-  const catBtn = document.getElementById(catMap[p.cat] || 'cat-food');
-  if (catBtn) { catBtn.classList.add('selected'); selectedMainCat = p.cat || 'food'; }
-
-  // Fiyat seç
-  document.querySelectorAll('.price-opt').forEach(opt => {
-    opt.classList.toggle('selected', opt.querySelector('.price-sym')?.textContent === p.price);
-  });
-
-  // Adult toggle
-  isAdultContent = p.isAdult || false;
-  const adultToggle = document.getElementById('toggle-adult');
-  if (adultToggle) adultToggle.className = isAdultContent ? 'toggle on' : 'toggle off';
-
-  // Form başlığını ve butonu güncelle
-  const addTitle = document.getElementById('add-title');
-  const submitBtn = document.getElementById('btn-submit');
-  if (addTitle) addTitle.textContent = lang==='tr' ? 'Yeri Düzenle' : 'Edit Place';
-  if (submitBtn) submitBtn.textContent = lang==='tr' ? 'Güncelle →' : 'Update →';
-
-  goTo('screen-add');
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-
 async function submitPlace() {
   const name = document.getElementById('input-place-name').value.trim();
   const addr = document.getElementById('input-place-addr').value.trim();
@@ -3963,7 +3806,6 @@ async function submitPlace() {
   if (navigator.onLine) {
     try {
       if (editMode) {
-        // PATCH — güncelle
         const token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token') || SUPABASE_KEY;
         await fetch(`${SUPABASE_URL}/rest/v1/places?id=eq.${placeId}`, {
           method: 'PATCH',
@@ -3976,7 +3818,6 @@ async function submitPlace() {
           body: JSON.stringify(placePayload)
         });
       } else {
-        // POST — yeni ekle
         await sbFetch('places', { method: 'POST', body: JSON.stringify(placePayload) });
         sendPushForNewPlace({ city: currentCity||'Seoul', name, emoji: catEmojis[selectedMainCat]||'📍', placeId }).catch(()=>{});
       }
@@ -4023,11 +3864,10 @@ async function submitPlace() {
     showToast(successMsg);
     if (!editMode) addCityToDynamic(currentCity, currentCountry, currentFlag);
     window._editingPlaceId = null;
-    // Form başlığını sıfırla
     const addTitle = document.getElementById('add-title');
-    const submitBtn = document.getElementById('btn-submit');
+    const submitBtn2 = document.getElementById('btn-submit');
     if (addTitle) addTitle.textContent = lang==='tr' ? 'Yeni Yer Ekle' : 'Add Place';
-    if (submitBtn) submitBtn.textContent = lang==='tr' ? 'Paylaş →' : 'Share →';
+    if (submitBtn2) submitBtn2.textContent = lang==='tr' ? 'Paylaş →' : 'Share →';
     setTimeout(() => { goTo('screen-home'); renderCards(); }, 1000);
   }
 }
@@ -4409,7 +4249,7 @@ function filterCities(q) {
   list.innerHTML = html;
 }
 
-let currentCity = localStorage.getItem('cg_last_city') || null;
+let currentCity = 'Seoul';
 
 // ── ZIYARET EDİLEN ŞEHİRLER (Bildirim için) ──────────────────────────────────
 function getVisitedCities() {
@@ -4435,8 +4275,6 @@ function hasVisitedCity(cityName) {
 
 function selectCity(name, country, flag) {
   currentCity = name;
-  // Son şehri kaydet
-  localStorage.setItem('cg_last_city', name);
   // Ziyaret edilen şehre ekle
   addVisitedCity(name);
   const dot = document.getElementById('location-dot');
@@ -5843,62 +5681,55 @@ async function createAccount() {
   btn.disabled = true;
 
   try {
-    // 1. Supabase Auth'da kayıt — metadata ile trigger profili oluşturur
-    const newInviteCode = 'CRW-' + Math.random().toString(36).substring(2,5).toUpperCase();
-    const isMaster = sessionStorage.getItem('isMasterInvite') === 'true';
-
+    // 1. Supabase Auth'da kayıt
     const authData = await authFetch('signup', {
       method: 'POST',
-      body: JSON.stringify({
-        email,
-        password,
-        data: {
-          username,
-          invite_code: newInviteCode,
-          invited_by: inviteCode,
-        }
-      })
+      body: JSON.stringify({ email, password })
     });
 
     const userId = authData.user?.id;
     const accessToken = authData.access_token;
-
-    // Email doğrulama gerekiyorsa access_token gelmez — bu normal
     if (!userId) throw new Error('User ID alınamadı');
 
-    // 2. Davet kodunu kullanıldı işaretle (arka planda — hata olsa devam et)
-    try {
-      sessionStorage.removeItem('isMasterInvite');
-      if (!isMaster) {
-        await fetch(`${SUPABASE_URL}/rest/v1/invite_codes?code=eq.${encodeURIComponent(inviteCode)}`, {
-          method: 'PATCH',
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': 'Bearer ' + SUPABASE_KEY,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal'
-          },
-          body: JSON.stringify({ used_by: userId, used_at: new Date().toISOString() })
-        });
-      }
-    } catch(e) {
-      console.warn('[createAccount] Davet kodu işaretlenemedi:', e);
+    // 2. Profil oluştur (kendi kodu — tek ana kod)
+    const newInviteCode = 'CRW-' + Math.random().toString(36).substring(2,5).toUpperCase();
+    await fetch(SUPABASE_URL + '/rest/v1/profiles', {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        id: userId,
+        username,
+        invite_code: newInviteCode,
+        invited_by: inviteCode
+      })
+    });
+
+    // 3. Kullanıcıya 3 adet davet kodu üret
+    const inviteCodes = [];
+    for (let i = 0; i < 3; i++) {
+      const code = 'CRW-' + Math.random().toString(36).substring(2,5).toUpperCase() + Math.random().toString(36).substring(2,4).toUpperCase();
+      inviteCodes.push({ code, created_by: userId });
     }
+    await sbFetch('invite_codes', {
+      method: 'POST',
+      prefer: 'return=minimal',
+      body: JSON.stringify(inviteCodes)
+    });
 
-    // 3. Email doğrulama gerekiyorsa — teşekkür ekranı göster
-    if (!accessToken) {
-      showToast(lang === 'tr'
-        ? '📧 Doğrulama emaili gönderildi! Emailini kontrol et.'
-        : '📧 Verification email sent! Check your inbox.');
-      btn.textContent = lang === 'tr' ? 'Email gönderildi ✓' : 'Email sent ✓';
-      btn.disabled = false;
+    // 4. Kullanılan davet kodunu işaretle (master kod için atlıyoruz)
+    const isMaster = sessionStorage.getItem('isMasterInvite') === 'true';
+    sessionStorage.removeItem('isMasterInvite');
+    if (!isMaster) await sbFetch(`invite_codes?code=eq.${encodeURIComponent(inviteCode)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ used_by: userId, used_at: new Date().toISOString() })
+    });
 
-      // Giriş ekranına yönlendir
-      setTimeout(() => goTo('screen-login'), 2500);
-      return;
-    }
-
-    // 4. Email doğrulama kapalıysa direkt session kaydet
+    // 5. Session kaydet
     sessionStorage.setItem('sb_access_token', accessToken);
     sessionStorage.setItem('sb_refresh_token', authData.refresh_token || '');
     localStorage.setItem('sb_access_token', accessToken);
@@ -5994,26 +5825,6 @@ async function loadProfile(userId, token) {
     if (data && data[0]) {
       currentProfile = data[0];
       localStorage.setItem('sb_profile', JSON.stringify(currentProfile));
-      // Hesap devre dışıysa çıkış yap
-      if (currentProfile.is_disabled) {
-        console.warn('[loadProfile] Hesap devre dışı — çıkış yapılıyor');
-        showToast(lang === 'tr' ? 'Hesabın devre dışı bırakılmış.' : 'Your account has been disabled.');
-        setTimeout(() => signOut(), 1500);
-        return;
-      }
-    } else {
-      // Profil bulunamadı — hesap silinmiş, çıkış yap
-      console.warn('[loadProfile] Profil bulunamadı — çıkış yapılıyor');
-      localStorage.removeItem('sb_profile');
-      localStorage.removeItem('sb_access_token');
-      localStorage.removeItem('sb_refresh_token');
-      localStorage.removeItem('sb_user');
-      sessionStorage.clear();
-      currentUser = null;
-      currentProfile = null;
-      showToast(lang === 'tr' ? 'Oturum geçersiz.' : 'Session invalid.');
-      setTimeout(() => goTo('screen-splash'), 1000);
-      return;
     }
 
     // Kullanıcının davet kodlarını yükle
@@ -6993,7 +6804,7 @@ async function loadAdminInvites() {
 
     // Tüm profilleri çek
     const profRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/profiles?order=created_at.desc&select=id,username,invite_code,invited_by,created_at,role,is_disabled`,
+      `${SUPABASE_URL}/rest/v1/profiles?order=created_at.desc&select=id,username,invite_code,invited_by,created_at,role`,
       { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + token } }
     );
     if (!profRes.ok) throw new Error(await profRes.text());
@@ -7007,24 +6818,11 @@ async function loadAdminInvites() {
     if (!invRes.ok) throw new Error(await invRes.text());
     const inviteCodes = await invRes.json();
 
-    // id → username hızlı lookup
-    const idToUsername = {};
-    profiles.forEach(p => { idToUsername[p.id] = p.username; });
-
-    // Her profile'a kodlarını ve davet eden bilgisini eşleştir
-    allAdminUsers = profiles.map(p => {
-      // invited_by kodu invite_codes tablosunda kim tarafından oluşturulmuş?
-      const usedCode = inviteCodes.find(c => c.code === p.invited_by);
-      const invitedByUsername = usedCode?.created_by
-        ? (idToUsername[usedCode.created_by] || 'Bilinmiyor')
-        : (p.invited_by ? p.invited_by : null); // CRW-MASTER gibi hardcoded kodlar
-
-      return {
-        ...p,
-        codes: inviteCodes.filter(c => c.created_by === p.id),
-        invitedByUsername,
-      };
-    });
+    // Her profile'a kodlarını eşleştir
+    allAdminUsers = profiles.map(p => ({
+      ...p,
+      codes: inviteCodes.filter(c => c.created_by === p.id)
+    }));
 
     // İstatistikler
     const totalCodes = inviteCodes.length;
@@ -7070,8 +6868,7 @@ function renderAdminInvites() {
     const joined = u.created_at ? new Date(u.created_at).toLocaleDateString('tr-TR', {day:'numeric',month:'short',year:'numeric'}) : '—';
     const usedCount = u.codes.filter(c => c.used_by).length;
     const freeCount = u.codes.filter(c => !c.used_by).length;
-    // invitedByUsername loadAdminInvites'ta hesaplandı
-    const invitedByLabel = u.invitedByUsername || null;
+    const invitedByUser = u.invited_by ? allAdminUsers.find(x => x.invite_code === u.invited_by) : null;
 
     const codesHtml = u.codes.length
       ? u.codes.map(c => `
@@ -7091,21 +6888,14 @@ function renderAdminInvites() {
             <div class="invite-user-name">
               ${u.username || 'İsimsiz'}
               ${u.role === 'admin' ? '<span style="font-size:10px;background:var(--navy);color:#fff;padding:1px 6px;border-radius:4px;margin-left:4px;">ADMIN</span>' : ''}
-              ${u.is_disabled ? '<span class="disabled-badge">Devre Dışı</span>' : ''}
             </div>
             <div class="invite-user-meta">
               Katıldı: ${joined}
-              ${invitedByLabel ? ` · Davet eden: <b>${invitedByLabel}</b>` : ''}
+              ${invitedByUser ? ` · Davet eden: <b>${invitedByUser.username}</b>` : ' · (Kurucu/Master)'}
               · ${usedCount}/${u.codes.length} kullanıldı
             </div>
           </div>
-          <div style="display:flex;gap:4px;align-items:center;">
-            <button class="invite-add-btn" onclick="adminAddInviteCode('${u.id}', '${(u.username||'').replace(/'/g,"\'")}')">+ Kod Ver</button>
-            ${u.is_disabled
-              ? `<button class="invite-delete-btn" onclick="adminEnableUser('${u.id}', this)">✓ Aktif Et</button>`
-              : `<button class="invite-delete-btn" onclick="adminDeleteUser('${u.id}', this)">🗑 Sil</button>`
-            }
-          </div>
+          <button class="invite-add-btn" onclick="adminAddInviteCode('${u.id}', '${(u.username||'').replace(/'/g,"\'")}')">+ Kod Ver</button>
         </div>
         <div style="padding-left:4px;">${codesHtml}</div>
       </div>`;
@@ -7131,89 +6921,6 @@ async function adminAddInviteCode(userId, username) {
     await loadAdminInvites();
   } catch(e) {
     console.error('[adminAddInviteCode]', e);
-    showToast('Hata: ' + e.message);
-  }
-}
-
-// ── KULLANICI YÖNETİMİ ──────────────────────────────────────────────────────
-
-async function manageUserAction(action, targetUserId) {
-  const token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token');
-  const res = await fetch(`${SUPABASE_URL}/functions/v1/manage-user`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + token,
-      'apikey': SUPABASE_KEY,
-    },
-    body: JSON.stringify({ action, targetUserId })
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'İşlem başarısız');
-  return data;
-}
-
-async function adminDeleteUser(userId, btn) {
-  if (!isAdmin()) return;
-  const username = btn?.closest('.invite-user-row')?.querySelector('.invite-user-name')?.textContent?.trim()?.split(' ')[0] || userId;
-  const confirmed = confirm(`"${username}" kullanıcısı kalıcı olarak silinecek!
-
-Eklediği yerler gizlenecek, davet kodları silinecek.
-
-Devam etmek istiyor musun?`);
-  if (!confirmed) return;
-
-  try {
-    showToast(lang === 'tr' ? '⏳ Siliniyor...' : '⏳ Deleting...');
-    await manageUserAction('delete', userId);
-    showToast(`✓ "${username}" silindi`);
-    allAdminUsers = [];
-    await loadAdminInvites();
-  } catch(e) {
-    console.error('[adminDeleteUser]', e);
-    showToast('Hata: ' + e.message);
-  }
-}
-
-async function adminEnableUser(userId, btn) {
-  if (!isAdmin()) return;
-  const username = btn?.closest('.invite-user-row')?.querySelector('.invite-user-name')?.textContent?.trim()?.split(' ')[0] || userId;
-  const confirmed = confirm(`"${username}" hesabı yeniden aktif edilsin mi?`);
-  if (!confirmed) return;
-
-  try {
-    await manageUserAction('enable', userId);
-    showToast(`✓ "${username}" aktif edildi`);
-    allAdminUsers = [];
-    await loadAdminInvites();
-  } catch(e) {
-    console.error('[adminEnableUser]', e);
-    showToast('Hata: ' + e.message);
-  }
-}
-
-// Kullanıcı kendi hesabını devre dışı bırakır
-async function disableMyAccount() {
-  const confirmed = confirm(
-    lang === 'tr'
-      ? "Hesabın devre dışı bırakılacak. Devam etmek istiyor musun?"
-      : "Your account will be disabled. Continue?"
-  );
-  if (!confirmed) return;
-
-  try {
-    await manageUserAction('disable', currentUser.id);
-    showToast(lang === 'tr' ? 'Hesabın devre dışı bırakıldı.' : 'Account disabled.');
-    // Çıkış yap
-    sessionStorage.clear();
-    localStorage.removeItem('sb_access_token');
-    localStorage.removeItem('sb_refresh_token');
-    localStorage.removeItem('sb_user');
-    currentUser = null;
-    currentProfile = null;
-    setTimeout(() => goTo('screen-home'), 1500);
-  } catch(e) {
-    console.error('[disableMyAccount]', e);
     showToast('Hata: ' + e.message);
   }
 }
@@ -7556,180 +7263,6 @@ function updateCurrentUsernameDisplay() {
 
 
 // ── YER EKLEME — GPS KONUM ────────────────────────────────────────────────────
-// ── KONUM SEÇİCİ (sürüklenebilir pin) ───────────────────────────────────────
-let pickerMap = null;
-let pickerMarker = null;
-let pickerLat = null;
-let pickerLon = null;
-let pickerAddrTimer = null;
-
-async function openLocationPicker() {
-  // Eski modal varsa kaldır
-  const old = document.getElementById('location-picker-modal');
-  if (old) old.remove();
-  if (pickerMap) { pickerMap.remove(); pickerMap = null; pickerMarker = null; }
-
-  const modal = document.createElement('div');
-  modal.id = 'location-picker-modal';
-  modal.className = 'location-picker-modal';
-  modal.innerHTML = `
-    <div class="location-picker-header">
-      <button class="map-close-btn" onclick="closeLocationPicker()">←</button>
-      <div style="flex:1;">
-        <div class="location-picker-title">${lang==='tr'?'Konumu Seç':'Pick Location'}</div>
-        <div class="location-picker-subtitle">${lang==='tr'?'Pini sürükleyerek konumu ayarla':'Drag the pin to adjust the location'}</div>
-      </div>
-    </div>
-    <div id="location-picker-map"></div>
-    <div class="location-picker-footer">
-      <div class="location-picker-addr" id="picker-addr-text">
-        <span>📍</span>
-        <span id="picker-addr-label">${lang==='tr'?'Konum alınıyor...':'Getting location...'}</span>
-      </div>
-      <button class="picker-confirm-btn" id="picker-confirm-btn" onclick="confirmPickedLocation()" disabled>
-        ${lang==='tr'?'Bu Konumu Kullan ✓':'Use This Location ✓'}
-      </button>
-    </div>
-  `;
-
-  document.getElementById('app').appendChild(modal);
-
-  // Başlangıç koordinatı: GPS veya şehir merkezi
-  const startLat = pickerLat || 48.8566;
-  const startLon = pickerLon || 2.3522;
-
-  setTimeout(async () => {
-    pickerMap = L.map('location-picker-map', {
-      center: [startLat, startLon],
-      zoom: 15,
-      zoomControl: true,
-    });
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap',
-      maxZoom: 19
-    }).addTo(pickerMap);
-
-    // Sürüklenebilir marker
-    const markerIcon = L.divIcon({
-      html: `<div style="
-        width:36px;height:36px;border-radius:50% 50% 50% 0;
-        background:var(--navy,#0f1729);border:3px solid white;
-        transform:rotate(-45deg);box-shadow:0 2px 8px rgba(0,0,0,0.3);
-        display:flex;align-items:center;justify-content:center;">
-        <span style="transform:rotate(45deg);font-size:16px;">📍</span>
-      </div>`,
-      className: '',
-      iconSize: [36, 36],
-      iconAnchor: [18, 36],
-    });
-
-    pickerMarker = L.marker([startLat, startLon], {
-      icon: markerIcon,
-      draggable: true,
-    }).addTo(pickerMap);
-
-    pickerLat = startLat;
-    pickerLon = startLon;
-
-    // Pin sürüklenince adres güncelle
-    pickerMarker.on('dragend', async (e) => {
-      const pos = e.target.getLatLng();
-      pickerLat = pos.lat;
-      pickerLon = pos.lng;
-      await updatePickerAddress(pos.lat, pos.lng);
-    });
-
-    // Haritaya tıklayınca pin oraya gitsin
-    pickerMap.on('click', async (e) => {
-      pickerLat = e.latlng.lat;
-      pickerLon = e.latlng.lng;
-      pickerMarker.setLatLng([pickerLat, pickerLon]);
-      await updatePickerAddress(pickerLat, pickerLon);
-    });
-
-    pickerMap.invalidateSize();
-
-    // GPS ile başla
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          pickerLat = pos.coords.latitude;
-          pickerLon = pos.coords.longitude;
-          pickerMarker.setLatLng([pickerLat, pickerLon]);
-          pickerMap.setView([pickerLat, pickerLon], 16);
-          await updatePickerAddress(pickerLat, pickerLon);
-        },
-        () => {
-          // GPS izni yok — mevcut konumda kal
-          updatePickerAddress(startLat, startLon);
-        },
-        { enableHighAccuracy: true, timeout: 8000 }
-      );
-    } else {
-      updatePickerAddress(startLat, startLon);
-    }
-  }, 150);
-}
-
-async function updatePickerAddress(lat, lon) {
-  const label = document.getElementById('picker-addr-label');
-  const addrEl = document.getElementById('picker-addr-text');
-  const btn = document.getElementById('picker-confirm-btn');
-
-  if (label) label.textContent = lang==='tr'?'Adres aranıyor...':'Looking up address...';
-  if (addrEl) addrEl.classList.add('loading');
-  if (btn) btn.disabled = true;
-
-  try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=${lang}`,
-      { headers: { 'User-Agent': 'CrewGuide/1.0' } }
-    );
-    const data = await res.json();
-    const a = data.address || {};
-    const parts = [];
-    if (a.road || a.pedestrian || a.street) parts.push(a.road || a.pedestrian || a.street);
-    if (a.neighbourhood || a.suburb || a.district) parts.push(a.neighbourhood || a.suburb || a.district);
-    if (a.city || a.town || a.village || a.county) parts.push(a.city || a.town || a.village || a.county);
-    if (a.country) parts.push(a.country);
-
-    const addr = parts.join(', ') || data.display_name || `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
-
-    if (label) label.textContent = addr;
-    if (addrEl) addrEl.classList.remove('loading');
-    if (btn) btn.disabled = false;
-
-    // Adresi global sakla
-    window._pickerResolvedAddr = addr;
-
-  } catch(e) {
-    const fallback = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
-    if (label) label.textContent = fallback;
-    if (addrEl) addrEl.classList.remove('loading');
-    if (btn) btn.disabled = false;
-    window._pickerResolvedAddr = fallback;
-  }
-}
-
-function confirmPickedLocation() {
-  const input = document.getElementById('input-place-addr');
-  const addr = window._pickerResolvedAddr;
-  if (input && addr) {
-    input.value = addr;
-    showToast(lang==='tr'?'📍 Konum eklendi!':'📍 Location added!');
-  }
-  closeLocationPicker();
-}
-
-function closeLocationPicker() {
-  const modal = document.getElementById('location-picker-modal');
-  if (modal) modal.remove();
-  if (pickerMap) { pickerMap.remove(); pickerMap = null; pickerMarker = null; }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-
 async function fillCurrentLocation() {
   const btn = document.getElementById('btn-gps-location');
   const status = document.getElementById('gps-status');
@@ -8553,8 +8086,7 @@ updateCurrencyBadge('Seoul');
 // Default şehri ziyaret edilenler listesine ekle
 addVisitedCity('Seoul');
 // Supabase'den Seoul yerlerini yükle
-// Başlangıçta şehir seçilmeden yükleme yapma — kullanıcı şehir seçince yüklenir
-if (currentCity && currentCity !== 'Seoul') loadPlaces(currentCity);
+loadPlaces('Seoul');
 // Sayfa yüklenince session kontrol et
 window.addEventListener('load', () => {
   checkSession();
