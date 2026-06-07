@@ -1468,6 +1468,16 @@
         <button class="action-btn" id="btn-save-detail" onclick="toggleSave()">🔖 <span id="save-label">Kaydet</span></button>
         <button class="action-btn primary" id="btn-comment" onclick="scrollToCommentInput()">💬 <span id="comment-label">Yorum</span></button>
       </div>
+      <!-- Düzenle butonu — yerin sahibi veya admin -->
+      <div id="edit-place-action" style="display:none;margin-top:4px;">
+        <button onclick="openEditPlace()" style="
+          width:100%;padding:11px;border-radius:var(--radius-sm);
+          background:#eff6ff;border:1.5px solid #93c5fd;
+          color:#1d4ed8;font-size:13px;font-weight:600;
+          font-family:'Syne',sans-serif;cursor:pointer;">
+          ✏️ <span id="edit-place-label">Yeri Düzenle</span>
+        </button>
+      </div>
       <!-- Admin silme butonu — sadece admin görebilir -->
       <div id="admin-actions" style="display:none;margin-top:4px;">
         <button onclick="adminDeletePlace()" style="
