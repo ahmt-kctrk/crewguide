@@ -3462,8 +3462,14 @@ function openDetail(id) {
   fetchPlaceHours(p);  // çalışma saati badge
   // Silme butonunu göster/gizle — admin veya yerin sahibi
   const adminActions = document.getElementById('admin-actions');
-  const isOwner = currentUser && p.userId && currentUser.id === p.userId;
-  if (adminActions) adminActions.style.display = (isAdmin() || isOwner) ? 'block' : 'none';
+  if (adminActions) adminActions.style.display = isAdmin() ? 'block' : 'none';
+
+  // Düzenle butonu — yerin sahibi veya admin
+  const editAction = document.getElementById('edit-place-action');
+  if (editAction) {
+    const canEdit = isAdmin() || (currentUser && p.userId === currentUser.id);
+    editAction.style.display = canEdit ? 'block' : 'none';
+  }
   goTo('screen-detail');
 }
 
