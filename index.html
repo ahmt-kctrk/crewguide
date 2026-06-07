@@ -3764,6 +3764,45 @@ function toggleShowAdult(el) {
   renderCards();
 }
 
+// ── YER DÜZENLEME ────────────────────────────────────────────────────────────
+function openEditPlace() {
+  const p = places.find(x => x.id === currentDetailId);
+  if (!p) return;
+
+  window._editingPlaceId = p.id;
+
+  document.getElementById('input-place-name').value = p.name || '';
+  document.getElementById('input-place-addr').value = p.addr || '';
+  document.getElementById('input-desc').value = p.desc?.[lang] || p.desc?.tr || p.desc?.en || '';
+
+  // Kategori
+  document.querySelectorAll('.main-cat-btn').forEach(b => b.classList.remove('selected'));
+  const catIds = { food: 'cat-food', shopping: 'cat-shopping', sightseeing: 'cat-sight-btn' };
+  const catBtn = document.getElementById(catIds[p.cat] || 'cat-food');
+  if (catBtn) { catBtn.classList.add('selected'); }
+  selectedMainCat = p.cat || 'food';
+
+  // Fiyat
+  document.querySelectorAll('.price-opt').forEach(opt => {
+    opt.classList.toggle('selected', opt.querySelector('.price-sym')?.textContent === p.price);
+  });
+
+  // Adult toggle
+  isAdultContent = p.isAdult || false;
+  const adultToggle = document.getElementById('toggle-adult');
+  if (adultToggle) adultToggle.className = isAdultContent ? 'toggle on' : 'toggle off';
+
+  // Form başlığı ve buton
+  const addTitle = document.getElementById('add-title');
+  const submitBtn = document.getElementById('btn-submit');
+  if (addTitle) addTitle.textContent = lang==='tr' ? 'Yeri Düzenle' : 'Edit Place';
+  if (submitBtn) submitBtn.textContent = lang==='tr' ? 'Güncelle →' : 'Update →';
+
+  goTo('screen-add');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 async function submitPlace() {
   const name = document.getElementById('input-place-name').value.trim();
   const addr = document.getElementById('input-place-addr').value.trim();
