@@ -556,6 +556,26 @@
 
 
   /* YORUM DÜZENLE / SİL */
+  /* Konum seçici modal */
+  .location-picker-modal {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--white);
+    display: flex; flex-direction: column;
+    animation: slideUp 0.25s ease;
+  }
+  .location-picker-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; border-bottom: 1px solid var(--border);
+    flex-shrink: 0; background: var(--white);
+  }
+  .location-picker-title { font-size: 15px; font-weight: 700; color: var(--navy); font-family: 'Syne', sans-serif; flex: 1; }
+  .location-picker-subtitle { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  #location-picker-map { flex: 1; min-height: 0; }
+  .location-picker-footer { padding: 12px 16px; border-top: 1px solid var(--border); background: var(--white); flex-shrink: 0; }
+  .location-picker-addr { font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; min-height: 16px; display: flex; align-items: center; gap: 6px; transition: opacity 0.2s; }
+  .location-picker-addr.loading { opacity: 0.5; }
+  .picker-confirm-btn { width: 100%; padding: 14px; border-radius: var(--radius); background: var(--navy); color: #fff; border: none; font-size: 15px; font-weight: 700; font-family: 'Syne', sans-serif; cursor: pointer; }
+  .picker-confirm-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   /* Admin sekmeleri */
   .admin-tab { flex:1; padding:11px 0; border:none; background:none; font-size:13px; font-family:'DM Sans',sans-serif; font-weight:500; color:var(--text-muted); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; transition:all 0.15s; }
   .admin-tab.active { color:var(--navy); font-weight:700; border-bottom-color:var(--navy); }
@@ -1555,7 +1575,7 @@
         <div class="field-label" id="label-place-addr">ADRES / KONUM</div>
         <div style="display:flex;gap:8px;align-items:center;">
           <input class="field-input" type="text" id="input-place-addr" placeholder="Mapo-gu, Seoul" style="flex:1;margin:0;">
-          <button onclick="fillCurrentLocation()" id="btn-gps-location" title="Mevcut konumu kullan" style="
+          <button onclick="openLocationPicker()" id="btn-gps-location" title="Haritadan konum seç" style="
             flex-shrink:0; width:44px; height:44px; border-radius:var(--radius-sm);
             background:var(--navy); color:#fff; border:none; cursor:pointer;
             font-size:18px; display:flex; align-items:center; justify-content:center;
@@ -7318,6 +7338,141 @@ function updateCurrentUsernameDisplay() {
 
 
 // ── YER EKLEME — GPS KONUM ────────────────────────────────────────────────────
+// ── KONUM SEÇİCİ ─────────────────────────────────────────────────────────────
+let pickerMap = null;
+let pickerMarker = null;
+let pickerLat = null;
+let pickerLon = null;
+
+async function openLocationPicker() {
+  const old = document.getElementById('location-picker-modal');
+  if (old) old.remove();
+  if (pickerMap) { pickerMap.remove(); pickerMap = null; pickerMarker = null; }
+
+  const modal = document.createElement('div');
+  modal.id = 'location-picker-modal';
+  modal.className = 'location-picker-modal';
+  modal.innerHTML = `
+    <div class="location-picker-header">
+      <button class="map-close-btn" onclick="closeLocationPicker()">←</button>
+      <div style="flex:1;">
+        <div class="location-picker-title">${lang==='tr'?'Konumu Seç':'Pick Location'}</div>
+        <div class="location-picker-subtitle">${lang==='tr'?'Pini sürükle veya haritaya tıkla':'Drag pin or tap map'}</div>
+      </div>
+    </div>
+    <div id="location-picker-map"></div>
+    <div class="location-picker-footer">
+      <div class="location-picker-addr" id="picker-addr-text">
+        <span>📍</span>
+        <span id="picker-addr-label">${lang==='tr'?'Konum alınıyor...':'Getting location...'}</span>
+      </div>
+      <button class="picker-confirm-btn" id="picker-confirm-btn" onclick="confirmPickedLocation()" disabled>
+        ${lang==='tr'?'Bu Konumu Kullan ✓':'Use This Location ✓'}
+      </button>
+    </div>
+  `;
+
+  document.getElementById('app').appendChild(modal);
+
+  const startLat = pickerLat || 41.0082;
+  const startLon = pickerLon || 28.9784;
+
+  setTimeout(async () => {
+    pickerMap = L.map('location-picker-map', { center: [startLat, startLon], zoom: 15 });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap', maxZoom: 19
+    }).addTo(pickerMap);
+
+    const markerIcon = L.divIcon({
+      html: `<div style="width:32px;height:32px;border-radius:50% 50% 50% 0;background:#0f1729;border:3px solid white;transform:rotate(-45deg);box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>`,
+      className: '', iconSize: [32, 32], iconAnchor: [16, 32],
+    });
+
+    pickerMarker = L.marker([startLat, startLon], { icon: markerIcon, draggable: true }).addTo(pickerMap);
+    pickerLat = startLat; pickerLon = startLon;
+
+    pickerMarker.on('dragend', async (e) => {
+      const pos = e.target.getLatLng();
+      pickerLat = pos.lat; pickerLon = pos.lng;
+      await updatePickerAddress(pos.lat, pos.lng);
+    });
+
+    pickerMap.on('click', async (e) => {
+      pickerLat = e.latlng.lat; pickerLon = e.latlng.lng;
+      pickerMarker.setLatLng([pickerLat, pickerLon]);
+      await updatePickerAddress(pickerLat, pickerLon);
+    });
+
+    pickerMap.invalidateSize();
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          pickerLat = pos.coords.latitude; pickerLon = pos.coords.longitude;
+          pickerMarker.setLatLng([pickerLat, pickerLon]);
+          pickerMap.setView([pickerLat, pickerLon], 16);
+          await updatePickerAddress(pickerLat, pickerLon);
+        },
+        () => { updatePickerAddress(startLat, startLon); },
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    } else {
+      updatePickerAddress(startLat, startLon);
+    }
+  }, 150);
+}
+
+async function updatePickerAddress(lat, lon) {
+  const label = document.getElementById('picker-addr-label');
+  const addrEl = document.getElementById('picker-addr-text');
+  const btn = document.getElementById('picker-confirm-btn');
+  if (label) label.textContent = lang==='tr'?'Adres aranıyor...':'Looking up...';
+  if (addrEl) addrEl.classList.add('loading');
+  if (btn) btn.disabled = true;
+
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=${lang}`,
+      { headers: { 'User-Agent': 'CrewGuide/1.0' } }
+    );
+    const data = await res.json();
+    const a = data.address || {};
+    const parts = [];
+    if (a.road || a.pedestrian) parts.push(a.road || a.pedestrian);
+    if (a.neighbourhood || a.suburb) parts.push(a.neighbourhood || a.suburb);
+    if (a.city || a.town || a.village) parts.push(a.city || a.town || a.village);
+    if (a.country) parts.push(a.country);
+    const addr = parts.join(', ') || data.display_name || `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+    if (label) label.textContent = addr;
+    if (addrEl) addrEl.classList.remove('loading');
+    if (btn) btn.disabled = false;
+    window._pickerResolvedAddr = addr;
+  } catch(e) {
+    const fallback = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+    if (label) label.textContent = fallback;
+    if (addrEl) addrEl.classList.remove('loading');
+    if (btn) btn.disabled = false;
+    window._pickerResolvedAddr = fallback;
+  }
+}
+
+function confirmPickedLocation() {
+  const input = document.getElementById('input-place-addr');
+  if (input && window._pickerResolvedAddr) {
+    input.value = window._pickerResolvedAddr;
+    showToast(lang==='tr'?'📍 Konum eklendi!':'📍 Location added!');
+  }
+  closeLocationPicker();
+}
+
+function closeLocationPicker() {
+  const modal = document.getElementById('location-picker-modal');
+  if (modal) modal.remove();
+  if (pickerMap) { pickerMap.remove(); pickerMap = null; pickerMarker = null; }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 async function fillCurrentLocation() {
   const btn = document.getElementById('btn-gps-location');
   const status = document.getElementById('gps-status');
