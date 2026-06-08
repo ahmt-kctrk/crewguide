@@ -7588,8 +7588,7 @@ async function loadPlaces(cityFilter) {
         isAdult: row.is_adult || false,
         userId: row.user_id || null,
         desc: { tr: row.desc_tr || '', en: row.desc_en || '' },
-        googlePlaceId: row.google_place_id || null,
-        openingHours: row.opening_hours || null,
+        city: row.city || '',
         googlePlaceId: row.google_place_id || null,
         openingHours: row.opening_hours || null
       });
