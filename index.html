@@ -6547,7 +6547,9 @@ async function openMapModal() {
 
   try {
     // Nominatim ile adres → koordinat
-    const query = encodeURIComponent(`${p.name}, ${p.addr}`);
+    // Şehir bilgisini de ekle — yanlış lokasyon önlenir
+    const cityHint = p.city || currentCity || '';
+    const query = encodeURIComponent(`${p.name}, ${p.addr}${cityHint ? ', ' + cityHint : ''}`);
     const res = await fetch(
       `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`,
       { headers: { 'Accept-Language': lang } }
