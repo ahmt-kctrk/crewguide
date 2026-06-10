@@ -8279,16 +8279,53 @@ function onCityAddChange() {
 
 function onCustomCityInput(val) {
   const city = val.trim();
-  if (city) {
-    currentCity = city;
-    const citySelect = document.getElementById('select-city-add');
-    if (citySelect) citySelect.value = '';
-    const display = document.getElementById('selected-city-display');
-    if (display) display.textContent = `${currentFlag} ${city} · ${currentCountry?.[lang]||''}`;
-    // Para birimini güncelle
+  if (city.length < 2) return;
+  currentCity = city;
+  const citySelect = document.getElementById('select-city-add');
+  if (citySelect) citySelect.value = '';
+
+  // Önce mevcut listede ara
+  const cityData = getMergedCities().find(c => c.name.toLowerCase() === city.toLowerCase());
+  if (cityData && cityData.country && cityData.country.en && cityData.country.en !== city) {
+    currentCountry = cityData.country;
+    currentFlag = cityData.flag;
     currentCurrency = getCurrencyForCity(city);
     updateCurrencyBadge(city);
+    const display = document.getElementById('selected-city-display');
+    if (display) display.textContent = `${currentFlag} ${city} · ${currentCountry?.[lang]||''}`;
+    return;
   }
+
+  // Listede yoksa Nominatim'den çek (debounce — 800ms sonra)
+  clearTimeout(window._cityInputTimer);
+  window._cityInputTimer = setTimeout(async () => {
+    try {
+      const q = encodeURIComponent(city);
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1&addressdetails=1`,
+        { headers: { 'Accept-Language': 'en' } }
+      );
+      const data = await res.json();
+      if (data && data[0]?.address) {
+        const a = data[0].address;
+        const countryEn = a.country || city;
+        const countryCode = a.country_code?.toUpperCase() || '';
+        const flagEmoji = countryCode
+          ? countryCode.split('').map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65)).join('')
+          : '🌍';
+        currentCountry = { tr: countryEn, en: countryEn };
+        currentFlag = flagEmoji;
+        // dynamicCities'e ekle
+        addCityToDynamic(city, currentCountry, currentFlag);
+      }
+    } catch(e) {
+      console.warn('[onCustomCityInput] Nominatim hatası:', e);
+    }
+    currentCurrency = getCurrencyForCity(city);
+    updateCurrencyBadge(city);
+    const display = document.getElementById('selected-city-display');
+    if (display) display.textContent = `${currentFlag} ${city} · ${currentCountry?.[lang]||''}`;
+  }, 800);
 }
 
 // ── DAVET KODLARI UI ──────────────────────────────────────────────────────────
