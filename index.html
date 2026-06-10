@@ -4354,12 +4354,26 @@ function hasVisitedCity(cityName) {
 
 function selectCity(name, country, flag) {
   currentCity = name;
+  localStorage.setItem('cg_last_city', name);
+
+  // country string olarak geliyor — objeye çevir
+  // Ayrıca dynamicCities veya popularCities'den tam bilgiyi al
+  const cityData = getMergedCities().find(c => c.name.toLowerCase() === name.toLowerCase());
+  if (cityData) {
+    currentCountry = cityData.country;
+    currentFlag = cityData.flag;
+  } else {
+    // Fallback: gelen string'i hem tr hem en olarak kaydet
+    currentCountry = { tr: country || name, en: country || name };
+    currentFlag = flag || '🌍';
+  }
+
   // Ziyaret edilen şehre ekle
   addVisitedCity(name);
   const dot = document.getElementById('location-dot');
   const text = document.getElementById('location-text');
   dot.style.background = '#10b981';
-if (text) text.textContent = flag + ' ' + name + ', ' + country;
+  if (text) text.textContent = (currentFlag || flag) + ' ' + name + (country ? ', ' + country : '');
 
   const addSub = document.getElementById('add-sub');
   if (addSub) addSub.textContent = name + ' · ' + (lang==='tr'?'Deneyimini paylaş':'Share your experience');
