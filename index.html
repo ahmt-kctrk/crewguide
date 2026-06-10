@@ -4101,6 +4101,38 @@ const countryCurrencyDB = {
   'Meksika': { symbol:'$', code:'MXN', rate:0.052, name:{tr:'Meksika Pesosu',en:'Mexican Peso'} },
   'S. Africa': { symbol:'R', code:'ZAR', rate:0.054, name:{tr:'Güney Afrika Randı',en:'South African Rand'} },
   'G. Afrika': { symbol:'R', code:'ZAR', rate:0.054, name:{tr:'Güney Afrika Randı',en:'South African Rand'} },
+  'Kenya': { symbol:'KSh', code:'KES', rate:0.0077, name:{tr:'Kenya Şilini',en:'Kenyan Shilling'} },
+  'Morocco': { symbol:'MAD', code:'MAD', rate:0.099, name:{tr:'Fas Dirhemi',en:'Moroccan Dirham'} },
+  'Fas': { symbol:'MAD', code:'MAD', rate:0.099, name:{tr:'Fas Dirhemi',en:'Moroccan Dirham'} },
+  'Ethiopia': { symbol:'Br', code:'ETB', rate:0.0073, name:{tr:'Etiyopya Birri',en:'Ethiopian Birr'} },
+  'Ghana': { symbol:'₵', code:'GHS', rate:0.065, name:{tr:'Gana Sedisi',en:'Ghanaian Cedi'} },
+  'Nigeria': { symbol:'₦', code:'NGN', rate:0.00063, name:{tr:'Nijerya Nayrası',en:'Nigerian Naira'} },
+  'Tanzania': { symbol:'TSh', code:'TZS', rate:0.00038, name:{tr:'Tanzanya Şilini',en:'Tanzanian Shilling'} },
+  'Uganda': { symbol:'USh', code:'UGX', rate:0.00027, name:{tr:'Uganda Şilini',en:'Ugandan Shilling'} },
+  'Indonesia': { symbol:'Rp', code:'IDR', rate:0.000062, name:{tr:'Endonezya Rupisi',en:'Indonesian Rupiah'} },
+  'Endonezya': { symbol:'Rp', code:'IDR', rate:0.000062, name:{tr:'Endonezya Rupisi',en:'Indonesian Rupiah'} },
+  'Philippines': { symbol:'₱', code:'PHP', rate:0.017, name:{tr:'Filipin Pesosu',en:'Philippine Peso'} },
+  'Vietnam': { symbol:'₫', code:'VND', rate:0.000040, name:{tr:'Vietnam Dongu',en:'Vietnamese Dong'} },
+  'Pakistan': { symbol:'₨', code:'PKR', rate:0.0036, name:{tr:'Pakistan Rupisi',en:'Pakistani Rupee'} },
+  'Bangladesh': { symbol:'৳', code:'BDT', rate:0.0091, name:{tr:'Bangladeş Takası',en:'Bangladeshi Taka'} },
+  'Argentina': { symbol:'$', code:'ARS', rate:0.001, name:{tr:'Arjantin Pesosu',en:'Argentine Peso'} },
+  'Colombia': { symbol:'$', code:'COP', rate:0.00024, name:{tr:'Kolombiya Pesosu',en:'Colombian Peso'} },
+  'Chile': { symbol:'$', code:'CLP', rate:0.001, name:{tr:'Şili Pesosu',en:'Chilean Peso'} },
+  'Peru': { symbol:'S/', code:'PEN', rate:0.27, name:{tr:'Peru Solu',en:'Peruvian Sol'} },
+  'Czech Republic': { symbol:'Kč', code:'CZK', rate:0.044, name:{tr:'Çek Korunası',en:'Czech Koruna'} },
+  'Poland': { symbol:'zł', code:'PLN', rate:0.25, name:{tr:'Polonya Zlotisi',en:'Polish Zloty'} },
+  'Hungary': { symbol:'Ft', code:'HUF', rate:0.0028, name:{tr:'Macar Forinti',en:'Hungarian Forint'} },
+  'Romania': { symbol:'lei', code:'RON', rate:0.22, name:{tr:'Romen Leyi',en:'Romanian Leu'} },
+  'Sweden': { symbol:'kr', code:'SEK', rate:0.094, name:{tr:'İsveç Kronası',en:'Swedish Krona'} },
+  'Norway': { symbol:'kr', code:'NOK', rate:0.093, name:{tr:'Norveç Kronası',en:'Norwegian Krone'} },
+  'Denmark': { symbol:'kr', code:'DKK', rate:0.146, name:{tr:'Danimarka Kronası',en:'Danish Krone'} },
+  'Israel': { symbol:'₪', code:'ILS', rate:0.27, name:{tr:'İsrail Şekeli',en:'Israeli Shekel'} },
+  'Jordan': { symbol:'JD', code:'JOD', rate:1.41, name:{tr:'Ürdün Dinarı',en:'Jordanian Dinar'} },
+  'Ürdün': { symbol:'JD', code:'JOD', rate:1.41, name:{tr:'Ürdün Dinarı',en:'Jordanian Dinar'} },
+  'Kuwait': { symbol:'KD', code:'KWD', rate:3.26, name:{tr:'Kuveyt Dinarı',en:'Kuwaiti Dinar'} },
+  'Kuveyt': { symbol:'KD', code:'KWD', rate:3.26, name:{tr:'Kuveyt Dinarı',en:'Kuwaiti Dinar'} },
+  'Bahrain': { symbol:'BD', code:'BHD', rate:2.65, name:{tr:'Bahreyn Dinarı',en:'Bahraini Dinar'} },
+  'New Zealand': { symbol:'NZ$', code:'NZD', rate:0.60, name:{tr:'Yeni Zelanda Doları',en:'New Zealand Dollar'} },
 };
 
 function getCurrencyForCity(cityName) {
@@ -4352,20 +4384,50 @@ function hasVisitedCity(cityName) {
   return getVisitedCities().some(c => c.toLowerCase() === (cityName||'').toLowerCase());
 }
 
-function selectCity(name, country, flag) {
+async function selectCity(name, country, flag) {
   currentCity = name;
   localStorage.setItem('cg_last_city', name);
 
-  // country string olarak geliyor — objeye çevir
-  // Ayrıca dynamicCities veya popularCities'den tam bilgiyi al
+  // Önce popularCities veya dynamicCities'den bak
   const cityData = getMergedCities().find(c => c.name.toLowerCase() === name.toLowerCase());
-  if (cityData) {
+
+  if (cityData && cityData.country && cityData.country.en && cityData.country.en !== name) {
+    // Gerçek ülke bilgisi var
     currentCountry = cityData.country;
     currentFlag = cityData.flag;
   } else {
-    // Fallback: gelen string'i hem tr hem en olarak kaydet
-    currentCountry = { tr: country || name, en: country || name };
-    currentFlag = flag || '🌍';
+    // Ülke bilgisi yok veya şehir adıyla aynı — Nominatim'den çek
+    try {
+      const q = encodeURIComponent(name);
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1&addressdetails=1`,
+        { headers: { 'Accept-Language': 'en' } }
+      );
+      const data = await res.json();
+      if (data && data[0] && data[0].address) {
+        const a = data[0].address;
+        const countryEn = a.country || name;
+        const countryCode = data[0].address?.country_code?.toUpperCase() || '';
+        // Flag emoji ülke kodundan üret
+        const flagEmoji = countryCode
+          ? countryCode.split('').map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65)).join('')
+          : '🌍';
+        currentCountry = { tr: countryEn, en: countryEn };
+        currentFlag = flagEmoji;
+        // dynamicCities'i güncelle
+        const dc = dynamicCities.find(c => c.name.toLowerCase() === name.toLowerCase());
+        if (dc) { dc.country = currentCountry; dc.flag = currentFlag; }
+        // Supabase'deki bu şehre ait yerleri güncelle (arka planda)
+        updateCityCountryInDB(name, countryEn, countryEn, currentFlag);
+        // Para birimini ülke belirlendikten sonra güncelle
+        currentCurrency = getCurrencyForCity(name);
+        updateCurrencyBadge(name);
+      }
+    } catch(e) {
+      console.warn('[selectCity] Nominatim hatası:', e);
+      currentCountry = { tr: country || name, en: country || name };
+      currentFlag = flag || '🌍';
+    }
   }
 
   // Ziyaret edilen şehre ekle
@@ -4373,7 +4435,7 @@ function selectCity(name, country, flag) {
   const dot = document.getElementById('location-dot');
   const text = document.getElementById('location-text');
   dot.style.background = '#10b981';
-  if (text) text.textContent = (currentFlag || flag) + ' ' + name + (country ? ', ' + country : '');
+  if (text) text.textContent = currentFlag + ' ' + name + (currentCountry?.en && currentCountry.en !== name ? ', ' + currentCountry.en : '');
 
   const addSub = document.getElementById('add-sub');
   if (addSub) addSub.textContent = name + ' · ' + (lang==='tr'?'Deneyimini paylaş':'Share your experience');
@@ -4383,6 +4445,23 @@ function selectCity(name, country, flag) {
   // Şehir bazlı yerleri Supabase'den yükle
   loadPlaces(name);
   goTo('screen-home');
+}
+
+async function updateCityCountryInDB(city, countryTr, countryEn, flag) {
+  try {
+    const token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token') || SUPABASE_KEY;
+    await fetch(`${SUPABASE_URL}/rest/v1/places?city=eq.${encodeURIComponent(city)}&country_en=eq.`, {
+      method: 'PATCH',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ country_tr: countryTr, country_en: countryEn, flag })
+    });
+    console.log('[selectCity] Ülke bilgisi güncellendi:', city, countryEn);
+  } catch(e) { console.warn('[updateCityCountryInDB]', e); }
 }
 
 function useCurrentLocation() {
