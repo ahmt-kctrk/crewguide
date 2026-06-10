@@ -4400,14 +4400,16 @@ async function selectCity(name, country, flag) {
     try {
       const q = encodeURIComponent(name);
       const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1&addressdetails=1`,
+        `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=5&addressdetails=1&featuretype=city`,
         { headers: { 'Accept-Language': 'en' } }
       );
       const data = await res.json();
-      if (data && data[0] && data[0].address) {
-        const a = data[0].address;
+      const cityTypes = ['city','town','village','island','administrative'];
+      const bestResult = data.find(d => cityTypes.includes(d.type) || cityTypes.includes(d.class)) || data[0];
+      if (bestResult && bestResult.address) {
+        const a = bestResult.address;
         const countryEn = a.country || name;
-        const countryCode = data[0].address?.country_code?.toUpperCase() || '';
+        const countryCode = bestResult.address?.country_code?.toUpperCase() || '';
         // Flag emoji ülke kodundan üret
         const flagEmoji = countryCode
           ? countryCode.split('').map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65)).join('')
@@ -8301,13 +8303,18 @@ function onCustomCityInput(val) {
   window._cityInputTimer = setTimeout(async () => {
     try {
       const q = encodeURIComponent(city);
+      // city + place türleri ile daha spesifik ara
       const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1&addressdetails=1`,
+        `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=5&addressdetails=1&featuretype=city`,
         { headers: { 'Accept-Language': 'en' } }
       );
       const data = await res.json();
-      if (data && data[0]?.address) {
-        const a = data[0].address;
+      // Şehir/kasaba/ada tiplerini önceliklendir
+      const cityTypes = ['city','town','village','island','administrative'];
+      const best = data.find(d => cityTypes.includes(d.type) || cityTypes.includes(d.class))
+                   || data[0];
+      if (best?.address) {
+        const a = best.address;
         const countryEn = a.country || city;
         const countryCode = a.country_code?.toUpperCase() || '';
         const flagEmoji = countryCode
