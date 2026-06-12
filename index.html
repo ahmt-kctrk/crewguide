@@ -7247,7 +7247,7 @@ function renderAdminPlaces() {
             ? `<button class="admin-btn admin-btn-show" onclick="adminToggleHide('${p.id}', false, this)">✓ Göster</button>`
             : `<button class="admin-btn admin-btn-hide" onclick="adminToggleHide('${p.id}', true, this)">🚫 Gizle</button>`
           }
-          <button class="admin-btn admin-btn-del" onclick="adminPermanentDelete('${p.id}', '${p.name.replace(/'/g, "\'")}', this)">🗑 Sil</button>
+          <button class="admin-btn admin-btn-del" data-id="${p.id}" data-name="${p.name.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" onclick="adminPermanentDelete(this.dataset.id, this.dataset.name, this)">🗑 Sil</button>
         </div>
       </div>`;
   }).join('');
