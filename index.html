@@ -588,9 +588,6 @@
   .invite-code-pill.used { background:#f0f3f9; color:var(--text-muted); text-decoration:line-through; }
   .invite-code-pill.free { background:#fef3c7; color:#92400e; }
   .invite-add-btn { font-size:11px; background:var(--navy); color:#fff; border:none; border-radius:6px; padding:4px 10px; cursor:pointer; font-family:'Syne',sans-serif; font-weight:600; }
-  .invite-delete-btn { font-size:11px; background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; border-radius:6px; padding:4px 10px; cursor:pointer; font-family:'Syne',sans-serif; font-weight:600; }
-  .invite-user-row.disabled { opacity:0.5; }
-  .disabled-badge { font-size:10px; background:#fee2e2; color:#991b1b; padding:1px 6px; border-radius:4px; margin-left:4px; }
   /* Admin paneli */
   .admin-stat-chip { font-size:11px; font-weight:600; color:var(--text-muted); padding:4px 10px 4px 0; }
   .admin-place-row { display:flex; align-items:flex-start; gap:10px; padding:12px 16px; border-bottom:1px solid var(--border); background:var(--white); }
@@ -1920,7 +1917,6 @@
       <div id="admin-panel-btn-wrap" style="display:none;">
         <button onclick="goTo('screen-admin')" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid var(--navy);background:var(--navy);font-size:13px;color:#fff;cursor:pointer;font-family:'Syne',sans-serif;font-weight:600;">🛡 Admin Paneli</button>
       </div>
-      <button onclick="disableMyAccount()" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid #fca5a5;background:transparent;font-size:13px;color:#991b1b;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:8px;">⚠️ Hesabımı Devre Dışı Bırak</button>
       <button onclick="signOut()" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid #fca5a5;background:transparent;font-size:13px;color:#ef4444;cursor:pointer;font-family:'DM Sans',sans-serif;" id="btn-sign-out">🚪 Çıkış Yap</button>
       <div style="height:20px;"></div>
     </div>
@@ -4445,9 +4441,12 @@ async function selectCity(name, country, flag) {
 
   const addSub = document.getElementById('add-sub');
   if (addSub) addSub.textContent = name + ' · ' + (lang==='tr'?'Deneyimini paylaş':'Share your experience');
-  // Para birimini güncelle
-  currentCurrency = getCurrencyForCity(name);
-  updateCurrencyBadge(name);
+  // Para birimi — popularCities'de varsa hemen güncelle, Nominatim'den gelecekse orada güncelleniyor
+  const popCity = popularCities.find(p => p.name.toLowerCase() === name.toLowerCase());
+  if (popCity || currencyDB[name]) {
+    currentCurrency = getCurrencyForCity(name);
+    updateCurrencyBadge(name);
+  }
   // Şehir bazlı yerleri Supabase'den yükle
   loadPlaces(name);
   goTo('screen-home');
@@ -5859,77 +5858,55 @@ async function createAccount() {
   btn.disabled = true;
 
   try {
-    // 1. Supabase Auth'da kayıt — metadata ile trigger profili oluşturur
-    const newInviteCode = 'CRW-' + Math.random().toString(36).substring(2,5).toUpperCase();
-    const isMaster = sessionStorage.getItem('isMasterInvite') === 'true';
-
+    // 1. Supabase Auth'da kayıt
     const authData = await authFetch('signup', {
       method: 'POST',
-      body: JSON.stringify({
-        email,
-        password,
-        data: {
-          username,
-          invite_code: newInviteCode,
-          invited_by: inviteCode,
-        }
-      })
+      body: JSON.stringify({ email, password })
     });
 
     const userId = authData.user?.id;
     const accessToken = authData.access_token;
     if (!userId) throw new Error('User ID alınamadı');
 
-    // 2. Davet kodunu kullanıldı işaretle — anon key ile (RLS politika izin veriyorsa)
-    try {
-      sessionStorage.removeItem('isMasterInvite');
-      if (!isMaster) {
-        await fetch(`${SUPABASE_URL}/rest/v1/invite_codes?code=eq.${encodeURIComponent(inviteCode)}`, {
-          method: 'PATCH',
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': 'Bearer ' + SUPABASE_KEY,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal'
-          },
-          body: JSON.stringify({ used_by: userId, used_at: new Date().toISOString() })
-        });
-      }
-    } catch(e) {
-      console.warn('[createAccount] Davet kodu işaretlenemedi:', e);
-    }
+    // 2. Profil oluştur (kendi kodu — tek ana kod)
+    const newInviteCode = 'CRW-' + Math.random().toString(36).substring(2,5).toUpperCase();
+    await fetch(SUPABASE_URL + '/rest/v1/profiles', {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        id: userId,
+        username,
+        invite_code: newInviteCode,
+        invited_by: inviteCode
+      })
+    });
 
-    // 3. Kullanıcıya 3 adet davet kodu üret — accessToken varsa hemen, yoksa atla (trigger sonrası giriş ekranında oluşturulabilir)
-    if (accessToken) {
-      const inviteCodes = [];
-      for (let i = 0; i < 3; i++) {
-        const code = 'CRW-' + Math.random().toString(36).substring(2,5).toUpperCase() + Math.random().toString(36).substring(2,4).toUpperCase();
-        inviteCodes.push({ code, created_by: userId });
-      }
-      try {
-        await sbFetch('invite_codes', {
-          method: 'POST',
-          prefer: 'return=minimal',
-          body: JSON.stringify(inviteCodes)
-        });
-      } catch(e) {
-        console.warn('[createAccount] Davet kodları oluşturulamadı:', e);
-      }
+    // 3. Kullanıcıya 3 adet davet kodu üret
+    const inviteCodes = [];
+    for (let i = 0; i < 3; i++) {
+      const code = 'CRW-' + Math.random().toString(36).substring(2,5).toUpperCase() + Math.random().toString(36).substring(2,4).toUpperCase();
+      inviteCodes.push({ code, created_by: userId });
     }
+    await sbFetch('invite_codes', {
+      method: 'POST',
+      prefer: 'return=minimal',
+      body: JSON.stringify(inviteCodes)
+    });
 
-    // 4. Email doğrulama gerekiyorsa — bilgi ekranı göster
-    if (!accessToken) {
-      showToast(lang === 'tr'
-        ? '📧 Doğrulama emaili gönderildi! Emailini kontrol et.'
-        : '📧 Verification email sent! Check your inbox.');
-      btn.textContent = lang === 'tr' ? 'Email gönderildi ✓' : 'Email sent ✓';
-      btn.disabled = false;
-      sessionStorage.removeItem('pendingInviteCode');
-      setTimeout(() => goTo('screen-login'), 2500);
-      return;
-    }
+    // 4. Kullanılan davet kodunu işaretle (master kod için atlıyoruz)
+    const isMaster = sessionStorage.getItem('isMasterInvite') === 'true';
+    sessionStorage.removeItem('isMasterInvite');
+    if (!isMaster) await sbFetch(`invite_codes?code=eq.${encodeURIComponent(inviteCode)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ used_by: userId, used_at: new Date().toISOString() })
+    });
 
-    // 5. accessToken varsa direkt session kaydet
+    // 5. Session kaydet
     sessionStorage.setItem('sb_access_token', accessToken);
     sessionStorage.setItem('sb_refresh_token', authData.refresh_token || '');
     localStorage.setItem('sb_access_token', accessToken);
@@ -6025,26 +6002,6 @@ async function loadProfile(userId, token) {
     if (data && data[0]) {
       currentProfile = data[0];
       localStorage.setItem('sb_profile', JSON.stringify(currentProfile));
-      // Hesap devre dışıysa çıkış yap
-      if (currentProfile.is_disabled) {
-        console.warn('[loadProfile] Hesap devre dışı — çıkış yapılıyor');
-        showToast(lang === 'tr' ? 'Hesabın devre dışı bırakılmış.' : 'Your account has been disabled.');
-        setTimeout(() => signOut(), 1500);
-        return;
-      }
-    } else {
-      // Profil bulunamadı — hesap silinmiş, çıkış yap
-      console.warn('[loadProfile] Profil bulunamadı — çıkış yapılıyor');
-      localStorage.removeItem('sb_profile');
-      localStorage.removeItem('sb_access_token');
-      localStorage.removeItem('sb_refresh_token');
-      localStorage.removeItem('sb_user');
-      sessionStorage.clear();
-      currentUser = null;
-      currentProfile = null;
-      showToast(lang === 'tr' ? 'Oturum geçersiz.' : 'Session invalid.');
-      setTimeout(() => goTo('screen-splash'), 1000);
-      return;
     }
 
     // Kullanıcının davet kodlarını yükle
@@ -7054,7 +7011,7 @@ async function loadAdminInvites() {
 
     // Tüm profilleri çek
     const profRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/profiles?order=created_at.desc&select=id,username,invite_code,invited_by,created_at,role,is_disabled`,
+      `${SUPABASE_URL}/rest/v1/profiles?order=created_at.desc&select=id,username,invite_code,invited_by,created_at,role`,
       { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + token } }
     );
     if (!profRes.ok) throw new Error(await profRes.text());
@@ -7068,23 +7025,11 @@ async function loadAdminInvites() {
     if (!invRes.ok) throw new Error(await invRes.text());
     const inviteCodes = await invRes.json();
 
-    // id → username hızlı lookup
-    const idToUsername = {};
-    profiles.forEach(p => { idToUsername[p.id] = p.username; });
-
-    // Her profile'a kodlarını ve davet eden bilgisini eşleştir
-    allAdminUsers = profiles.map(p => {
-      const usedCode = inviteCodes.find(c => c.code === p.invited_by);
-      const invitedByUsername = usedCode?.created_by
-        ? (idToUsername[usedCode.created_by] || 'Bilinmiyor')
-        : null;
-
-      return {
-        ...p,
-        codes: inviteCodes.filter(c => c.created_by === p.id),
-        invitedByUsername,
-      };
-    });
+    // Her profile'a kodlarını eşleştir
+    allAdminUsers = profiles.map(p => ({
+      ...p,
+      codes: inviteCodes.filter(c => c.created_by === p.id)
+    }));
 
     // İstatistikler
     const totalCodes = inviteCodes.length;
@@ -7130,7 +7075,7 @@ function renderAdminInvites() {
     const joined = u.created_at ? new Date(u.created_at).toLocaleDateString('tr-TR', {day:'numeric',month:'short',year:'numeric'}) : '—';
     const usedCount = u.codes.filter(c => c.used_by).length;
     const freeCount = u.codes.filter(c => !c.used_by).length;
-    const invitedByLabel = u.invitedByUsername || null;
+    const invitedByUser = u.invited_by ? allAdminUsers.find(x => x.invite_code === u.invited_by) : null;
 
     const codesHtml = u.codes.length
       ? u.codes.map(c => `
@@ -7144,27 +7089,20 @@ function renderAdminInvites() {
       : '<div style="font-size:11px;color:var(--text-muted);padding:4px 0;">Kodu yok</div>';
 
     return `
-      <div class="invite-user-row${u.is_disabled ? ' disabled' : ''}">
+      <div class="invite-user-row">
         <div class="invite-user-header">
           <div>
             <div class="invite-user-name">
               ${u.username || 'İsimsiz'}
               ${u.role === 'admin' ? '<span style="font-size:10px;background:var(--navy);color:#fff;padding:1px 6px;border-radius:4px;margin-left:4px;">ADMIN</span>' : ''}
-              ${u.is_disabled ? '<span class="disabled-badge">Devre Dışı</span>' : ''}
             </div>
             <div class="invite-user-meta">
               Katıldı: ${joined}
-              ${invitedByLabel ? ` · Davet eden: <b>${invitedByLabel}</b>` : ''}
+              ${invitedByUser ? ` · Davet eden: <b>${invitedByUser.username}</b>` : ' · (Kurucu/Master)'}
               · ${usedCount}/${u.codes.length} kullanıldı
             </div>
           </div>
-          <div style="display:flex;gap:4px;align-items:center;">
-            <button class="invite-add-btn" data-id="${u.id}" onclick="adminAddInviteCode(this.dataset.id, this.dataset.name)" data-name="${(u.username||'').replace(/"/g,'&quot;')}">+ Kod Ver</button>
-            ${u.is_disabled
-              ? `<button class="invite-delete-btn" data-id="${u.id}" data-name="${(u.username||'').replace(/"/g,'&quot;')}" onclick="adminEnableUser(this.dataset.id, this.dataset.name)">✓ Aktif Et</button>`
-              : `<button class="invite-delete-btn" data-id="${u.id}" data-name="${(u.username||'').replace(/"/g,'&quot;')}" onclick="adminDeleteUser(this.dataset.id, this.dataset.name)">🗑 Sil</button>`
-            }
-          </div>
+          <button class="invite-add-btn" onclick="adminAddInviteCode('${u.id}', '${(u.username||'').replace(/'/g,"\'")}')">+ Kod Ver</button>
         </div>
         <div style="padding-left:4px;">${codesHtml}</div>
       </div>`;
@@ -7190,82 +7128,6 @@ async function adminAddInviteCode(userId, username) {
     await loadAdminInvites();
   } catch(e) {
     console.error('[adminAddInviteCode]', e);
-    showToast('Hata: ' + e.message);
-  }
-}
-
-// ── KULLANICI YÖNETİMİ ──────────────────────────────────────────────────────
-
-async function manageUserAction(action, targetUserId) {
-  const token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token');
-  const res = await fetch(`${SUPABASE_URL}/functions/v1/manage-user`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + token,
-      'apikey': SUPABASE_KEY,
-    },
-    body: JSON.stringify({ action, targetUserId })
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'İşlem başarısız');
-  return data;
-}
-
-async function adminDeleteUser(userId, username) {
-  if (!isAdmin()) return;
-  const confirmed = confirm(`"${username}" kullanıcısı kalıcı olarak silinecek!\n\nEklediği yerler gizlenecek, davet kodları silinecek.\n\nDevam etmek istiyor musun?`);
-  if (!confirmed) return;
-
-  try {
-    showToast(lang === 'tr' ? '⏳ Siliniyor...' : '⏳ Deleting...');
-    await manageUserAction('delete', userId);
-    showToast(`✓ "${username}" silindi`);
-    allAdminUsers = [];
-    await loadAdminInvites();
-  } catch(e) {
-    console.error('[adminDeleteUser]', e);
-    showToast('Hata: ' + e.message);
-  }
-}
-
-async function adminEnableUser(userId, username) {
-  if (!isAdmin()) return;
-  const confirmed = confirm(`"${username}" hesabı yeniden aktif edilsin mi?`);
-  if (!confirmed) return;
-
-  try {
-    await manageUserAction('enable', userId);
-    showToast(`✓ "${username}" aktif edildi`);
-    allAdminUsers = [];
-    await loadAdminInvites();
-  } catch(e) {
-    console.error('[adminEnableUser]', e);
-    showToast('Hata: ' + e.message);
-  }
-}
-
-// Kullanıcı kendi hesabını devre dışı bırakır
-async function disableMyAccount() {
-  const confirmed = confirm(
-    lang === 'tr'
-      ? "Hesabın devre dışı bırakılacak. Devam etmek istiyor musun?"
-      : "Your account will be disabled. Continue?"
-  );
-  if (!confirmed) return;
-
-  try {
-    await manageUserAction('disable', currentUser.id);
-    showToast(lang === 'tr' ? 'Hesabın devre dışı bırakıldı.' : 'Account disabled.');
-    sessionStorage.clear();
-    localStorage.removeItem('sb_access_token');
-    localStorage.removeItem('sb_refresh_token');
-    localStorage.removeItem('sb_user');
-    currentUser = null;
-    currentProfile = null;
-    setTimeout(() => goTo('screen-home'), 1500);
-  } catch(e) {
-    console.error('[disableMyAccount]', e);
     showToast('Hata: ' + e.message);
   }
 }
