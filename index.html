@@ -3239,6 +3239,8 @@ function applyTranslations() {
   renderCards();
   renderSubCats();
   updateFilterChips();
+  // Çeviri sözlüğü konum yazısını "Seoul" ile eziyordu — gerçek şehri geri yaz
+  if (typeof updateLocationText === 'function') updateLocationText();
 }
 
 function goTo(id) {
@@ -3768,6 +3770,12 @@ function isAdmin() {
   return false;
 }
 
+// Admin veya şehir elçisi: eklediği yer onaysız yayınlanır
+function isTrustedContributor() {
+  if (isAdmin()) return true;
+  return !!(currentProfile && ['admin', 'ambassador'].includes(currentProfile.role));
+}
+
 let isAdultContent = false;
 let showAdultContent = false;
 
@@ -3823,6 +3831,14 @@ function openEditPlace() {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
+function submitSuccessMessage(editMode, isPending) {
+  if (editMode) return lang==='tr' ? 'Yer güncellendi! ✓' : 'Place updated! ✓';
+  if (isPending) return lang==='tr'
+    ? 'Önerin alındı! 🙌 Onaylandıktan sonra yayınlanacak.'
+    : 'Thanks! 🙌 Your suggestion will appear after review.';
+  return lang==='tr' ? 'Yer başarıyla eklendi! 🎉' : 'Place added successfully! 🎉';
+}
+
 async function submitPlace() {
   const name = document.getElementById('input-place-name').value.trim();
   const addr = document.getElementById('input-place-addr').value.trim();
@@ -3841,13 +3857,32 @@ async function submitPlace() {
   const editMode = !!window._editingPlaceId;
   const placeId = editMode ? window._editingPlaceId : 'place_' + Date.now();
 
+  if (!currentUser) {
+    showToast(lang==='tr' ? 'Yer önermek için giriş yapmalısın' : 'Please sign in to suggest a place');
+    return;
+  }
+
+  // Ülke bilgisi eksikse (ör. elle yazılan şehir, 800ms dolmadan gönderildi) şimdi bul
+  if (!flagToIso(currentFlag) && currentCity && navigator.onLine) {
+    try {
+      const geo = await geocodeCityCountry(currentCity);
+      if (geo) { currentCountry = geo.country; currentFlag = geo.flag; }
+    } catch(e) {}
+  }
+
+  const trusted = isTrustedContributor();
+  const isPending = !editMode && !trusted;
+  const cityName = currentCity || '';
+  if (!cityName) { showToast(lang==='tr' ? 'Önce şehir seç' : 'Select a city first'); return; }
+
   const newPlace = {
     id: placeId,
     cat: selectedMainCat,
     subcat: subLabel,
     emoji: catEmojis[selectedMainCat],
     name: name,
-    addr: addr || 'Seoul',
+    addr: addr || cityName,
+    city: cityName,
     price: priceVal,
     priceName: priceName[priceVal] || {tr:'Uygun',en:'Budget'},
     likes: 0,
@@ -3864,56 +3899,95 @@ async function submitPlace() {
     cat: selectedMainCat,
     subcat: subLabel,
     emoji: catEmojis[selectedMainCat],
-    name, addr: addr || currentCity || 'Seoul',
-    city: currentCity || 'Seoul',
-    country_tr: currentCountry ? currentCountry.tr : '',
-    country_en: currentCountry ? currentCountry.en : '',
+    name, addr: addr || cityName,
+    city: cityName,
+    country_tr: currentCountry ? (currentCountry.tr || '') : '',
+    country_en: currentCountry ? (currentCountry.en || '') : '',
     flag: currentFlag || '',
     price: priceVal,
     price_name_tr: (priceName[priceVal]||{}).tr || 'Uygun',
     price_name_en: (priceName[priceVal]||{}).en || 'Budget',
     desc_tr: desc || '', desc_en: desc || '',
     is_adult: isAdultContent,
-    user_id: currentUser ? currentUser.id : null,
-    is_hidden: false,
     lat: (pickerLat && window._pickerUsedForForm) ? pickerLat : null,
     lon: (pickerLon && window._pickerUsedForForm) ? pickerLon : null,
   };
+  if (!editMode) {
+    // Yeni kayıt: sahiplik + görünürlük. (Sunucudaki trigger de aynı kuralı zorlar.)
+    placePayload.user_id = currentUser.id;
+    placePayload.is_hidden = isPending;
+    placePayload.status = isPending ? 'pending' : 'approved';
+  } else if (!(pickerLat && window._pickerUsedForForm)) {
+    // Düzenlemede konum seçilmediyse mevcut koordinatları silme
+    delete placePayload.lat; delete placePayload.lon;
+  }
   // Kullanıldıktan sonra sıfırla
   window._pickerUsedForForm = false;
 
+  const submitBtnEl = document.getElementById('btn-submit');
+  if (submitBtnEl) submitBtnEl.disabled = true;
+  const reenable = () => { if (submitBtnEl) submitBtnEl.disabled = false; };
+
+  // 'status' kolonu henüz yoksa (SQL çalıştırılmadıysa) onsuz tekrar dene
+  const insertPlace = async (payload) => {
+    try {
+      await sbFetch('places', { method: 'POST', body: JSON.stringify(payload) });
+    } catch(e) {
+      if (String(e.message).includes('status') && 'status' in payload) {
+        const { status, ...rest } = payload;
+        await sbFetch('places', { method: 'POST', body: JSON.stringify(rest) });
+      } else throw e;
+    }
+  };
+
+  let queued = false;
   if (navigator.onLine) {
     try {
       if (editMode) {
-        const token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token') || SUPABASE_KEY;
-        await fetch(`${SUPABASE_URL}/rest/v1/places?id=eq.${placeId}`, {
-          method: 'PATCH',
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal'
-          },
-          body: JSON.stringify(placePayload)
-        });
+        await sbFetch(`places?id=eq.${encodeURIComponent(placeId)}`, { method: 'PATCH', body: JSON.stringify(placePayload) });
       } else {
-        await sbFetch('places', { method: 'POST', body: JSON.stringify(placePayload) });
-        sendPushForNewPlace({ city: currentCity||'Seoul', name, emoji: catEmojis[selectedMainCat]||'📍', placeId }).catch(()=>{});
+        await insertPlace(placePayload);
+        if (!isPending) {
+          sendPushForNewPlace({ city: cityName, name, emoji: catEmojis[selectedMainCat]||'📍', placeId }).catch(()=>{});
+        }
       }
     } catch(e) {
-      console.warn('[submitPlace] Online gönderim başarısız:', e);
-      if (!editMode) {
+      console.warn('[submitPlace] Gönderim başarısız:', e);
+      // Sadece ağ hatasında kuyruğa al; sunucu reddettiyse (yetki, geçersiz veri) kullanıcıya söyle
+      const isNetworkError = e instanceof TypeError || !navigator.onLine;
+      if (!editMode && isNetworkError) {
         await addToQueue('place_insert', placePayload);
         await updateQueueBadge();
+        queued = true;
+      } else {
+        reenable();
+        showToast((lang==='tr' ? 'Kaydedilemedi: ' : 'Could not save: ') + String(e.message || e).slice(0, 80));
+        return;
       }
     }
   } else if (!editMode) {
     await addToQueue('place_insert', placePayload);
     await updateQueueBadge();
+    queued = true;
     console.log('[submitPlace] Offline — queue ya eklendi');
+  } else {
+    reenable();
+    showToast(lang==='tr' ? 'Düzenleme için internet gerekli' : 'Editing requires a connection');
+    return;
+  }
+  reenable();
+
+  if (editMode) {
+    // Düzenlenen kaydı yerinde güncelle (eskiden listeye ikinci kez ekleniyordu)
+    const idx = places.findIndex(p => p.id === placeId);
+    if (idx >= 0) places[idx] = { ...places[idx], ...newPlace, likes: places[idx].likes, rating: places[idx].rating, ratingCount: places[idx].ratingCount, ratings: places[idx].ratings };
+  } else if (!isPending) {
+    places.unshift(newPlace);
   }
 
-  places.unshift(newPlace);
+  if (isPending) {
+    window._lastSubmitPending = true;
+  }
 
   // Reset form
   document.getElementById('input-place-name').value = '';
@@ -3931,17 +4005,15 @@ async function submitPlace() {
       selectedPhotos = [];
       renderPhotoPreviews();
       if (btn) { btn.textContent = lang==='tr'?'Paylaş →':'Share →'; btn.disabled = false; }
-      showToast(lang==='tr'?`Yer eklendi! 🎉`:`Place added! 🎉`);
-      // Yeni şehri dynamicCities'e ekle
-      addCityToDynamic(currentCity, currentCountry, currentFlag);
+      showToast(submitSuccessMessage(editMode, isPending));
+      window._editingPlaceId = null;
+      // Yeni şehri dynamicCities'e ekle (onaylı yerler için)
+      if (!isPending) addCityToDynamic(currentCity, currentCountry, currentFlag);
       setTimeout(() => { goTo('screen-home'); renderCards(); }, 1000);
     });
   } else {
-    const successMsg = editMode
-      ? (lang==='tr' ? 'Yer güncellendi! ✓' : 'Place updated! ✓')
-      : (lang==='tr' ? 'Yer başarıyla eklendi! 🎉' : 'Place added successfully! 🎉');
-    showToast(successMsg);
-    if (!editMode) addCityToDynamic(currentCity, currentCountry, currentFlag);
+    showToast(submitSuccessMessage(editMode, isPending));
+    if (!editMode && !isPending) addCityToDynamic(currentCity, currentCountry, currentFlag);
     window._editingPlaceId = null;
     const addTitle = document.getElementById('add-title');
     const submitBtn2 = document.getElementById('btn-submit');
@@ -4135,38 +4207,102 @@ const countryCurrencyDB = {
   'New Zealand': { symbol:'NZ$', code:'NZD', rate:0.60, name:{tr:'Yeni Zelanda Doları',en:'New Zealand Dollar'} },
 };
 
+// ── ÜLKE KODU (ISO 3166) → PARA BİRİMİ (ISO 4217) ───────────────────────────
+// Para birimi artık ülke İSMİNDEN değil, ülke KODUNDAN bulunuyor.
+// Ülke kodu bayrak emojisinden türetilir (🇫🇷 → FR), bayrak zaten her şehirde ve DB'de var.
+const COUNTRY_TO_CURRENCY = (() => {
+  const groups = {
+    EUR:'AD AT BE CY DE EE ES FI FR GR HR IE IT LT LU LV MC ME MT NL PT SI SK SM VA XK GF GP MQ RE YT PM BL MF',
+    USD:'US EC SV PA PR GU VI AS MP TL BQ FM MH PW TC VG UM', XOF:'BJ BF CI GW ML NE SN TG', XAF:'CM CF TD CG GQ GA',
+    XCD:'AG DM GD KN LC VC AI MS', AUD:'AU KI NR TV CX CC NF', NZD:'NZ CK NU PN TK', DKK:'DK FO GL', CHF:'CH LI',
+    GBP:'GB GG JE IM', NOK:'NO SJ BV', MAD:'MA EH', ILS:'IL PS', INR:'IN BT', ZAR:'ZA LS NA',
+  };
+  const single = 'AE:AED AF:AFN AL:ALL AM:AMD AO:AOA AR:ARS AW:AWG AZ:AZN BA:BAM BB:BBD BD:BDT BG:BGN BH:BHD BI:BIF BM:BMD BN:BND BO:BOB BR:BRL BS:BSD BW:BWP BY:BYN BZ:BZD CA:CAD CD:CDF CL:CLP CN:CNY CO:COP CR:CRC CU:CUP CV:CVE CW:ANG SX:ANG CZ:CZK DJ:DJF DO:DOP DZ:DZD EG:EGP ER:ERN ET:ETB FJ:FJD FK:FKP GE:GEL GH:GHS GI:GIP GM:GMD GN:GNF GT:GTQ GY:GYD HK:HKD HN:HNL HT:HTG HU:HUF ID:IDR IQ:IQD IR:IRR IS:ISK JM:JMD JO:JOD JP:JPY KE:KES KG:KGS KH:KHR KM:KMF KP:KPW KR:KRW KW:KWD KY:KYD KZ:KZT LA:LAK LB:LBP LK:LKR LR:LRD LY:LYD MD:MDL MG:MGA MK:MKD MM:MMK MN:MNT MO:MOP MR:MRU MU:MUR MV:MVR MW:MWK MX:MXN MY:MYR MZ:MZN NC:XPF PF:XPF WF:XPF NG:NGN NI:NIO NP:NPR OM:OMR PE:PEN PG:PGK PH:PHP PK:PKR PL:PLN PY:PYG QA:QAR RO:RON RS:RSD RU:RUB RW:RWF SA:SAR SB:SBD SC:SCR SD:SDG SE:SEK SG:SGD SH:SHP SL:SLE SO:SOS SR:SRD SS:SSP ST:STN SY:SYP SZ:SZL TH:THB TJ:TJS TM:TMT TN:TND TO:TOP TR:TRY TT:TTD TW:TWD TZ:TZS UA:UAH UG:UGX UY:UYU UZ:UZS VE:VES VN:VND VU:VUV WS:WST YE:YER ZM:ZMW ZW:ZWG';
+  const map = {};
+  Object.entries(groups).forEach(([cur, list]) => list.split(' ').forEach(cc => { map[cc] = cur; }));
+  single.split(' ').forEach(pair => { const [cc, cur] = pair.split(':'); map[cc] = cur; });
+  return map;
+})();
+
+const USD_CURRENCY = { symbol:'$', code:'USD', rate:1, name:{tr:'Amerikan Doları',en:'US Dollar'} };
+
+// 🇫🇷 → 'FR'  (geçersizse '')
+function flagToIso(flag) {
+  if (!flag) return '';
+  const cps = [...flag].map(c => c.codePointAt(0));
+  if (cps.length !== 2 || cps.some(c => c < 0x1F1E6 || c > 0x1F1FF)) return '';
+  return String.fromCharCode(...cps.map(c => c - 0x1F1E6 + 65));
+}
+
+// 'FR' → 🇫🇷
+function isoToFlag(iso) {
+  if (!iso || !/^[A-Za-z]{2}$/.test(iso)) return '🌍';
+  return iso.toUpperCase().split('').map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65)).join('');
+}
+
+// 'FR' → 'Fransa' / 'France'
+function countryNameFromIso(iso, l) {
+  try { return new Intl.DisplayNames([l || 'en'], { type: 'region' }).of(iso.toUpperCase()) || iso; }
+  catch { return iso; }
+}
+
+// Ülke kodundan {tr, en} ülke objesi
+function countryFromIso(iso) {
+  return { tr: countryNameFromIso(iso, 'tr'), en: countryNameFromIso(iso, 'en'), code: iso.toUpperCase() };
+}
+
+// Para birimi koduyla currency objesi üret (sembol/isim Intl'den, statik kur varsa fallback olarak)
+function buildCurrency(code) {
+  const known = Object.values(countryCurrencyDB).find(c => c.code === code)
+             || Object.values(currencyDB).find(c => c.code === code);
+  if (known) return { ...known };
+  let symbol = code, nameTr = code, nameEn = code;
+  try {
+    symbol = new Intl.NumberFormat('en', { style:'currency', currency: code, currencyDisplay:'narrowSymbol' })
+      .formatToParts(0).find(p => p.type === 'currency')?.value || code;
+  } catch {}
+  try { nameTr = new Intl.DisplayNames(['tr'], { type:'currency' }).of(code) || code; } catch {}
+  try { nameEn = new Intl.DisplayNames(['en'], { type:'currency' }).of(code) || code; } catch {}
+  // Statik kur yok → kayıtlı canlı kurlardan dene; o da yoksa rate:0 (formatLocalPrice USD'ye düşer)
+  const cached = getCachedRates();
+  const rate = cached && cached[code] > 0 ? 1 / cached[code] : 0;
+  return { symbol, code, rate, name: { tr: nameTr, en: nameEn } };
+}
+
+function findCityEntry(cityName) {
+  const key = (cityName || '').toLowerCase();
+  if (!key) return null;
+  return popularCities.find(c => c.name.toLowerCase() === key)
+      || dynamicCities.find(c => c.name.toLowerCase() === key)
+      || null;
+}
+
 function getCurrencyForCity(cityName) {
-  // Önce şehir bazlı bak
-  if (currencyDB[cityName]) return currencyDB[cityName];
+  const city = findCityEntry(cityName);
 
-  // popularCities'den şehrin ülkesini bul (en güvenilir yol)
-  const popCity = popularCities.find(p => p.name.toLowerCase() === (cityName||'').toLowerCase());
-  if (popCity) {
-    const byEn = countryCurrencyDB[popCity.country.en];
-    if (byEn) return byEn;
-    const byTr = countryCurrencyDB[popCity.country.tr];
-    if (byTr) return byTr;
+  // 1) Şehrin kendi bayrağından ülke kodu
+  let iso = city ? flagToIso(city.flag) : '';
+  if (!iso && city?.country?.code) iso = city.country.code;
+  // 2) Seçili şehir buysa, aktif bayrak/ülke kodu
+  if (!iso && (cityName || '').toLowerCase() === (currentCity || '').toLowerCase()) {
+    iso = currentCountry?.code || flagToIso(currentFlag);
+  }
+  if (iso && COUNTRY_TO_CURRENCY[iso]) return buildCurrency(COUNTRY_TO_CURRENCY[iso]);
+
+  // 3) Eski isim bazlı tablolar (bayrağı olmayan eski kayıtlar için)
+  if (currencyDB[cityName]) return { ...currencyDB[cityName] };
+  const country = city?.country || ((cityName || '').toLowerCase() === (currentCity || '').toLowerCase() ? currentCountry : null);
+  if (country) {
+    const byName = countryCurrencyDB[country.en] || countryCurrencyDB[country.tr];
+    if (byName) return { ...byName };
   }
 
-  // currentCountry'den ülke bazlı bak
-  if (currentCountry) {
-    const byEn = countryCurrencyDB[currentCountry.en];
-    if (byEn) return byEn;
-    const byTr = countryCurrencyDB[currentCountry.tr];
-    if (byTr) return byTr;
-  }
-
-  // dynamicCities'den bak
-  const dynCity = dynamicCities.find(p => p.name.toLowerCase() === (cityName||'').toLowerCase());
-  if (dynCity) {
-    const byEn = countryCurrencyDB[dynCity.country.en];
-    if (byEn) return byEn;
-  }
-
-  return { symbol:'$', code:'USD', rate:1, name:{tr:'Amerikan Doları',en:'US Dollar'} };
+  return { ...USD_CURRENCY };
 }
 
 function formatLocalPrice(usdPrice, currency) {
+  // Kur bilinmiyorsa yanlış rakam göstermek yerine USD göster
+  if (!currency || !(currency.rate > 0)) return `$${Math.round(usdPrice)}`;
   const local = Math.round(usdPrice / currency.rate);
   // Binlik ayraç
   const formatted = local.toLocaleString('tr-TR');
@@ -4324,27 +4460,34 @@ function filterCities(q) {
 
   if (!query) {
     // Ülkeye göre gruplu göster
+    // Gruplama ülke koduna göre (UK / United Kingdom gibi isim farkları tek grupta birleşir)
     const byCountry = {};
     filtered.forEach(c => {
-      const countryName = c.country[lang] || c.country.en || '';
-      if (!byCountry[countryName]) byCountry[countryName] = { flag: c.flag, cities: [] };
-      byCountry[countryName].cities.push(c);
+      const iso = flagToIso(c.flag);
+      const key = iso || (c.country.en || c.name);
+      if (!byCountry[key]) byCountry[key] = {
+        flag: c.flag,
+        name: iso ? countryNameFromIso(iso, lang) : (c.country[lang] || c.country.en || ''),
+        cities: []
+      };
+      byCountry[key].cities.push(c);
     });
 
-    Object.keys(byCountry).sort().forEach(countryName => {
-      const group = byCountry[countryName];
+    Object.keys(byCountry).sort((a, b) => byCountry[a].name.localeCompare(byCountry[b].name)).forEach(key => {
+      const group = byCountry[key];
+      const countryName = group.name;
       html += `<div style="margin-top:8px;margin-bottom:2px;padding:4px 4px;font-size:11px;font-family:'Syne',sans-serif;font-weight:700;color:var(--text-muted);letter-spacing:0.05em;display:flex;align-items:center;gap:6px;">
         <span>${group.flag}</span> ${countryName.toUpperCase()}
       </div>`;
       group.cities.forEach(c => {
-        html += `<div onclick="selectCity('${c.name}','${(c.country[lang]||'').replace(/'/g,"\'")}','${c.flag}')" style="display:flex;align-items:center;gap:8px;padding:7px 10px 7px 22px;border-radius:8px;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background=''">
+        html += `<div onclick="selectCity('${jsq(c.name)}','${jsq(c.country[lang]||'')}','${c.flag}')" style="display:flex;align-items:center;gap:8px;padding:7px 10px 7px 22px;border-radius:8px;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background=''">
           <div style="font-size:13px;font-weight:500;color:var(--text-primary);">${c.name}</div>
         </div>`;
       });
     });
   } else {
     filtered.forEach(c => {
-      html += `<div onclick="selectCity('${c.name}','${(c.country[lang]||'').replace(/'/g,"\'")}','${c.flag}')" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background=''">
+      html += `<div onclick="selectCity('${jsq(c.name)}','${jsq(c.country[lang]||'')}','${c.flag}')" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background=''">
         <span style="font-size:18px;flex-shrink:0;">${c.flag}</span>
         <div style="display:flex;align-items:baseline;gap:6px;">
           <div style="font-size:13px;font-weight:500;color:var(--text-primary);">${c.name}</div>
@@ -4384,78 +4527,120 @@ function hasVisitedCity(cityName) {
   return getVisitedCities().some(c => c.toLowerCase() === (cityName||'').toLowerCase());
 }
 
+// JS string içine güvenli gömme (onclick="fn('...')" için)
+function jsq(s) {
+  return String(s ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+// Diakritik/büyük-küçük harf duyarsız karşılaştırma: "İstanbul" = "Istanbul", "São Paulo" = "Sao Paulo"
+function normCity(s) {
+  return String(s || '').toLocaleLowerCase('tr').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ı/g, 'i').trim();
+}
+
+// Bir isim listesinden bilinen bir şehri bul (Nominatim farklı dilde isim döndürebilir)
+function matchKnownCity(names) {
+  const all = getMergedCities();
+  for (const n of names.filter(Boolean)) {
+    const hit = all.find(c => normCity(c.name) === normCity(n));
+    if (hit) return hit;
+  }
+  return null;
+}
+
+// Nominatim'den şehrin ülke kodunu bul
+async function geocodeCityCountry(name) {
+  const q = encodeURIComponent(name);
+  const res = await fetch(
+    `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=5&addressdetails=1&featuretype=city`,
+    { headers: { 'Accept-Language': 'en' } }
+  );
+  if (!res.ok) throw new Error('Nominatim ' + res.status);
+  const data = await res.json();
+  const cityTypes = ['city','town','village','island','administrative'];
+  const best = data.find(d => cityTypes.includes(d.type) || cityTypes.includes(d.class)) || data[0];
+  const iso = best?.address?.country_code?.toUpperCase() || '';
+  return iso ? { iso, country: countryFromIso(iso), flag: isoToFlag(iso) } : null;
+}
+
+// Konum çubuğundaki yazıyı güncelle (dil değişince de çağrılır)
+function updateLocationText() {
+  try {
+    const text = document.getElementById('location-text');
+    if (!text || !currentCity) return;
+    const iso = currentCountry?.code || flagToIso(currentFlag);
+    const countryName = iso ? countryNameFromIso(iso, lang) : (currentCountry?.[lang] || currentCountry?.en || '');
+    text.textContent = (currentFlag || '📍') + ' ' + currentCity +
+      (countryName && normCity(countryName) !== normCity(currentCity) ? ', ' + countryName : '');
+    const addSub = document.getElementById('add-sub');
+    if (addSub) addSub.textContent = currentCity + ' · ' + (lang==='tr'?'Deneyimini paylaş':'Share your experience');
+  } catch(e) {}
+}
+
+function saveLastCity() {
+  try {
+    localStorage.setItem('cg_last_city', currentCity);
+    localStorage.setItem('cg_last_city_v2', JSON.stringify({ name: currentCity, country: currentCountry, flag: currentFlag }));
+  } catch(e) {}
+}
+
+let _selectCityToken = 0;
 async function selectCity(name, country, flag) {
+  const myToken = ++_selectCityToken;   // hızlı ard arda seçimlerde eski isteği yok say
+
+  // Bilinen bir şehirse listedeki yazımını kullan (İstanbul/Istanbul tek kayıt olsun)
+  const cityData = matchKnownCity([name]);
+  if (cityData) name = cityData.name;
+
   currentCity = name;
-  localStorage.setItem('cg_last_city', name);
+  // Önceki şehrin ülkesini taşıma — para birimi hatalarının ana sebebi buydu
+  currentCountry = null;
+  currentFlag = '';
 
-  // Önce popularCities veya dynamicCities'den bak
-  const cityData = getMergedCities().find(c => c.name.toLowerCase() === name.toLowerCase());
-
-  if (cityData && cityData.country && cityData.country.en && cityData.country.en !== name) {
-    // Gerçek ülke bilgisi var
-    currentCountry = cityData.country;
+  const hasRealCountry = cityData && flagToIso(cityData.flag);
+  if (hasRealCountry) {
+    currentCountry = { ...cityData.country, code: flagToIso(cityData.flag) };
     currentFlag = cityData.flag;
   } else {
-    // Ülke bilgisi yok veya şehir adıyla aynı — Nominatim'den çek
+    // Ülke bilgisi yok — Nominatim'den çek
     try {
-      const q = encodeURIComponent(name);
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=5&addressdetails=1&featuretype=city`,
-        { headers: { 'Accept-Language': 'en' } }
-      );
-      const data = await res.json();
-      const cityTypes = ['city','town','village','island','administrative'];
-      const bestResult = data.find(d => cityTypes.includes(d.type) || cityTypes.includes(d.class)) || data[0];
-      if (bestResult && bestResult.address) {
-        const a = bestResult.address;
-        const countryEn = a.country || name;
-        const countryCode = bestResult.address?.country_code?.toUpperCase() || '';
-        // Flag emoji ülke kodundan üret
-        const flagEmoji = countryCode
-          ? countryCode.split('').map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65)).join('')
-          : '🌍';
-        currentCountry = { tr: countryEn, en: countryEn };
-        currentFlag = flagEmoji;
-        // dynamicCities'i güncelle
+      const geo = await geocodeCityCountry(name);
+      if (myToken !== _selectCityToken) return;
+      if (geo) {
+        currentCountry = geo.country;
+        currentFlag = geo.flag;
         const dc = dynamicCities.find(c => c.name.toLowerCase() === name.toLowerCase());
-        if (dc) { dc.country = currentCountry; dc.flag = currentFlag; }
-        // Supabase'deki bu şehre ait yerleri güncelle (arka planda)
-        updateCityCountryInDB(name, countryEn, countryEn, currentFlag);
-        // Para birimini ülke belirlendikten sonra güncelle
-        currentCurrency = getCurrencyForCity(name);
-        updateCurrencyBadge(name);
+        if (dc) { dc.country = geo.country; dc.flag = geo.flag; }
+        else addCityToDynamic(name, geo.country, geo.flag);
+        // Supabase'deki bu şehre ait ülke bilgisi eksik yerleri tamamla (arka planda)
+        updateCityCountryInDB(name, geo.country.tr, geo.country.en, geo.flag);
       }
     } catch(e) {
       console.warn('[selectCity] Nominatim hatası:', e);
-      currentCountry = { tr: country || name, en: country || name };
+    }
+    if (myToken !== _selectCityToken) return;
+    if (!currentCountry && country) {
+      const iso = flagToIso(flag);
+      currentCountry = iso ? countryFromIso(iso) : { tr: country, en: country };
       currentFlag = flag || '🌍';
     }
   }
 
-  // Ziyaret edilen şehre ekle
+  saveLastCity();
   addVisitedCity(name);
   const dot = document.getElementById('location-dot');
-  const text = document.getElementById('location-text');
-  dot.style.background = '#10b981';
-  if (text) text.textContent = currentFlag + ' ' + name + (currentCountry?.en && currentCountry.en !== name ? ', ' + currentCountry.en : '');
-
-  const addSub = document.getElementById('add-sub');
-  if (addSub) addSub.textContent = name + ' · ' + (lang==='tr'?'Deneyimini paylaş':'Share your experience');
-  // Para birimi — popularCities'de varsa hemen güncelle, Nominatim'den gelecekse orada güncelleniyor
-  const popCity = popularCities.find(p => p.name.toLowerCase() === name.toLowerCase());
-  if (popCity || currencyDB[name]) {
-    currentCurrency = getCurrencyForCity(name);
-    updateCurrencyBadge(name);
-  }
-  // Şehir bazlı yerleri Supabase'den yükle
+  if (dot) dot.style.background = '#10b981';
+  updateLocationText();
+  updateCurrencyBadge(name);
   loadPlaces(name);
   goTo('screen-home');
 }
 
 async function updateCityCountryInDB(city, countryTr, countryEn, flag) {
+  // Sadece giriş yapmış kullanıcı deneyebilir; RLS izin vermezse sessizce geçer
+  if (!currentUser) return;
   try {
     const token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token') || SUPABASE_KEY;
-    await fetch(`${SUPABASE_URL}/rest/v1/places?city=eq.${encodeURIComponent(city)}&country_en=eq.`, {
+    await fetch(`${SUPABASE_URL}/rest/v1/places?city=eq.${encodeURIComponent(city)}&or=(country_en.is.null,country_en.eq.,flag.is.null,flag.eq.,flag.eq.🌍)`, {
       method: 'PATCH',
       headers: {
         'apikey': SUPABASE_KEY,
@@ -4480,27 +4665,38 @@ function useCurrentLocation() {
     dot.style.background = '#ef4444';
     return;
   }
+  const startToken = _selectCityToken;
   navigator.geolocation.getCurrentPosition(
     async (pos) => {
+      // Konum beklenirken kullanıcı elle şehir seçtiyse GPS sonucu onu ezmesin
+      if (_selectCityToken !== startToken) { updateLocationText(); return; }
       try {
         const { latitude: lat, longitude: lon } = pos.coords;
-        const res = await fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json&accept-language=' + lang);
+        // zoom=10 → şehir seviyesi; namedetails → şehrin tüm dillerdeki adları
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=jsonv2&zoom=10&addressdetails=1&namedetails=1`,
+          { headers: { 'Accept-Language': 'en' } }
+        );
+        if (!res.ok) throw new Error('Nominatim ' + res.status);
         const data = await res.json();
-        // Önce büyük şehir adını al, sonra ilçeyi göster
-        const cityName = data.address.city || data.address.province || data.address.state || '';
-        const district = data.address.town || data.address.suburb || data.address.village || '';
-        const country = data.address.country || '';
-        const displayName = district ? district + ', ' + cityName : cityName;
-        dot.style.background = '#10b981';
-        text.textContent = '📍 ' + (displayName || cityName) + (country ? ', ' + country : '');
-        const addSub = document.getElementById('add-sub');
-        if (addSub) addSub.textContent = (cityName || district) + ' · ' + (lang==='tr'?'Deneyimini paylaş':'Share your experience');
-        // Şehir adıyla yerleri yükle ve para birimini güncelle
-        currentCity = cityName || district;
-        currentCurrency = getCurrencyForCity(currentCity);
-        updateCurrencyBadge(currentCity);
-        loadPlaces(currentCity);
+        const a = data.address || {};
+        const nd = data.namedetails || {};
+        const iso = (a.country_code || '').toUpperCase();
+
+        // Bilinen bir şehirle eşleştir (tüm dil varyantları + il/eyalet adı)
+        const candidates = [nd['name:en'], nd.name, nd['name:tr'], ...Object.values(nd),
+                            a.city, a.town, a.municipality, a.province, a.state, a.village];
+        const known = matchKnownCity(candidates);
+        const cityName = known ? known.name
+          : (nd['name:en'] || a.city || a.town || a.municipality || a.village || a.province || a.state || data.name || '');
+        if (!cityName) throw new Error('Şehir bulunamadı');
+        if (_selectCityToken !== startToken) { updateLocationText(); return; }
+
+        if (!known && iso) addCityToDynamic(cityName, countryFromIso(iso), isoToFlag(iso));
+        // Tek bir yoldan geç: ülke, bayrak, para birimi, yerler hepsi selectCity'de ayarlanıyor
+        await selectCity(cityName, iso ? countryNameFromIso(iso, lang) : '', iso ? isoToFlag(iso) : '');
       } catch(e) {
+        console.warn('[useCurrentLocation]', e);
         dot.style.background = '#ef4444';
         text.textContent = lang === 'tr' ? '📍 Konum alınamadı' : '📍 Could not get location';
       }
@@ -4508,7 +4704,8 @@ function useCurrentLocation() {
     () => {
       dot.style.background = '#ef4444';
       text.textContent = lang === 'tr' ? '📍 İzin reddedildi' : '📍 Permission denied';
-    }
+    },
+    { enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 }
   );
 }
 
@@ -4915,6 +5112,8 @@ async function processQueueItem(item) {
     const resText = await res.text();
     console.log('[Queue] place_insert response:', res.status, resText.slice(0, 200));
     if (res.ok || res.status === 201 || res.status === 409) {
+      // Onay bekleyen öneriler için bildirim gönderme — admin onaylayınca gidecek
+      if (item.payload.status === 'pending' || item.payload.is_hidden) return true;
       sendPushForNewPlace({
         city: item.payload.city,
         name: item.payload.name,
@@ -7154,7 +7353,7 @@ async function loadAdminPlaces() {
     const token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token') || SUPABASE_KEY;
     // is_hidden filtresi YOK — hem görünür hem gizli çek
     let res = await fetch(
-      `${SUPABASE_URL}/rest/v1/places?order=created_at.desc&limit=300&select=id,name,emoji,city,cat,price,likes,rating,is_hidden,user_id,created_at,addr`,
+      `${SUPABASE_URL}/rest/v1/places?order=created_at.desc&limit=300&select=*`,
       { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + token } }
     );
     // Token expire olduysa yenile
@@ -7162,7 +7361,7 @@ async function loadAdminPlaces() {
       const newToken = await refreshAccessToken();
       if (newToken) {
         res = await fetch(
-          `${SUPABASE_URL}/rest/v1/places?order=created_at.desc&limit=300&select=id,name,emoji,city,cat,price,likes,rating,is_hidden,user_id,created_at,addr`,
+          `${SUPABASE_URL}/rest/v1/places?order=created_at.desc&limit=300&select=*`,
           { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + newToken } }
         );
       }
@@ -7206,15 +7405,16 @@ function renderAdminPlaces() {
   if (!listEl) return;
 
   const total   = allAdminPlaces.length;
+  const pendingCount = allAdminPlaces.filter(p => p.status === 'pending').length;
   const visible = allAdminPlaces.filter(p => !p.is_hidden).length;
-  const hidden  = allAdminPlaces.filter(p =>  p.is_hidden).length;
+  const hidden  = allAdminPlaces.filter(p =>  p.is_hidden && p.status !== 'pending').length;
 
   const totalEl   = document.getElementById('admin-stat-total');
   const visibleEl = document.getElementById('admin-stat-visible');
   const hiddenEl  = document.getElementById('admin-stat-hidden');
   if (totalEl)   totalEl.textContent   = `${total} yer`;
   if (visibleEl) visibleEl.textContent = `${visible} görünür`;
-  if (hiddenEl)  hiddenEl.textContent  = `${hidden} gizli`;
+  if (hiddenEl)  hiddenEl.textContent  = `${hidden} gizli` + (pendingCount ? ` · ⏳ ${pendingCount} onay bekliyor` : '');
 
   const subEl = document.getElementById('admin-panel-sub');
   if (subEl) subEl.textContent = adminFilteredPlaces.length !== total
@@ -7228,25 +7428,39 @@ function renderAdminPlaces() {
 
   const catBg = { food:'#fef3c7', shopping:'#e0e7ff', sightseeing:'#dcfce7' };
 
-  listEl.innerHTML = adminFilteredPlaces.map(p => {
+  // Onay bekleyenler en üstte
+  const ordered = [...adminFilteredPlaces].sort((a, b) => (b.status === 'pending') - (a.status === 'pending'));
+
+  listEl.innerHTML = ordered.map(p => {
+    const isPending = p.status === 'pending';
     const bg = catBg[p.cat] || '#f0f3f9';
     const date = new Date(p.created_at).toLocaleDateString('tr-TR', { day:'numeric', month:'short', year:'numeric' });
     const catLabel = p.cat==='food'?'Yemek':p.cat==='shopping'?'Alışveriş':'Gezi';
-    const hiddenBadge = p.is_hidden ? '<span class="admin-hidden-badge">GİZLİ</span>' : '';
+    const hiddenBadge = isPending
+      ? '<span class="admin-hidden-badge" style="background:#f59e0b;color:#fff;">ONAY BEKLİYOR</span>'
+      : p.status === 'rejected'
+        ? '<span class="admin-hidden-badge">REDDEDİLDİ</span>'
+        : p.is_hidden ? '<span class="admin-hidden-badge">GİZLİ</span>' : '';
+    const descSnippet = isPending && (p.desc_tr || p.desc_en)
+      ? `<div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">“${escapeAdminHtml((p.desc_tr || p.desc_en).slice(0, 140))}”</div>` : '';
 
     return `
       <div class="admin-place-row">
         <div class="admin-place-emoji" style="background:${bg};">${p.emoji || '📍'}</div>
         <div class="admin-place-body">
-          <div class="admin-place-name">${p.name} ${hiddenBadge}</div>
+          <div class="admin-place-name">${escapeAdminHtml(p.name)} ${hiddenBadge}</div>
           <div class="admin-place-meta">
             📍 ${p.city || '—'} · ${catLabel} · ${p.price || '$'}<br>
             ♥ ${p.likes || 0} · ⭐ ${p.rating ? parseFloat(p.rating).toFixed(1) : '—'} · 📅 ${date}
           </div>
+          ${descSnippet}
         </div>
         <div class="admin-place-actions">
           <button class="admin-btn admin-btn-view" onclick="adminViewPlace('${p.id}')">👁 Gör</button>
-          ${p.is_hidden
+          ${isPending
+            ? `<button class="admin-btn admin-btn-show" onclick="adminReviewPlace('${p.id}', true, this)">✓ Onayla</button>
+               <button class="admin-btn admin-btn-hide" onclick="adminReviewPlace('${p.id}', false, this)">✕ Reddet</button>`
+            : p.is_hidden
             ? `<button class="admin-btn admin-btn-show" onclick="adminToggleHide('${p.id}', false, this)">✓ Göster</button>`
             : `<button class="admin-btn admin-btn-hide" onclick="adminToggleHide('${p.id}', true, this)">🚫 Gizle</button>`
           }
@@ -7279,6 +7493,38 @@ function adminViewPlace(placeId) {
   openDetail(placeId);
 }
 
+function escapeAdminHtml(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Onay bekleyen öneriyi onayla / reddet
+async function adminReviewPlace(placeId, approve, btn) {
+  if (!isAdmin()) return;
+  const row = btn?.closest('.admin-place-actions');
+  row?.querySelectorAll('button').forEach(b => b.disabled = true);
+  if (btn) btn.textContent = '⏳';
+  try {
+    await sbFetch(`places?id=eq.${encodeURIComponent(placeId)}`, {
+      method: 'PATCH',
+      body: JSON.stringify(approve ? { status: 'approved', is_hidden: false } : { status: 'rejected', is_hidden: true })
+    });
+    const ap = allAdminPlaces.find(p => String(p.id) === String(placeId));
+    if (ap) { ap.status = approve ? 'approved' : 'rejected'; ap.is_hidden = !approve; }
+    if (approve && ap) {
+      // Bildirim artık onay anında gidiyor
+      sendPushForNewPlace({ city: ap.city, name: ap.name, emoji: ap.emoji || '📍', placeId: ap.id }).catch(() => {});
+      if ((ap.city || '').toLowerCase() === (currentCity || '').toLowerCase()) loadPlaces(currentCity);
+      addCityToDynamic(ap.city, { tr: ap.country_tr || ap.city, en: ap.country_en || ap.city }, ap.flag);
+    }
+    showToast(approve ? '✓ Onaylandı ve yayınlandı' : '✕ Reddedildi');
+    renderAdminPlaces();
+  } catch(e) {
+    console.error('[adminReviewPlace]', e);
+    showToast('Hata: ' + e.message);
+    row?.querySelectorAll('button').forEach(b => b.disabled = false);
+  }
+}
+
 async function adminToggleHide(placeId, hide, btn) {
   if (!isAdmin()) return;
   if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
@@ -7288,13 +7534,15 @@ async function adminToggleHide(placeId, hide, btn) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/places?id=eq.${placeId}`, {
       method: 'PATCH',
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ is_hidden: hide })
+      body: JSON.stringify(
+        (!hide && allAdminPlaces.find(p => String(p.id) === String(placeId))?.status !== undefined)
+          ? { is_hidden: false, status: 'approved' } : { is_hidden: hide })
     });
     if (!res.ok) throw new Error(await res.text());
 
     // Local güncelle
     const ap = allAdminPlaces.find(p => String(p.id) === String(placeId));
-    if (ap) ap.is_hidden = hide;
+    if (ap) { ap.is_hidden = hide; if (!hide && ap.status !== undefined) ap.status = 'approved'; }
     const lp = places.find(p => String(p.id) === String(placeId));
     if (lp && hide) {
       places.splice(places.indexOf(lp), 1);
@@ -8093,12 +8341,12 @@ async function openNotifPlace(placeId, city) {
 
       // Ülke ve para birimini güncelle
       if (placeInfo.country_en || placeInfo.country_tr) {
-        currentCountry = { en: placeInfo.country_en || '', tr: placeInfo.country_tr || '' };
+        currentCountry = { en: placeInfo.country_en || '', tr: placeInfo.country_tr || '', code: flagToIso(placeInfo.flag) || undefined };
         currentFlag = placeInfo.flag || '';
       } else {
         // popularCities'den bul
-        const popCity = popularCities.find(c => c.name.toLowerCase() === (city||'').toLowerCase());
-        if (popCity) { currentCountry = popCity.country; currentFlag = popCity.flag; }
+        const popCity = findCityEntry(city);
+        if (popCity) { currentCountry = { ...popCity.country, code: flagToIso(popCity.flag) || undefined }; currentFlag = popCity.flag; }
       }
     }
   } catch(e) {
@@ -8110,7 +8358,9 @@ async function openNotifPlace(placeId, city) {
     currentCity = city;
     const cityEl = document.getElementById('current-city');
     if (cityEl) cityEl.textContent = city;
-    currentCurrency = getCurrencyForCity(city);
+    saveLastCity();
+    addVisitedCity(city);
+    updateLocationText();
     updateCurrencyBadge(city);
     places.length = 0;
     await loadPlaces(city);
@@ -8195,11 +8445,14 @@ function buildCountryOptions() {
   const allCities = getMergedCities();
   const countries = {};
   allCities.forEach(c => {
-    const key = c.country.en || c.name;
+    const iso = flagToIso(c.flag);
+    const key = iso || c.country.en || c.name;
     if (!countries[key]) {
-      countries[key] = { tr: c.country.tr, en: c.country.en, flag: c.flag, cities: [] };
+      countries[key] = iso
+        ? { tr: countryNameFromIso(iso, 'tr'), en: countryNameFromIso(iso, 'en'), flag: c.flag, cities: [] }
+        : { tr: c.country.tr, en: c.country.en, flag: c.flag, cities: [] };
     }
-    countries[key].cities.push(c.name);
+    if (!countries[key].cities.includes(c.name)) countries[key].cities.push(c.name);
   });
 
   const sorted = Object.keys(countries).sort((a, b) => {
@@ -8226,8 +8479,7 @@ function buildCountryOptions() {
   if (currentCity) {
     const match = allCities.find(c => c.name === currentCity);
     if (match) {
-      const countryEn = match.country.en;
-      select.value = countryEn;
+      select.value = flagToIso(match.flag) || match.country.en;
       onCountryChange();
     }
   }
@@ -8246,7 +8498,7 @@ function onCountryChange() {
     return;
   }
 
-  currentCountry = { tr: opt.dataset.tr, en: opt.dataset.en };
+  currentCountry = { tr: opt.dataset.tr, en: opt.dataset.en, code: flagToIso(opt.dataset.flag) || undefined };
   currentFlag = opt.dataset.flag;
 
   const cities = JSON.parse(opt.dataset.cities || '[]');
@@ -8290,12 +8542,13 @@ function onCustomCityInput(val) {
   if (citySelect) citySelect.value = '';
 
   // Önce mevcut listede ara
-  const cityData = getMergedCities().find(c => c.name.toLowerCase() === city.toLowerCase());
-  if (cityData && cityData.country && cityData.country.en && cityData.country.en !== city) {
-    currentCountry = cityData.country;
+  const cityData = matchKnownCity([city]);
+  if (cityData && flagToIso(cityData.flag)) {
+    clearTimeout(window._cityInputTimer);
+    currentCity = cityData.name;
+    currentCountry = { ...cityData.country, code: flagToIso(cityData.flag) };
     currentFlag = cityData.flag;
-    currentCurrency = getCurrencyForCity(city);
-    updateCurrencyBadge(city);
+    updateCurrencyBadge(currentCity);
     const display = document.getElementById('selected-city-display');
     if (display) display.textContent = `${currentFlag} ${city} · ${currentCountry?.[lang]||''}`;
     return;
@@ -8303,35 +8556,22 @@ function onCustomCityInput(val) {
 
   // Listede yoksa Nominatim'den çek (debounce — 800ms sonra)
   clearTimeout(window._cityInputTimer);
+  // Önceki şehrin ülkesi yeni şehre taşınmasın
+  currentCountry = null;
+  currentFlag = '';
   window._cityInputTimer = setTimeout(async () => {
     try {
-      const q = encodeURIComponent(city);
-      // city + place türleri ile daha spesifik ara
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=5&addressdetails=1&featuretype=city`,
-        { headers: { 'Accept-Language': 'en' } }
-      );
-      const data = await res.json();
-      // Şehir/kasaba/ada tiplerini önceliklendir
-      const cityTypes = ['city','town','village','island','administrative'];
-      const best = data.find(d => cityTypes.includes(d.type) || cityTypes.includes(d.class))
-                   || data[0];
-      if (best?.address) {
-        const a = best.address;
-        const countryEn = a.country || city;
-        const countryCode = a.country_code?.toUpperCase() || '';
-        const flagEmoji = countryCode
-          ? countryCode.split('').map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65)).join('')
-          : '🌍';
-        currentCountry = { tr: countryEn, en: countryEn };
-        currentFlag = flagEmoji;
-        // dynamicCities'e ekle
-        addCityToDynamic(city, currentCountry, currentFlag);
+      const geo = await geocodeCityCountry(city);
+      if (currentCity !== city) return; // kullanıcı yazmaya devam etti
+      if (geo) {
+        currentCountry = geo.country;
+        currentFlag = geo.flag;
+        addCityToDynamic(city, geo.country, geo.flag);
       }
     } catch(e) {
       console.warn('[onCustomCityInput] Nominatim hatası:', e);
     }
-    currentCurrency = getCurrencyForCity(city);
+    if (currentCity !== city) return;
     updateCurrencyBadge(city);
     const display = document.getElementById('selected-city-display');
     if (display) display.textContent = `${currentFlag} ${city} · ${currentCountry?.[lang]||''}`;
@@ -8467,13 +8707,35 @@ if (savedLang && translations[savedLang]) {
   setTimeout(() => updateLangBtn(savedLang), 0);
   applyTranslations();
 }
+// Son seçilen şehri geri yükle (eskiden her açılışta Seoul'a dönüyordu)
+(function restoreLastCity() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('cg_last_city_v2') || 'null');
+    if (saved && saved.name) {
+      currentCity = saved.name;
+      currentCountry = saved.country || null;
+      currentFlag = saved.flag || '';
+    } else {
+      const legacy = localStorage.getItem('cg_last_city');
+      const known = legacy && findCityEntry(legacy);
+      if (known) {
+        currentCity = known.name;
+        currentCountry = { ...known.country, code: flagToIso(known.flag) || undefined };
+        currentFlag = known.flag;
+      }
+    }
+  } catch(e) {}
+  if (!currentFlag) {
+    const known = findCityEntry(currentCity);
+    if (known) { currentCountry = { ...known.country, code: flagToIso(known.flag) || undefined }; currentFlag = known.flag; }
+  }
+})();
 renderCards();
 renderSubCats();
-updateCurrencyBadge('Seoul');
-// Default şehri ziyaret edilenler listesine ekle
-addVisitedCity('Seoul');
-// Supabase'den Seoul yerlerini yükle
-loadPlaces('Seoul');
+updateCurrencyBadge(currentCity);
+addVisitedCity(currentCity);
+updateLocationText();
+loadPlaces(currentCity);
 // Sayfa yüklenince session kontrol et
 window.addEventListener('load', () => {
   checkSession();
@@ -8481,29 +8743,50 @@ window.addEventListener('load', () => {
 
 // ── CANLI KUR SİSTEMİ ────────────────────────────────────────────────────────
 // open.er-api.com — ücretsiz, kayıt gerektirmez, 1500 istek/ay
-let liveRatesCache = null;      // { USD: 1, EUR: 0.92, ... }
-let liveRatesFetchedAt = 0;     // timestamp (ms)
-const LIVE_RATES_TTL = 3600000; // 1 saat cache
+var liveRatesCache = null;      // { USD: 1, EUR: 0.92, ... }
+var liveRatesFetchedAt = 0;     // timestamp (ms)
+var LIVE_RATES_TTL = 3600000; // 1 saat cache
 
+// Son alınan kurları cihazda sakla — uygulama çevrimdışıyken de doğru kur gösterilsin
+function getCachedRates() {
+  if (liveRatesCache) return liveRatesCache;
+  try {
+    const saved = JSON.parse(localStorage.getItem('cg_rates') || 'null');
+    if (saved && saved.rates) {
+      liveRatesCache = saved.rates;
+      liveRatesFetchedAt = saved.at || 0;
+      return liveRatesCache;
+    }
+  } catch(e) {}
+  return null;
+}
+
+var _ratesInflight = null;
 async function fetchLiveRates() {
+  getCachedRates();
   // Cache geçerliyse tekrar çekme
   if (liveRatesCache && Date.now() - liveRatesFetchedAt < LIVE_RATES_TTL) {
     return liveRatesCache;
   }
+  if (_ratesInflight) return _ratesInflight;
+  _ratesInflight = (async () => {
   try {
-    const res = await fetch('https://open.er-api.com/v6/latest/USD', { cache: 'force-cache' });
-    if (!res.ok) return null;
+    const res = await fetch('https://open.er-api.com/v6/latest/USD');
+    if (!res.ok) return liveRatesCache;
     const data = await res.json();
     if (data && data.rates) {
       liveRatesCache = data.rates;
       liveRatesFetchedAt = Date.now();
+      try { localStorage.setItem('cg_rates', JSON.stringify({ rates: data.rates, at: liveRatesFetchedAt })); } catch(e) {}
       console.log('[Currency] Canlı kurlar alındı:', Object.keys(data.rates).length, 'para birimi');
       return liveRatesCache;
     }
   } catch(e) {
-    console.warn('[Currency] Canlı kur alınamadı, yerel kurlar kullanılıyor:', e.message);
+    console.warn('[Currency] Canlı kur alınamadı, kayıtlı/yerel kurlar kullanılıyor:', e.message);
   }
-  return null;
+  return liveRatesCache; // eski de olsa kayıtlı kur, hiç yoksa null
+  })();
+  try { return await _ratesInflight; } finally { _ratesInflight = null; }
 }
 
 function applyLiveRate(cur, rates) {
@@ -8516,8 +8799,12 @@ function applyLiveRate(cur, rates) {
   return cur;
 }
 
+var _currencyReqId = 0;
 function updateCurrencyBadge(cityName) {
+  const reqId = ++_currencyReqId;  // geç gelen kur cevabı yeni şehrin para birimini ezmesin
   let cur = getCurrencyForCity(cityName);
+  const cachedRates = getCachedRates();
+  if (cachedRates) cur = applyLiveRate(cur, cachedRates);
   currentCurrency = cur;
   const symEl = document.getElementById('currency-symbol');
   const codeEl = document.getElementById('currency-code');
@@ -8528,6 +8815,12 @@ function updateCurrencyBadge(cityName) {
   const badge = document.getElementById('currency-badge');
   const rateEl = document.getElementById('currency-rate-hint');
   function displayRate(c) {
+    if (!(c.rate > 0)) {
+      const msg = lang==='tr' ? 'Kur bilgisi yok — fiyatlar USD' : 'No rate — prices in USD';
+      if (badge) badge.title = msg;
+      if (rateEl) rateEl.textContent = msg;
+      return;
+    }
     const rate = (1 / c.rate).toFixed(c.rate < 0.01 ? 0 : c.rate < 0.1 ? 1 : 2);
     const liveTag = c._live ? ' ●' : '';
     if (badge) badge.title = `1 USD ≈ ${rate} ${c.symbol}${liveTag}`;
@@ -8539,12 +8832,14 @@ function updateCurrencyBadge(cityName) {
 
   // Arka planda canlı kur çek ve güncelle
   fetchLiveRates().then(rates => {
-    if (!rates) return;
+    if (!rates || reqId !== _currencyReqId) return;
     const liveCur = applyLiveRate(cur, rates);
     currentCurrency = liveCur;
     displayRate(liveCur);
     if (symEl) symEl.textContent = liveCur.symbol;
     if (codeEl) codeEl.textContent = liveCur.code;
+    // Kartlardaki yerel fiyatlar yeni kurla yeniden çizilsin
+    if (typeof renderCards === 'function') renderCards();
   }).catch(() => {});
 }
 
@@ -8655,12 +8950,15 @@ async function loadMyPlaces() {
   try {
     const token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token') || SUPABASE_KEY;
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/places?user_id=eq.${currentUser.id}&is_hidden=eq.false&order=created_at.desc&limit=50&select=id,name,emoji,city,cat,likes,rating`,
+      `${SUPABASE_URL}/rest/v1/places?user_id=eq.${currentUser.id}&order=created_at.desc&limit=50&select=*`,
       { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + token } }
     );
 
     if (!res.ok) throw new Error(await res.text());
-    const myPlaces = await res.json();
+    const allMine = await res.json();
+    // Yayında olanlar + onay bekleyen / reddedilen önerilerim (admin'in gizledikleri hariç)
+    const myPlaces = allMine.filter(p => !p.is_hidden);
+    const myPending = allMine.filter(p => p.status === 'pending' || p.status === 'rejected');
 
     // Stat sayaçlarını güncelle
     const placeCountEl = document.getElementById('stat-places');
@@ -8672,14 +8970,29 @@ async function loadMyPlaces() {
     const likesEl = document.getElementById('stat-likes');
     if (likesEl) likesEl.textContent = totalLikes;
 
-    if (!myPlaces.length) {
+    const pendingHtml = myPending.map(p => {
+      const cat = catColors[p.cat] || { bg: '#f0f3f9', emoji: p.emoji || '📍' };
+      const badge = p.status === 'pending'
+        ? `<span style="font-size:10px;background:#f59e0b;color:#fff;padding:1px 6px;border-radius:4px;">${lang==='tr'?'Onay bekliyor':'In review'}</span>`
+        : `<span style="font-size:10px;background:#9ca3af;color:#fff;padding:1px 6px;border-radius:4px;">${lang==='tr'?'Yayınlanmadı':'Not published'}</span>`;
+      return `
+        <div class="place-row-profile" style="opacity:0.75;cursor:default;">
+          <div class="place-icon-profile" style="background:${cat.bg};">${p.emoji || cat.emoji}</div>
+          <div class="place-row-info">
+            <div class="place-row-name">${escapeAdminHtml(p.name)} ${badge}</div>
+            <div class="place-row-meta">${escapeAdminHtml(p.city || '')}</div>
+          </div>
+        </div>`;
+    }).join('');
+
+    if (!myPlaces.length && !myPending.length) {
       listEl.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">
         📍 ${lang==='tr'?'Henüz yer eklemedin. İlk yerini ekle!':'No places added yet. Add your first one!'}
       </div>`;
       return;
     }
 
-    listEl.innerHTML = myPlaces.map(p => {
+    listEl.innerHTML = pendingHtml + myPlaces.map(p => {
       const cat = catColors[p.cat] || { bg: '#f0f3f9', emoji: p.emoji || '📍' };
       const catLabel = catLabels[p.cat] ? catLabels[p.cat][lang] || catLabels[p.cat].tr : '';
       const stars = p.rating > 0 ? `<span style="color:#f59e0b;font-size:10px;">${'★'.repeat(Math.round(p.rating))}</span> ` : '';
@@ -8768,15 +9081,8 @@ function renderVisitedCitiesBar() {
 }
 
 function selectCityFromNotif(cityName) {
-  // Şehir seç ve ana sayfaya git
-  const cur = getCurrencyForCity(cityName);
-  currentCity = cityName;
-  currentCurrency = cur;
-  updateCurrencyBadge(cityName);
-  loadPlaces(cityName);
-  const text = document.getElementById('location-text');
-  if (text) text.textContent = cityName;
-  goTo('screen-home');
+  // Tek yol: ülke, bayrak, para birimi ve yerler selectCity'de ayarlanır
+  selectCity(cityName);
 }
 
 function removeVisitedCity(event, cityName) {
@@ -8801,7 +9107,7 @@ function showCurrencyModal(cur) {
   const old = document.getElementById('currency-modal');
   if (old) old.remove();
 
-  const usdRate = (1 / cur.rate).toFixed(1);
+  const usdRate = cur.rate > 0 ? (1 / cur.rate).toFixed(cur.rate < 0.01 ? 0 : 1) : '?';
   const examples = [
     { label: lang==='tr'?'Ucuz yemek':'Budget meal', usd: 15 },
     { label: lang==='tr'?'Orta restoran':'Mid restaurant', usd: 40 },
