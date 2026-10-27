@@ -1,7 +1,7 @@
 // CrewGuide Service Worker v4.1 — Offline-first + Supabase Cache
-// BUILD: 202610271923
-const STATIC_CACHE   = 'crewguide-static-202506030001';
-const DYNAMIC_CACHE  = 'crewguide-dynamic-202506030001';
+// BUILD: 202610271931
+const STATIC_CACHE = 'crewguide-static-202610271931';
+const DYNAMIC_CACHE = 'crewguide-dynamic-202610271931';
 const SUPABASE_CACHE = 'crewguide-supabase-202506030001';
 
 const STATIC_ASSETS = [
@@ -15,7 +15,8 @@ self.addEventListener('install', event => {
   console.log('[SW] Installing v4.1...');
   event.waitUntil(
     caches.open(STATIC_CACHE)
-      .then(cache => cache.addAll(STATIC_ASSETS))
+      // cache:'reload' → tarayıcının HTTP önbelleğini atla, her zaman sunucudaki son sürümü al
+      .then(cache => cache.addAll(STATIC_ASSETS.map(u => new Request(u, { cache: 'reload' }))))
       .then(() => self.skipWaiting())
       .catch(() => self.skipWaiting())
   );
@@ -56,6 +57,14 @@ self.addEventListener('fetch', event => {
 
   // POST/PATCH/DELETE — network only
   if (event.request.method !== 'GET') return;
+
+  // Uygulama sayfası (index.html) — NETWORK FIRST: internet varsa her açılışta son sürüm,
+  // yoksa önbellekteki sürüm. (Eskiden cache-first'tü; telefonda eski sürüm takılı kalıyordu.)
+  if (url.origin === self.location.origin &&
+      (event.request.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('.html'))) {
+    event.respondWith(pageNetworkFirst(event.request));
+    return;
+  }
 
   // Statik dosyalar — cache first
   if (
@@ -130,6 +139,21 @@ async function supabaseNetworkFirst(request) {
 }
 
 // ── STRATEJİLER ──────────────────────────────────────────────────────────────
+async function pageNetworkFirst(request) {
+  try {
+    const response = await fetch(request, { cache: 'no-cache' });
+    if (response.ok) {
+      const cache = await caches.open(STATIC_CACHE);
+      cache.put('./index.html', response.clone());
+    }
+    return response;
+  } catch {
+    return (await caches.match(request)) ||
+           (await caches.match('./index.html')) ||
+           new Response('Çevrimdışı', { status: 503 });
+  }
+}
+
 async function cacheFirst(request) {
   const cached = await caches.match(request);
   if (cached) return cached;

@@ -47,12 +47,12 @@ def main():
 
     # Cache versiyonlarını güncelle
     updated = re.sub(
-        r"const STATIC_CACHE = 'crewguide-static-[\w-]+'",
+        r"const STATIC_CACHE\s*=\s*'crewguide-static-[\w-]+'",
         f"const STATIC_CACHE = 'crewguide-static-{ts}'",
         content
     )
     updated = re.sub(
-        r"const DYNAMIC_CACHE = 'crewguide-dynamic-[\w-]+'",
+        r"const DYNAMIC_CACHE\s*=\s*'crewguide-dynamic-[\w-]+'",
         f"const DYNAMIC_CACHE = 'crewguide-dynamic-{ts}'",
         updated
     )

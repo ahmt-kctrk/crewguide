@@ -5251,7 +5251,6 @@ function applyTranslations() {
 const ROOT_SCREEN = 'screen-home';
 let navStack = [];
 let _navFromBack = false;
-let _trapArmed = false;
 
 function currentScreenId() {
   const el = document.querySelector('.screen.active');
@@ -5305,24 +5304,46 @@ function handleAppBack() {
   return false;
 }
 
+// Chrome (Android dahil), kullanıcı dokunmadan eklenen geçmiş kayıtlarını geri tuşunda ATLAR
+// ve uygulama kapanır. Bu yüzden:
+//  1) Tuzak kaydı (cgTrap) yalnızca bir dokunuş/tıklama sırasında BİR KEZ eklenir.
+//  2) Geri basılıp temel kayda dönünce yeni kayıt eklemek yerine history.forward() ile
+//     aynı tuzak kaydına geri gidilir (yeni kayıt = atlanma riski yok).
+let _ignorePop = false;
+
+function onTrap() { return !!(history.state && history.state.cgTrap); }
+
 function armBackTrap() {
-  if (_trapArmed) return;
-  try { history.pushState({ cgTrap: true }, ''); _trapArmed = true; } catch (e) {}
+  if (onTrap()) return;
+  const active = !navigator.userActivation || navigator.userActivation.isActive;
+  if (!active) return;                    // dokunuş yokken ekleme — Chrome atlar
+  try { history.pushState({ cgTrap: true }, ''); } catch (e) {}
+}
+
+function rearmBackTrap() {
+  if (onTrap()) return;
+  _ignorePop = true;                      // forward() da popstate tetikler; onu yok say
+  history.forward();
+  setTimeout(() => { _ignorePop = false; }, 400);
 }
 
 window.addEventListener('popstate', () => {
-  _trapArmed = false;                    // geri basışı tuzak kaydı karşıladı
-  if (handleAppBack()) { armBackTrap(); return; }
-  // Kök ekrandayız: tuzağı kurmadan uyar → 2 sn içindeki ikinci basışta sistem uygulamayı kapatır
+  if (_ignorePop) { _ignorePop = false; return; }
+  if (onTrap()) return;                   // ileri gidildi; işlem yok
+  if (handleAppBack()) { rearmBackTrap(); return; }
+  // Kök ekrandayız: uyar; 2 sn içindeki ikinci basışta sistem uygulamayı kapatır
   showToast(tx('Çıkmak için tekrar geri bas', 'Press back again to exit'));
-  setTimeout(armBackTrap, 2000);
+  setTimeout(rearmBackTrap, 2000);
 });
 
-try { history.replaceState({ cgBase: true }, ''); armBackTrap(); } catch (e) {}
+try { if (!history.state) history.replaceState({ cgBase: true }, ''); } catch (e) {}
+['pointerup', 'touchend', 'click', 'keydown'].forEach(ev =>
+  document.addEventListener(ev, armBackTrap, { capture: true, passive: true })
+);
 
 function goTo(id) {
   trackNavigation(currentScreenId(), id);
-  if (!_navFromBack) armBackTrap();
+  if (!_navFromBack) armBackTrap();       // tıklamayla gelindiyse tuzağı kur
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.getElementById(id).scrollTop = 0;
