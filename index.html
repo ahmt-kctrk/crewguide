@@ -1921,6 +1921,7 @@
         <button onclick="goTo('screen-admin')" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid var(--navy);background:var(--navy);font-size:13px;color:#fff;cursor:pointer;font-family:'Syne',sans-serif;font-weight:600;" data-t="🛡 Admin Panel">🛡 Admin Paneli</button>
       </div>
       <button onclick="disableMyAccount()" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid #fca5a5;background:transparent;font-size:13px;color:#991b1b;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:8px;" data-t="⚠️ Deactivate My Account">⚠️ Hesabımı Devre Dışı Bırak</button>
+      <button onclick="deleteMyAccount()" data-t="🗑 Delete My Account Permanently" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid #ef4444;background:#fee2e2;font-size:13px;color:#991b1b;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;margin-bottom:8px;">🗑 Hesabımı Kalıcı Olarak Sil</button>
       <button onclick="signOut()" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid #fca5a5;background:transparent;font-size:13px;color:#ef4444;cursor:pointer;font-family:'DM Sans',sans-serif;" id="btn-sign-out">🚪 Çıkış Yap</button>
       <div style="height:20px;"></div>
     </div>
@@ -2274,7 +2275,13 @@ var I18N = {
   "Type another city...": "Andere Stadt eingeben...",
   "All-you-can-eat, 90 min, busy in the evening...": "All-you-can-eat, 90 Min., abends voll...",
   "PHOTOS": "FOTOS",
-  "⚠️ Deactivate My Account": "⚠️ Mein Konto deaktivieren"
+  "⚠️ Deactivate My Account": "⚠️ Mein Konto deaktivieren",
+  "Operation failed": "Vorgang fehlgeschlagen",
+  "DELETE": "LÖSCHEN",
+  "Your account and personal data will be permanently deleted. This cannot be undone.\n\nPlaces you added stay without your name; your name is removed from your comments.\n\nType {0} to confirm:": "Dein Konto und deine persönlichen Daten werden endgültig gelöscht. Das kann nicht rückgängig gemacht werden.\n\nDeine Orte bleiben ohne deinen Namen erhalten; dein Name wird aus deinen Kommentaren entfernt.\n\nGib zur Bestätigung {0} ein:",
+  "Confirmation did not match; account not deleted.": "Bestätigung stimmt nicht überein; Konto wurde nicht gelöscht.",
+  "Your account has been deleted. Goodbye! 👋": "Dein Konto wurde gelöscht. Mach's gut! 👋",
+  "🗑 Delete My Account Permanently": "🗑 Mein Konto endgültig löschen"
  },
  "fr": {
   "Ask a colleague for an invite code.": "Demande un code d'invitation à un collègue.",
@@ -2543,7 +2550,13 @@ var I18N = {
   "Type another city...": "Saisis une autre ville...",
   "All-you-can-eat, 90 min, busy in the evening...": "À volonté, 90 min, bondé le soir...",
   "PHOTOS": "PHOTOS",
-  "⚠️ Deactivate My Account": "⚠️ Désactiver mon compte"
+  "⚠️ Deactivate My Account": "⚠️ Désactiver mon compte",
+  "Operation failed": "Échec de l'opération",
+  "DELETE": "SUPPRIMER",
+  "Your account and personal data will be permanently deleted. This cannot be undone.\n\nPlaces you added stay without your name; your name is removed from your comments.\n\nType {0} to confirm:": "Ton compte et tes données personnelles seront définitivement supprimés. Cette action est irréversible.\n\nLes lieux que tu as ajoutés restent, sans ton nom ; ton nom est retiré de tes commentaires.\n\nTape {0} pour confirmer :",
+  "Confirmation did not match; account not deleted.": "La confirmation ne correspond pas ; compte non supprimé.",
+  "Your account has been deleted. Goodbye! 👋": "Ton compte a été supprimé. Au revoir ! 👋",
+  "🗑 Delete My Account Permanently": "🗑 Supprimer définitivement mon compte"
  },
  "es": {
   "Ask a colleague for an invite code.": "Pide un código de invitación a un compañero.",
@@ -2812,7 +2825,13 @@ var I18N = {
   "Type another city...": "Escribe otra ciudad...",
   "All-you-can-eat, 90 min, busy in the evening...": "Libre, 90 min, lleno por la noche...",
   "PHOTOS": "FOTOS",
-  "⚠️ Deactivate My Account": "⚠️ Desactivar mi cuenta"
+  "⚠️ Deactivate My Account": "⚠️ Desactivar mi cuenta",
+  "Operation failed": "La operación falló",
+  "DELETE": "ELIMINAR",
+  "Your account and personal data will be permanently deleted. This cannot be undone.\n\nPlaces you added stay without your name; your name is removed from your comments.\n\nType {0} to confirm:": "Tu cuenta y tus datos personales se eliminarán para siempre. No se puede deshacer.\n\nLos lugares que añadiste se mantienen sin tu nombre; tu nombre se quita de tus comentarios.\n\nEscribe {0} para confirmar:",
+  "Confirmation did not match; account not deleted.": "La confirmación no coincide; la cuenta no se eliminó.",
+  "Your account has been deleted. Goodbye! 👋": "Tu cuenta ha sido eliminada. ¡Hasta pronto! 👋",
+  "🗑 Delete My Account Permanently": "🗑 Eliminar mi cuenta definitivamente"
  },
  "ar": {
   "Ask a colleague for an invite code.": "اطلب رمز دعوة من أحد زملائك.",
@@ -3081,7 +3100,13 @@ var I18N = {
   "Type another city...": "اكتب مدينة أخرى...",
   "All-you-can-eat, 90 min, busy in the evening...": "بوفيه مفتوح، 90 دقيقة، مزدحم مساءً...",
   "PHOTOS": "الصور",
-  "⚠️ Deactivate My Account": "⚠️ تعطيل حسابي"
+  "⚠️ Deactivate My Account": "⚠️ تعطيل حسابي",
+  "Operation failed": "فشلت العملية",
+  "DELETE": "حذف",
+  "Your account and personal data will be permanently deleted. This cannot be undone.\n\nPlaces you added stay without your name; your name is removed from your comments.\n\nType {0} to confirm:": "سيتم حذف حسابك وبياناتك الشخصية نهائيًا. لا يمكن التراجع عن ذلك.\n\nتبقى الأماكن التي أضفتها بدون اسمك، ويُزال اسمك من تعليقاتك.\n\nاكتب {0} للتأكيد:",
+  "Confirmation did not match; account not deleted.": "التأكيد غير مطابق؛ لم يُحذف الحساب.",
+  "Your account has been deleted. Goodbye! 👋": "تم حذف حسابك. إلى اللقاء! 👋",
+  "🗑 Delete My Account Permanently": "🗑 حذف حسابي نهائيًا"
  },
  "ja": {
   "Ask a colleague for an invite code.": "同僚に招待コードをもらってください。",
@@ -3350,7 +3375,13 @@ var I18N = {
   "Type another city...": "別の都市を入力...",
   "All-you-can-eat, 90 min, busy in the evening...": "食べ放題・90分・夜は混雑...",
   "PHOTOS": "写真",
-  "⚠️ Deactivate My Account": "⚠️ アカウントを無効化"
+  "⚠️ Deactivate My Account": "⚠️ アカウントを無効化",
+  "Operation failed": "処理に失敗しました",
+  "DELETE": "削除",
+  "Your account and personal data will be permanently deleted. This cannot be undone.\n\nPlaces you added stay without your name; your name is removed from your comments.\n\nType {0} to confirm:": "アカウントと個人データは完全に削除され、元に戻せません。\n\n追加したスポットは名前なしで残り、コメントからは名前が削除されます。\n\n確認のため {0} と入力してください：",
+  "Confirmation did not match; account not deleted.": "確認の入力が一致しないため、削除しませんでした。",
+  "Your account has been deleted. Goodbye! 👋": "アカウントを削除しました。さようなら！👋",
+  "🗑 Delete My Account Permanently": "🗑 アカウントを完全に削除"
  },
  "ko": {
   "Ask a colleague for an invite code.": "동료에게 초대 코드를 요청하세요.",
@@ -3619,7 +3650,13 @@ var I18N = {
   "Type another city...": "다른 도시 입력...",
   "All-you-can-eat, 90 min, busy in the evening...": "무한리필, 90분, 저녁엔 붐빔...",
   "PHOTOS": "사진",
-  "⚠️ Deactivate My Account": "⚠️ 내 계정 비활성화"
+  "⚠️ Deactivate My Account": "⚠️ 내 계정 비활성화",
+  "Operation failed": "작업에 실패했습니다",
+  "DELETE": "삭제",
+  "Your account and personal data will be permanently deleted. This cannot be undone.\n\nPlaces you added stay without your name; your name is removed from your comments.\n\nType {0} to confirm:": "계정과 개인 데이터가 영구적으로 삭제되며 되돌릴 수 없습니다.\n\n추가한 장소는 이름 없이 남고, 댓글에서 이름이 삭제됩니다.\n\n확인하려면 {0}을(를) 입력하세요:",
+  "Confirmation did not match; account not deleted.": "확인 문구가 일치하지 않아 계정을 삭제하지 않았습니다.",
+  "Your account has been deleted. Goodbye! 👋": "계정이 삭제되었습니다. 안녕히 가세요! 👋",
+  "🗑 Delete My Account Permanently": "🗑 계정 영구 삭제"
  },
  "zh": {
   "Ask a colleague for an invite code.": "请向同事索取邀请码。",
@@ -3888,7 +3925,13 @@ var I18N = {
   "Type another city...": "输入其他城市...",
   "All-you-can-eat, 90 min, busy in the evening...": "自助不限量，90 分钟，晚上人多...",
   "PHOTOS": "照片",
-  "⚠️ Deactivate My Account": "⚠️ 停用我的账号"
+  "⚠️ Deactivate My Account": "⚠️ 停用我的账号",
+  "Operation failed": "操作失败",
+  "DELETE": "删除",
+  "Your account and personal data will be permanently deleted. This cannot be undone.\n\nPlaces you added stay without your name; your name is removed from your comments.\n\nType {0} to confirm:": "你的账号和个人数据将被永久删除，且无法恢复。\n\n你添加的地点会保留但不显示你的名字；评论中的名字会被移除。\n\n请输入 {0} 以确认：",
+  "Confirmation did not match; account not deleted.": "确认内容不匹配，账号未删除。",
+  "Your account has been deleted. Goodbye! 👋": "你的账号已删除。再见！👋",
+  "🗑 Delete My Account Permanently": "🗑 永久删除我的账号"
  }
 };
 function tx(trS, enS, ...args) {
@@ -5139,6 +5182,7 @@ function setLang(l, btn) {
     b.classList.toggle('active', b.dataset.lang === l);
   });
   applyTranslations();
+  updatePushLang();
 }
 
 function setLangFromSettings(l) {
@@ -5157,6 +5201,7 @@ function setLangFromSettings(l) {
   });
 
   applyTranslations();
+  updatePushLang();
   showToast(translations[l] ? '✓ ' + {
     tr:'Türkçe', en:'English', de:'Deutsch', fr:'Français',
     es:'Español', ar:'العربية', ja:'日本語', ko:'한국어', zh:'中文'
@@ -6787,7 +6832,16 @@ async function savePushSubscription(sub) {
     }
 
     const token = sessionStorage.getItem('sb_access_token');
-    const res = await fetch(SUPABASE_URL + '/rest/v1/push_subscriptions', {
+    const payload = {
+      user_id:      currentUser.id,
+      endpoint:     endpoint,
+      p256dh:       p256dh,
+      auth:         auth,
+      city:         currentCity || 'Seoul',
+      lang:         lang,               // bildirim bu dilde gönderilir
+      subscription: JSON.stringify(subJson)
+    };
+    const post = (body) => fetch(SUPABASE_URL + '/rest/v1/push_subscriptions', {
       method: 'POST',
       headers: {
         'apikey': SUPABASE_KEY,
@@ -6796,15 +6850,14 @@ async function savePushSubscription(sub) {
         // user_id unique — varsa güncelle
         'Prefer': 'resolution=merge-duplicates,return=minimal'
       },
-      body: JSON.stringify({
-        user_id:      currentUser.id,
-        endpoint:     endpoint,
-        p256dh:       p256dh,
-        auth:         auth,
-        city:         currentCity || 'Seoul',
-        subscription: JSON.stringify(subJson)
-      })
+      body: JSON.stringify(body)
     });
+    let res = await post(payload);
+    if (!res.ok && res.status === 400) {
+      // 'lang' kolonu henüz eklenmediyse onsuz kaydet
+      const { lang: _l, ...rest } = payload;
+      res = await post(rest);
+    }
     if (res.ok) {
       console.log('[Push] Subscription kaydedildi:', endpoint.slice(0, 60) + '...');
     } else {
@@ -6816,36 +6869,23 @@ async function savePushSubscription(sub) {
   }
 }
 
+// Dil değişince bildirim aboneliğinin dilini de güncelle
+async function updatePushLang() {
+  if (!currentUser) return;
+  try {
+    await sbFetch(`push_subscriptions?user_id=eq.${currentUser.id}`, { method: 'PATCH', body: JSON.stringify({ lang }) });
+  } catch(e) { /* abonelik yoksa veya kolon yoksa sessiz geç */ }
+}
+
 // ── PUSH BİLDİRİMİ GÖNDER (Edge Function) ───────────────────────────────────
 async function sendPushForNewPlace({ city, name, emoji, placeId }) {
+  // Sunucu sadece admin / şehir elçisi isteğini kabul eder; mesaj her abonenin dilinde oluşturulur
   try {
-    const token = sessionStorage.getItem('sb_access_token');
-    const res = await fetch(
-      'https://nuebqtzeirpyyxtoptlp.supabase.co/functions/v1/send-push',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + (token || SUPABASE_KEY)
-        },
-        body: JSON.stringify({
-          city:    city,
-          title:   '📍 Yeni Yer Eklendi!',
-          body:    `${emoji} ${name} · ${city}`,
-          url:     './',
-          tag:     'new-place-' + placeId
-        })
-      }
-    );
-
-    if (res.ok) {
-      console.log('[Push] send-push çağrıldı:', city, name);
-    } else {
-      const err = await res.text();
-      console.warn('[Push] send-push hatası:', err);
-    }
+    const { ok, data } = await callFunction('send-push', { city, name, placeId });
+    if (ok) console.log('[Push] send-push:', city, name, data);
+    else console.warn('[Push] send-push hatası:', data);
   } catch(e) {
-    console.warn('[Push] send-push çağrılamadı:', e);
+    console.warn('[Push] send-push', e);
   }
 }
 
@@ -7133,6 +7173,24 @@ const GOOGLE_PLACES_KEY = 'AIzaSyCXcfrKl6Vbvw_C4JCyAk2X7Zu3HFbynmE';  // ← Bur
 const hoursCache = {};
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51ZWJxdHplaXJweXl4dG9wdGxwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NDI0NzgsImV4cCI6MjA5NTExODQ3OH0.Yw_8t-PVCDfFZPzV4F5jZjratLkAIE9X9sRdq2qme9Y';
 
+// Edge Function çağrısı: güncel kullanıcı token'ıyla, süresi dolmuşsa yenileyip bir kez daha dener
+async function callFunction(name, body) {
+  const doCall = (token) => fetch(`${SUPABASE_URL}/functions/v1/${name}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token, 'apikey': SUPABASE_KEY },
+    body: JSON.stringify(body || {})
+  });
+  let token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token');
+  if (!token) return { ok: false, status: 401, data: { error: 'Giriş gerekli' } };
+  let res = await doCall(token);
+  if (res.status === 401) {
+    const fresh = await refreshAccessToken();
+    if (fresh) res = await doCall(fresh);
+  }
+  const data = await res.json().catch(() => ({}));
+  return { ok: res.ok, status: res.status, data };
+}
+
 async function refreshAccessToken() {
   const refreshToken = sessionStorage.getItem('sb_refresh_token') || localStorage.getItem('sb_refresh_token');
   if (!refreshToken) return null;
@@ -7306,17 +7364,7 @@ async function translateComment(commentId, btn) {
   const targetLang = langNames[lang] || 'English';
 
   try {
-    const userToken = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token') || SUPABASE_KEY;
-    const response = await fetch('https://nuebqtzeirpyyxtoptlp.supabase.co/functions/v1/translate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + userToken
-      },
-      body: JSON.stringify({ text: originalText, targetLang })
-    });
-
-    const data = await response.json();
+    const { data } = await callFunction('translate', { text: originalText, targetLang });
     const translation = data.translation?.trim();
 
     if (translation) {
@@ -8405,26 +8453,14 @@ async function fetchFromGoogle(p) {
 
   try {
     // Edge Function üzerinden çağır (CORS sorunu yok, API key güvende)
-    const token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token') || SUPABASE_KEY;
-    const res = await fetch(
-      `${SUPABASE_URL}/functions/v1/places-hours`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token,
-          'apikey': SUPABASE_KEY,
-        },
-        body: JSON.stringify({
+    // Giriş yapmamış kullanıcıda çağırma (sunucu sadece üyelere yanıt veriyor)
+    if (!currentUser) { badge.style.display = 'none'; return; }
+    const { ok, status, data } = await callFunction('places-hours', {
           name: p.name,
           addr: p.addr,
           placeId: p.googlePlaceId || null,
-        })
-      }
-    );
-
-    if (!res.ok) throw new Error('Edge Function hata: ' + res.status);
-    const data = await res.json();
+        });
+    if (!ok) throw new Error('Edge Function hata: ' + status);
 
     if (!data.found || !data.opening_hours) {
       console.log('[Hours] Yer bulunamadı veya saat yok:', p.name);
@@ -8635,26 +8671,14 @@ async function fetchFromGoogle(p) {
 
   try {
     // Edge Function üzerinden çağır (CORS sorunu yok, API key güvende)
-    const token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token') || SUPABASE_KEY;
-    const res = await fetch(
-      `${SUPABASE_URL}/functions/v1/places-hours`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token,
-          'apikey': SUPABASE_KEY,
-        },
-        body: JSON.stringify({
+    // Giriş yapmamış kullanıcıda çağırma (sunucu sadece üyelere yanıt veriyor)
+    if (!currentUser) { badge.style.display = 'none'; return; }
+    const { ok, status, data } = await callFunction('places-hours', {
           name: p.name,
           addr: p.addr,
           placeId: p.googlePlaceId || null,
-        })
-      }
-    );
-
-    if (!res.ok) throw new Error('Edge Function hata: ' + res.status);
-    const data = await res.json();
+        });
+    if (!ok) throw new Error('Edge Function hata: ' + status);
 
     if (!data.found || !data.opening_hours) {
       console.log('[Hours] Yer bulunamadı veya saat yok:', p.name);
@@ -9330,19 +9354,43 @@ async function adminAddInviteCode(userId, username) {
 // ── KULLANICI YÖNETİMİ ──────────────────────────────────────────────────────
 
 async function manageUserAction(action, targetUserId) {
-  const token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token');
-  const res = await fetch(`${SUPABASE_URL}/functions/v1/manage-user`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + token,
-      'apikey': SUPABASE_KEY,
-    },
-    body: JSON.stringify({ action, targetUserId })
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'İşlem başarısız');
+  const { ok, data } = await callFunction('manage-user', { action, targetUserId });
+  if (!ok) throw new Error(data.error || tx('İşlem başarısız', 'Operation failed'));
   return data;
+}
+
+// Kullanıcı kendi hesabını KALICI siler (App Store / KVKK gereği)
+async function deleteMyAccount() {
+  if (!currentUser) { showToast(tx('Lütfen giriş yap!', 'Please sign in!')); return; }
+  const word = tx('SİL', 'DELETE');
+  const typed = prompt(tx(
+    'Hesabın ve kişisel verilerin kalıcı olarak silinecek. Bu işlem geri alınamaz.\n\nEklediğin yerler isimsiz olarak kalır; yorumlarındaki adın kaldırılır.\n\nOnaylamak için {0} yaz:',
+    'Your account and personal data will be permanently deleted. This cannot be undone.\n\nPlaces you added stay without your name; your name is removed from your comments.\n\nType {0} to confirm:',
+    word));
+  if (typed == null) return;
+  if (typed.trim().toLocaleUpperCase(lang === 'tr' ? 'tr' : 'en') !== word) {
+    showToast(tx('Onay metni eşleşmedi, hesap silinmedi.', 'Confirmation did not match; account not deleted.'));
+    return;
+  }
+  try {
+    showToast(tx('⏳ Siliniyor...', '⏳ Deleting...'));
+    await manageUserAction('delete_self');
+    // Cihazdaki oturum ve kişisel veriler
+    try {
+      const reg = await navigator.serviceWorker?.getRegistration();
+      const sub = await reg?.pushManager?.getSubscription();
+      await sub?.unsubscribe();
+    } catch(e) {}
+    sessionStorage.clear();
+    ['sb_access_token','sb_refresh_token','sb_user','sb_profile','cg_visited_cities'].forEach(k => localStorage.removeItem(k));
+    currentUser = null;
+    currentProfile = null;
+    showToast(tx('Hesabın silindi. Hoşça kal! 👋', 'Your account has been deleted. Goodbye! 👋'));
+    setTimeout(() => goTo('screen-splash'), 1500);
+  } catch(e) {
+    console.error('[deleteMyAccount]', e);
+    showToast(tx('Hata: {0}', 'Error: {0}', e.message));
+  }
 }
 
 async function adminDeleteUser(userId, username) {

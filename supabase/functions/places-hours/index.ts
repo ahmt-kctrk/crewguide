@@ -1,20 +1,21 @@
-// Supabase Edge Function: places-hours v5
+// Supabase Edge Function: places-hours v6
+// Sadece giriş yapmış kullanıcılar çağırabilir (Google Places kredisi korunur).
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const CORS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+import { CORS, getCaller } from "../_shared/auth.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
+  const caller = await getCaller(req);
+  if (!caller.user && !caller.isService) return json({ error: "Giriş gerekli" }, 401);
+
   let name = '', addr = '', placeId = null;
   try {
     const bodyText = await req.text();
-    if (bodyText) { const p = JSON.parse(bodyText); name=p.name||''; addr=p.addr||''; placeId=p.placeId||null; }
-  } catch(e) { return json({ error: "Body parse: " + e.message }, 400); }
+    if (bodyText) { const p = JSON.parse(bodyText); name=String(p.name||'').slice(0,200); addr=String(p.addr||'').slice(0,300); placeId=p.placeId||null; }
+    if (placeId && !/^[A-Za-z0-9_-]{10,300}$/.test(String(placeId))) placeId = null;
+    if (!placeId && !name) return json({ error: "name gerekli" }, 400);
+  } catch(e) { return json({ error: "Body parse: " + (e as Error).message }, 400); }
 
   const KEY = Deno.env.get("GOOGLE_PLACES_KEY");
   if (!KEY) return json({ error: "GOOGLE_PLACES_KEY yok" }, 500);
@@ -47,7 +48,7 @@ serve(async (req) => {
     console.log("Detail raw:", drText.slice(0, 500));
 
     let dd: any = {};
-    try { dd = JSON.parse(drText); } catch(e) { return json({ error: "Detail parse: " + e.message + " raw: " + drText.slice(0,100) }, 500); }
+    try { dd = JSON.parse(drText); } catch(e) { return json({ error: "Detail parse: " + (e as Error).message + " raw: " + drText.slice(0,100) }, 500); }
 
     const oh = dd.regularOpeningHours;
     if (!oh) return json({ found: true, google_place_id: googlePlaceId, opening_hours: null });
@@ -66,8 +67,8 @@ serve(async (req) => {
     });
 
   } catch(e) {
-    console.error("Error:", e.message);
-    return json({ error: e.message }, 500);
+    console.error("Error:", (e as Error).message);
+    return json({ error: (e as Error).message }, 500);
   }
 });
 

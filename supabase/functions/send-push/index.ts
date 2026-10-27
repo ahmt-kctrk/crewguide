@@ -1,61 +1,106 @@
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
-const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+// Supabase Edge Function: send-push v18
+// - Sadece admin / şehir elçisi / sunucu (service key) çağırabilir → bildirim spam'i engellenir.
+// - Onay bekleyen veya gizli yerler için bildirim gönderilmez.
+// - Bildirim metni her abonenin kendi dilinde (push_subscriptions.lang).
+import { CORS, getCaller, getKeys } from "../_shared/auth.ts";
+
 const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY") ?? "";
 const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY") ?? "";
 const VAPID_EMAIL = Deno.env.get("VAPID_EMAIL") ?? "";
 
-// ── CORS headers — tüm response'lara eklenir ─────────────────────────────────
-const CORS = {
-  "Access-Control-Allow-Origin":  "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+// {city} / {place} yer tutucuları
+const MESSAGES: Record<string, string> = {
+  tr: "{city} için yeni yer: {place}",
+  en: "New place in {city}: {place}",
+  de: "Neuer Ort in {city}: {place}",
+  fr: "Nouveau lieu à {city} : {place}",
+  es: "Nuevo lugar en {city}: {place}",
+  ar: "مكان جديد في {city}: {place}",
+  ja: "{city}に新しいスポット：{place}",
+  ko: "{city}에 새 장소: {place}",
+  zh: "{city}新地点：{place}",
 };
 
+function messageFor(lang: string | null | undefined, city: string, place: string) {
+  const tpl = MESSAGES[(lang || "tr").toLowerCase()] || MESSAGES.en;
+  return tpl.replace("{city}", city).replace("{place}", place);
+}
+
+function reply(data: unknown, status = 200) {
+  return Response.json(data, { status, headers: CORS });
+}
+
 Deno.serve(async (req: Request) => {
-  // Preflight — browser her POST öncesi bunu gönderir
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: CORS });
   }
 
   try {
-    const body = await req.json().catch(() => ({}));
-    let city = "";
-    let placeName = "Yeni yer";
-
-    if (body.type === "INSERT" && body.record) {
-      city = body.record.city ?? "";
-      placeName = body.record.name ?? "Yeni yer";
-    } else if (body.city) {
-      city = body.city;
-      placeName = body.name ?? "Yeni yer";
+    const caller = await getCaller(req);
+    if (!caller.isTrusted) {
+      return reply({ ok: false, error: "Yetkisiz" }, 403);
     }
 
-    console.log("[send-push] city:", city, "place:", placeName);
+    const { url: SUPABASE_URL, serviceKey: SUPABASE_SERVICE_KEY } = getKeys();
+    const body = await req.json().catch(() => ({}));
+    let city = "";
+    let placeName = "";
+    let placeId = "";
 
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/push_subscriptions?city=eq.${encodeURIComponent(city)}&select=endpoint,p256dh,auth`,
-      { headers: { "apikey": SUPABASE_SERVICE_KEY, "Authorization": `Bearer ${SUPABASE_SERVICE_KEY}` } }
-    );
+    if (body.type === "INSERT" && body.record) {
+      // DB webhook: sadece yayında olan yerler için bildir
+      if (body.record.is_hidden || body.record.status === "pending") {
+        return reply({ ok: true, sent: 0, msg: "not published" });
+      }
+      city = body.record.city ?? "";
+      placeName = body.record.name ?? "";
+      placeId = body.record.id ?? "";
+    } else if (body.city) {
+      city = String(body.city).slice(0, 100);
+      placeName = String(body.name ?? "").slice(0, 120);
+      placeId = String(body.placeId ?? "");
+    }
+    if (!city) return reply({ ok: false, error: "city gerekli" }, 400);
+
+    // Yer kimliği verildiyse gerçekten yayında olduğunu doğrula
+    if (placeId) {
+      const pr = await fetch(
+        `${SUPABASE_URL}/rest/v1/places?id=eq.${encodeURIComponent(placeId)}&select=name,city,is_hidden`,
+        { headers: { "apikey": SUPABASE_SERVICE_KEY, "Authorization": `Bearer ${SUPABASE_SERVICE_KEY}` } }
+      );
+      const rows = await pr.json().catch(() => []);
+      const row = Array.isArray(rows) ? rows[0] : null;
+      if (row?.is_hidden) return reply({ ok: true, sent: 0, msg: "not published" });
+      if (row) { city = row.city || city; placeName = row.name || placeName; }
+    }
+
+    console.log("[send-push] city:", city, "place:", placeName, "by:", caller.role);
+
+    const subUrl = (cols: string) =>
+      `${SUPABASE_URL}/rest/v1/push_subscriptions?city=eq.${encodeURIComponent(city)}&select=${cols}`;
+    const subHeaders = { "apikey": SUPABASE_SERVICE_KEY, "Authorization": `Bearer ${SUPABASE_SERVICE_KEY}` };
+    let res = await fetch(subUrl("endpoint,p256dh,auth,lang"), { headers: subHeaders });
+    if (!res.ok) res = await fetch(subUrl("endpoint,p256dh,auth"), { headers: subHeaders }); // lang kolonu yoksa
     const subs = await res.json();
     console.log("[send-push] subs:", Array.isArray(subs) ? subs.length : 0);
 
     if (!Array.isArray(subs) || subs.length === 0) {
-      return Response.json({ ok: true, sent: 0, msg: "no subscribers" }, { headers: CORS });
+      return reply({ ok: true, sent: 0, msg: "no subscribers" });
     }
 
     const vapidKey = await importVapidKey();
-    const notification = JSON.stringify({
-      title: "✈️ CrewGuide",
-      body: `${city} için yeni yer: ${placeName}`,
-      icon: "/icons/icon-192.png",
-      tag: "new-place",
-      data: { url: "/" }
-    });
 
     let sent = 0;
     for (const s of subs) {
       if (!s.endpoint) continue;
       try {
+        const notification = JSON.stringify({
+          title: "✈️ CrewGuide",
+          body: messageFor(s.lang, city, placeName || "📍"),
+          icon: "/icons/icon-192.png",
+          tag: "new-place-" + (placeId || city),
+          data: { url: "/", placeId, city },
+        });
         const encrypted = await encryptPayload(notification, s.p256dh, s.auth);
         const jwt = await makeVapidJwt(s.endpoint, vapidKey);
         const pushRes = await fetch(s.endpoint, {
@@ -70,18 +115,25 @@ Deno.serve(async (req: Request) => {
         });
         console.log("[send-push] status:", pushRes.status);
         if (pushRes.ok || pushRes.status === 201) sent++;
-        else console.error("[send-push] error:", await pushRes.text());
+        else {
+          console.error("[send-push] error:", await pushRes.text());
+          // Süresi dolmuş abonelikleri temizle
+          if (pushRes.status === 404 || pushRes.status === 410) {
+            await fetch(`${SUPABASE_URL}/rest/v1/push_subscriptions?endpoint=eq.${encodeURIComponent(s.endpoint)}`,
+              { method: "DELETE", headers: subHeaders }).catch(() => {});
+          }
+        }
       } catch (e) {
         console.error("[send-push] exception:", String(e));
       }
     }
 
     console.log("[send-push] sent:", sent, "/", subs.length);
-    return Response.json({ ok: true, sent, total: subs.length }, { headers: CORS });
+    return reply({ ok: true, sent, total: subs.length });
 
   } catch (e) {
     console.error("[send-push] fatal:", String(e));
-    return Response.json({ ok: false, error: String(e) }, { status: 500, headers: CORS });
+    return reply({ ok: false, error: String(e) }, 500);
   }
 });
 

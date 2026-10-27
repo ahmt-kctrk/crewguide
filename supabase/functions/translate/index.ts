@@ -1,22 +1,21 @@
-const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY")!;
+// Supabase Edge Function: translate v3
+// Sadece giriş yapmış kullanıcılar çağırabilir (Anthropic kredisi korunur).
+import { CORS, json, getCaller } from "../_shared/auth.ts";
+
+const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY") ?? "";
+const MAX_CHARS = 2000;
 
 Deno.serve(async (req: Request) => {
-  // CORS
-  if (req.method === "OPTIONS") {
-    return new Response(null, {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      }
-    });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
 
   try {
-    const { text, targetLang } = await req.json();
-    if (!text || !targetLang) {
-      return Response.json({ error: "text and targetLang required" }, { status: 400 });
-    }
+    const caller = await getCaller(req);
+    if (!caller.user && !caller.isService) return json({ error: "Giriş gerekli" }, 401);
+
+    const { text, targetLang } = await req.json().catch(() => ({}));
+    if (!text || !targetLang) return json({ error: "text and targetLang required" }, 400);
+    if (String(text).length > MAX_CHARS) return json({ error: "Metin çok uzun" }, 413);
+    if (!ANTHROPIC_API_KEY) return json({ error: "ANTHROPIC_API_KEY yok" }, 500);
 
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -30,19 +29,16 @@ Deno.serve(async (req: Request) => {
         max_tokens: 500,
         messages: [{
           role: "user",
-          content: `Translate this text to ${targetLang}. Return ONLY the translation, no explanations:\n\n${text}`
-        }]
-      })
+          content: `Translate this text to ${String(targetLang).slice(0, 30)}. Return ONLY the translation, no explanations:\n\n${text}`,
+        }],
+      }),
     });
 
     const data = await res.json();
+    if (!res.ok) return json({ error: data?.error?.message || "Çeviri hatası" }, 502);
     const translation = data.content?.[0]?.text?.trim();
-
-    return new Response(
-      JSON.stringify({ translation }),
-      { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
-    );
+    return json({ translation });
   } catch (e) {
-    return Response.json({ error: String(e) }, { status: 500 });
+    return json({ error: String(e) }, 500);
   }
 });
