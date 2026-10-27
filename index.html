@@ -1045,8 +1045,8 @@
         </div>
         <div class="toggle on" id="toggleReviews" onclick="toggleDownloadOption(this)"><div class="toggle-knob"></div></div>
       </div>
-      <button class="btn-navy mt-8" onclick="confirmDownload()" id="downloadBtn">⬇ İndir</button>
-      <div class="modal-size" id="downloadSize">Toplam: ~2.5 MB indirilecek</div>
+      <button class="btn-navy mt-8" onclick="confirmDownload()" id="downloadBtn" data-t="⬇ Download">⬇ İndir</button>
+      <div class="modal-size" id="downloadSize" data-t="Total: ~2.5 MB to download">Toplam: ~2.5 MB indirilecek</div>
       <button class="btn-ghost" onclick="closeModal()" style="width:100%;margin-top:6px;" id="dl-cancel">İptal</button>
     </div>
   </div>
@@ -1059,15 +1059,15 @@
     </div>
     <div class="navy-header">
       <div class="nav-back" onclick="goTo('screen-home')" id="back-city">← </div>
-      <div class="header-title font-display" id="city-modal-title">Şehir Seç</div>
-      <div class="header-sub" id="city-modal-sub">Mevcut konumun veya başka bir şehir ara</div>
+      <div class="header-title font-display" id="city-modal-title" data-t="Select City">Şehir Seç</div>
+      <div class="header-sub" id="city-modal-sub" data-t="Use current location or search a city">Mevcut konumun veya başka bir şehir ara</div>
     </div>
     <div style="padding:12px 16px;flex:1;display:flex;flex-direction:column;gap:8px;overflow:hidden;">
       <div style="position:relative;flex-shrink:0;">
         <input type="text" id="city-search-input" autocomplete="off"
           style="width:100%;padding:12px 44px 12px 14px;background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;"
           oninput="filterCities(this.value)"
-          placeholder="Şehir ara..."
+          placeholder="Şehir ara..." data-tph="Search city..."
         >
         <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:16px;">🔍</span>
       </div>
@@ -1197,7 +1197,7 @@
         <div class="code-hint" id="invite-hint">7 haneli davet kodu · Büyük/küçük harf duyarsız</div>
       </div>
       <button class="btn-navy" onclick="verifyInviteCode()" id="btn-continue">Devam Et →</button>
-      <button class="btn-ghost" id="btn-no-code" onclick="showToast(lang==='tr'?'Bir ekip arkadaşından davet kodu iste.':'Ask a colleague for an invite code.')">Kodum yok, nasıl alabilirim?</button>
+      <button class="btn-ghost" id="btn-no-code" onclick="showToast(tx('Bir ekip arkadaşından davet kodu iste.', 'Ask a colleague for an invite code.'))">Kodum yok, nasıl alabilirim?</button>
     </div>
   </div>
 
@@ -1321,7 +1321,7 @@
       <button class="filter-chip" id="chip-price" onclick="openFilterPanel('price')">💰 <span id="chip-price-label">Fiyat</span></button>
       <button class="filter-chip" id="chip-rating" onclick="openFilterPanel('rating')">⭐ <span id="chip-rating-label">Puan</span></button>
       <button class="filter-chip" id="chip-sort" onclick="openFilterPanel('sort')">↕ <span id="chip-sort-label">Sırala</span></button>
-      <button class="filter-chip" id="chip-reset" onclick="resetFilters()" style="display:none;">✕ Temizle</button>
+      <button class="filter-chip" id="chip-reset" onclick="resetFilters()" style="display:none;" data-t="✕ Clear">✕ Temizle</button>
     </div>
 
     <!-- Sonuç sayısı -->
@@ -1344,23 +1344,23 @@
     <div class="filter-panel" id="filter-panel">
       <div class="filter-panel-handle"></div>
       <div style="display:flex;align-items:center;justify-content:space-between;">
-        <div class="filter-panel-title" id="filter-panel-title">Filtrele</div>
+        <div class="filter-panel-title" id="filter-panel-title" data-t="Filter">Filtrele</div>
         <button onclick="closeFilterPanel()" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--text-muted);">✕</button>
       </div>
 
       <!-- Fiyat filtresi -->
       <div id="filter-price-section">
-        <div class="filter-section-label" id="filter-price-label">Fiyat Aralığı</div>
+        <div class="filter-section-label" id="filter-price-label" data-t="Price Range">Fiyat Aralığı</div>
         <div class="filter-option-grid" id="filter-price-opts">
-          <button class="filter-opt-btn" data-val="$" onclick="toggleFilterOpt(this,'price')">$ Uygun</button>
-          <button class="filter-opt-btn" data-val="$$" onclick="toggleFilterOpt(this,'price')">$$ Orta</button>
-          <button class="filter-opt-btn" data-val="$$$" onclick="toggleFilterOpt(this,'price')">$$$ Pahalı</button>
+          <button class="filter-opt-btn" data-val="$" onclick="toggleFilterOpt(this,'price')" data-t="$ Budget">$ Uygun</button>
+          <button class="filter-opt-btn" data-val="$$" onclick="toggleFilterOpt(this,'price')" data-t="$$ Mid-range">$$ Orta</button>
+          <button class="filter-opt-btn" data-val="$$$" onclick="toggleFilterOpt(this,'price')" data-t="$$$ Expensive">$$$ Pahalı</button>
         </div>
       </div>
 
       <!-- Puan filtresi -->
       <div id="filter-rating-section">
-        <div class="filter-section-label" id="filter-rating-label">Minimum Puan</div>
+        <div class="filter-section-label" id="filter-rating-label" data-t="Minimum Rating">Minimum Puan</div>
         <div class="filter-rating-row" id="filter-rating-opts">
           <button class="filter-rating-btn" data-val="3" onclick="selectRatingFilter(this)">3+ ⭐</button>
           <button class="filter-rating-btn" data-val="4" onclick="selectRatingFilter(this)">4+ ⭐</button>
@@ -1370,18 +1370,18 @@
 
       <!-- Sıralama -->
       <div id="filter-sort-section">
-        <div class="filter-section-label" id="filter-sort-label">Sıralama</div>
+        <div class="filter-section-label" id="filter-sort-label" data-t="Sort By">Sıralama</div>
         <div class="filter-option-grid" id="filter-sort-opts">
-          <button class="filter-opt-btn selected" data-val="default" onclick="toggleFilterOpt(this,'sort')">Varsayılan</button>
-          <button class="filter-opt-btn" data-val="rating" onclick="toggleFilterOpt(this,'sort')">En Yüksek Puan</button>
-          <button class="filter-opt-btn" data-val="likes" onclick="toggleFilterOpt(this,'sort')">En Çok Beğenilen</button>
-          <button class="filter-opt-btn" data-val="newest" onclick="toggleFilterOpt(this,'sort')">En Yeni</button>
+          <button class="filter-opt-btn selected" data-val="default" onclick="toggleFilterOpt(this,'sort')" data-t="Default">Varsayılan</button>
+          <button class="filter-opt-btn" data-val="rating" onclick="toggleFilterOpt(this,'sort')" data-t="Highest Rated">En Yüksek Puan</button>
+          <button class="filter-opt-btn" data-val="likes" onclick="toggleFilterOpt(this,'sort')" data-t="Most Liked">En Çok Beğenilen</button>
+          <button class="filter-opt-btn" data-val="newest" onclick="toggleFilterOpt(this,'sort')" data-t="Newest">En Yeni</button>
         </div>
       </div>
 
       <div class="filter-actions">
-        <button class="filter-clear-btn" onclick="resetFilters();closeFilterPanel();" id="filter-clear-btn">Temizle</button>
-        <button class="filter-apply-btn" onclick="applyFilters();closeFilterPanel();" id="filter-apply-btn">Uygula</button>
+        <button class="filter-clear-btn" onclick="resetFilters();closeFilterPanel();" id="filter-clear-btn" data-t="Clear">Temizle</button>
+        <button class="filter-apply-btn" onclick="applyFilters();closeFilterPanel();" id="filter-apply-btn" data-t="Apply">Uygula</button>
       </div>
     </div>
 
@@ -1440,7 +1440,7 @@
         <div class="hours-dot"></div>
         <span class="hours-main" id="hours-main">—</span>
         <span class="hours-detail" id="hours-detail"></span>
-        <button class="hours-toggle" id="hours-toggle" onclick="toggleWeeklyHours()" style="display:none;">▾ Tümü</button>
+        <button class="hours-toggle" id="hours-toggle" onclick="toggleWeeklyHours()" style="display:none;" data-t="▾ All">▾ Tümü</button>
       </div>
       <div class="hours-week" id="hours-week"></div>
 
@@ -1449,7 +1449,7 @@
         <div class="hours-dot"></div>
         <span class="hours-main" id="hours-main">—</span>
         <span class="hours-detail" id="hours-detail"></span>
-        <button class="hours-toggle" id="hours-toggle" onclick="toggleWeeklyHours()" style="display:none;">▾ Tümü</button>
+        <button class="hours-toggle" id="hours-toggle" onclick="toggleWeeklyHours()" style="display:none;" data-t="▾ All">▾ Tümü</button>
       </div>
       <div class="hours-week" id="hours-week"></div>
 
@@ -1469,7 +1469,7 @@
           <div class="comment-input-header" id="comment-input-title">Yorum Yaz</div>
           <div class="comment-name-row">
             <input class="comment-name-input" type="text" id="comment-username"
-              placeholder="Görünen adın (örn. CaptainSeoul)" maxlength="30"
+              placeholder="Görünen adın (örn. CaptainSeoul)" data-tph="Your display name (e.g. CaptainSeoul)" maxlength="30"
               autocomplete="off">
             <div class="comment-star-pick" id="comment-star-pick">
               <span onclick="setCommentStar(1)" onmouseover="hoverCommentStar(1)" onmouseout="unhoverCommentStar()">★</span>
@@ -1498,7 +1498,7 @@
           background:#eff6ff;border:1.5px solid #93c5fd;
           color:#1d4ed8;font-size:13px;font-weight:600;
           font-family:'Syne',sans-serif;cursor:pointer;">
-          ✏️ <span id="edit-place-label">Yeri Düzenle</span>
+          ✏️ <span id="edit-place-label" data-t="Edit Place">Yeri Düzenle</span>
         </button>
       </div>
       <!-- Admin silme butonu — sadece admin görebilir -->
@@ -1508,7 +1508,7 @@
           background:#fef2f2;border:1.5px solid #fca5a5;
           color:#ef4444;font-size:13px;font-weight:600;
           font-family:'Syne',sans-serif;cursor:pointer;">
-          🗑 <span id="delete-place-label">Yeri Kaldır</span>
+          🗑 <span id="delete-place-label" data-t="Remove Place">Yeri Kaldır</span>
         </button>
       </div>
     </div>
@@ -1546,7 +1546,7 @@
       </div>
       <!-- Ülke + Şehir Seçimi -->
       <div class="field-group" id="country-city-group">
-        <div class="field-label" id="label-country-city">ÜLKE & ŞEHİR</div>
+        <div class="field-label" id="label-country-city" data-t="COUNTRY & CITY">ÜLKE & ŞEHİR</div>
         <div style="display:flex;gap:8px;">
           <select id="select-country" onchange="onCountryChange()" style="
             flex:1;padding:11px 12px;background:var(--white);border:1.5px solid var(--border);
@@ -1561,7 +1561,7 @@
               color:var(--text-primary);outline:none;cursor:pointer;">
               <option value="">Şehir seç...</option>
             </select>
-            <input id="input-city-custom" type="text" placeholder="Farklı şehir yaz..."
+            <input id="input-city-custom" type="text" placeholder="Farklı şehir yaz..." data-tph="Type another city..."
               oninput="onCustomCityInput(this.value)"
               style="width:100%;padding:8px 12px;background:var(--white);border:1.5px solid var(--border);
               border-radius:var(--radius-sm);font-size:12px;font-family:'DM Sans',sans-serif;
@@ -1605,10 +1605,10 @@
       </div>
       <div class="field-group">
         <div class="field-label" id="label-desc">AÇIKLAMA & NOTLAR</div>
-        <textarea class="field-textarea" id="input-desc" placeholder="Sınırsız et, 90 dk, akşam kalabalık..."></textarea>
+        <textarea class="field-textarea" id="input-desc" placeholder="Sınırsız et, 90 dk, akşam kalabalık..." data-tph="All-you-can-eat, 90 min, busy in the evening..."></textarea>
       </div>
       <div>
-        <div class="field-label" id="label-photos" style="margin-bottom:8px;">FOTOĞRAFLAR</div>
+        <div class="field-label" id="label-photos" style="margin-bottom:8px;" data-t="PHOTOS">FOTOĞRAFLAR</div>
         <input type="file" id="photo-file-input" accept="image/*" multiple style="display:none" onchange="handlePhotoSelect(this)">
         <div class="photo-upload-area" id="photo-upload-area" onclick="document.getElementById('photo-file-input').click()">
           <div class="photo-upload-icon">📷</div>
@@ -1727,7 +1727,7 @@
         <div class="invite-display">
           <div class="invite-code-big">
             <div class="invite-code-text">CRW-X7K</div>
-            <button class="copy-btn-small" onclick="showToast(lang==='tr'?'Kod kopyalandı!':'Code copied!')" id="btn-copy">Kopyala</button>
+            <button class="copy-btn-small" onclick="showToast(tx('Kod kopyalandı!', 'Code copied!'))" id="btn-copy">Kopyala</button>
           </div>
           <div class="quota-text" id="quota-text">1 kişiyi davet ettin · 2 hakkın kaldı</div>
           <div class="quota-bar"><div class="quota-fill"></div></div>
@@ -1918,9 +1918,9 @@
 
       <button onclick="resetTheme()" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid var(--border);background:transparent;font-size:13px;color:var(--text-muted);cursor:pointer;font-family:'DM Sans',sans-serif;" id="btn-reset-theme">↺ Varsayılana Sıfırla</button>
       <div id="admin-panel-btn-wrap" style="display:none;">
-        <button onclick="goTo('screen-admin')" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid var(--navy);background:var(--navy);font-size:13px;color:#fff;cursor:pointer;font-family:'Syne',sans-serif;font-weight:600;">🛡 Admin Paneli</button>
+        <button onclick="goTo('screen-admin')" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid var(--navy);background:var(--navy);font-size:13px;color:#fff;cursor:pointer;font-family:'Syne',sans-serif;font-weight:600;" data-t="🛡 Admin Panel">🛡 Admin Paneli</button>
       </div>
-      <button onclick="disableMyAccount()" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid #fca5a5;background:transparent;font-size:13px;color:#991b1b;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:8px;">⚠️ Hesabımı Devre Dışı Bırak</button>
+      <button onclick="disableMyAccount()" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid #fca5a5;background:transparent;font-size:13px;color:#991b1b;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:8px;" data-t="⚠️ Deactivate My Account">⚠️ Hesabımı Devre Dışı Bırak</button>
       <button onclick="signOut()" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid #fca5a5;background:transparent;font-size:13px;color:#ef4444;cursor:pointer;font-family:'DM Sans',sans-serif;" id="btn-sign-out">🚪 Çıkış Yap</button>
       <div style="height:20px;"></div>
     </div>
@@ -2000,6 +2000,1947 @@
 
 <script>
 let lang = 'tr';
+
+// ── ÇOK DİLLİ METİN SİSTEMİ ─────────────────────────────────────────────────
+// tx('Türkçe', 'English', ...args): Türkçe'de ilkini, diğer dillerde I18N[lang]['English'] çevirisini
+// (yoksa İngilizcesini) döndürür. {0}, {1} ... yer tutucuları args ile doldurulur.
+// L({tr, en, ...}): obje içinde aktif dil varsa onu, yoksa tx(tr, en) sonucunu döndürür.
+// Çeviriler: İngilizce metin → dil. Yeni bir tx() metni eklenince buraya da eklenmeli.
+var I18N = {
+ "de": {
+  "Ask a colleague for an invite code.": "Frag eine Kollegin oder einen Kollegen nach einem Einladungscode.",
+  "Code copied!": "Code kopiert!",
+  "places found": "Orte gefunden",
+  "No results found.": "Keine Ergebnisse gefunden.",
+  "Write a Review": "Bewertung schreiben",
+  "Share your experience...": "Teile deine Erfahrung...",
+  "Send Comment": "Kommentar senden",
+  "✓ You rated {0} ★": "✓ Deine Bewertung: {0} ★",
+  "Update": "Aktualisieren",
+  "Rate": "Bewerten",
+  "ratings": "Bewertungen",
+  "No ratings yet": "Noch keine Bewertungen",
+  "✓ Rated": "✓ Bewertet",
+  "Select a star first!": "Wähle zuerst einen Stern!",
+  "You rated {0} stars! ★": "Du hast {0} Sterne vergeben! ★",
+  "Liked": "Gefällt dir",
+  "Like": "Gefällt mir",
+  "🔖 Added to saved!": "🔖 Gespeichert!",
+  "Removed from saved.": "Aus Gespeichert entfernt.",
+  "Saved": "Gespeichert",
+  "Save": "Speichern",
+  "Edit Place": "Ort bearbeiten",
+  "Update →": "Aktualisieren →",
+  "Place updated! ✓": "Ort aktualisiert! ✓",
+  "Thanks! 🙌 Your suggestion will appear after review.": "Danke! 🙌 Dein Vorschlag erscheint nach der Prüfung.",
+  "Place added successfully! 🎉": "Ort erfolgreich hinzugefügt! 🎉",
+  "Place name is required!": "Ortsname ist erforderlich!",
+  "Please sign in to suggest a place": "Bitte melde dich an, um einen Ort vorzuschlagen",
+  "Select a city first": "Wähle zuerst eine Stadt",
+  "Could not save: ": "Speichern fehlgeschlagen: ",
+  "Editing requires a connection": "Zum Bearbeiten ist eine Verbindung nötig",
+  "Uploading photos...": "Fotos werden hochgeladen...",
+  "Share →": "Teilen →",
+  "Add Place": "Ort hinzufügen",
+  "Display name is required!": "Anzeigename ist erforderlich!",
+  "Download {0}": "{0} herunterladen",
+  "Access {0} data when you're offline.": "Greife offline auf die Daten von {0} zu.",
+  "Total: ~{0} MB to download": "Gesamt: ~{0} MB Download",
+  "Downloading {0}... ✓": "{0} wird heruntergeladen... ✓",
+  "Select City": "Stadt wählen",
+  "Use current location or search a city": "Aktuellen Standort nutzen oder Stadt suchen",
+  "Search city...": "Stadt suchen...",
+  "My Current Location": "Mein aktueller Standort",
+  "Detect via GPS": "Per GPS ermitteln",
+  "City not found": "Stadt nicht gefunden",
+  "Share your experience": "Teile deine Erfahrung",
+  "📍 Getting location...": "📍 Standort wird ermittelt...",
+  "📍 Not supported": "📍 Nicht unterstützt",
+  "📍 Could not get location": "📍 Standort nicht verfügbar",
+  "📍 Permission denied": "📍 Zugriff verweigert",
+  "✅ All data synced!": "✅ Alle Daten synchronisiert!",
+  "☁️ Pending: {0} places, {1} comments, {2} ratings": "☁️ Ausstehend: {0} Orte, {1} Kommentare, {2} Bewertungen",
+  " — Syncing...": " — Synchronisierung...",
+  " (Offline)": " (Offline)",
+  "Theme reset.": "Design zurückgesetzt.",
+  "✅ {0} item synced!": "✅ {0} Einträge synchronisiert!",
+  "🌐 Connected, syncing data...": "🌐 Verbunden, Daten werden synchronisiert...",
+  "✈️ Offline mode — data will be saved": "✈️ Offline-Modus — Daten werden gespeichert",
+  "Loading comments...": "Kommentare werden geladen...",
+  "Could not load comments.": "Kommentare konnten nicht geladen werden.",
+  "No comments yet. Be the first!": "Noch keine Kommentare. Sei die/der Erste!",
+  "Translate": "Übersetzen",
+  "Edit": "Bearbeiten",
+  "Delete": "Löschen",
+  "Hide": "Ausblenden",
+  "Translation failed": "Übersetzung fehlgeschlagen",
+  "Using your profile name": "Dein Profilname wird verwendet",
+  "Profile": "Profil",
+  "Display name required!": "Anzeigename erforderlich!",
+  "Comment text required!": "Kommentartext erforderlich!",
+  "Comment too short!": "Kommentar zu kurz!",
+  "Sending...": "Wird gesendet...",
+  "✓ Comment added!": "✓ Kommentar hinzugefügt!",
+  "☁️ Comment saved, will send when online": "☁️ Kommentar gespeichert, wird online gesendet",
+  "Could not send comment. Try again.": "Kommentar konnte nicht gesendet werden. Versuch es erneut.",
+  "Cancel": "Abbrechen",
+  "Comment cannot be empty!": "Kommentar darf nicht leer sein!",
+  "Saving...": "Wird gespeichert...",
+  "✓ Comment updated!": "✓ Kommentar aktualisiert!",
+  "Update failed.": "Aktualisierung fehlgeschlagen.",
+  "Are you sure you want to delete this comment?": "Möchtest du diesen Kommentar wirklich löschen?",
+  "🗑 Comment deleted.": "🗑 Kommentar gelöscht.",
+  "Delete failed.": "Löschen fehlgeschlagen.",
+  "Notifications": "Benachrichtigungen",
+  "Get notified when new places are added to your city.": "Erhalte eine Benachrichtigung, wenn in deiner Stadt neue Orte hinzukommen.",
+  "✓ Allow": "✓ Erlauben",
+  "Not Now": "Nicht jetzt",
+  "🔔 Notifications enabled!": "🔔 Benachrichtigungen aktiviert!",
+  "Notifications disabled.": "Benachrichtigungen deaktiviert.",
+  "{0} too large (max 5 MB)": "{0} ist zu groß (max. 5 MB)",
+  "Images only": "Nur Bilder",
+  "Max {0} photos allowed": "Maximal {0} Fotos erlaubt",
+  "{0} more photos allowed": "Noch {0} Fotos möglich",
+  "Photo {0} failed ({1})": "Foto {0} fehlgeschlagen ({1})",
+  "Photo {0} failed": "Foto {0} fehlgeschlagen",
+  "Enter invite code!": "Einladungscode eingeben!",
+  "Checking...": "Wird geprüft...",
+  "Invalid or used code!": "Ungültiger oder bereits verwendeter Code!",
+  "Connection error, try again.": "Verbindungsfehler, versuch es erneut.",
+  "Continue →": "Weiter →",
+  "Email required!": "E-Mail erforderlich!",
+  "Password must be 6+ chars!": "Passwort muss mind. 6 Zeichen haben!",
+  "Creating account...": "Konto wird erstellt...",
+  "📧 Verification email sent! Check your inbox.": "📧 Bestätigungs-E-Mail gesendet! Sieh in dein Postfach.",
+  "Email sent ✓": "E-Mail gesendet ✓",
+  "Email already registered!": "E-Mail bereits registriert!",
+  "Error: {0}": "Fehler: {0}",
+  "Create Account →": "Konto erstellen →",
+  "Email and password required!": "E-Mail und Passwort erforderlich!",
+  "Signing in...": "Anmeldung...",
+  "Invalid email or password!": "E-Mail oder Passwort falsch!",
+  "Sign In →": "Anmelden →",
+  "Your account has been disabled.": "Dein Konto wurde deaktiviert.",
+  "Session invalid.": "Sitzung ungültig.",
+  "✈️ Offline mode": "✈️ Offline-Modus",
+  "Logged in account": "Angemeldetes Konto",
+  "Loading hours...": "Öffnungszeiten werden geladen...",
+  "· Until {0}": "· Bis {0}",
+  "· Opens at {0}": "· Öffnet um {0}",
+  "Open": "Geöffnet",
+  "Closed": "Geschlossen",
+  "▴ Less": "▴ Weniger",
+  "▾ All": "▾ Alle",
+  "Finding location...": "Standort wird gesucht...",
+  "View on Map": "Auf Karte anzeigen",
+  "Could not load map.": "Karte konnte nicht geladen werden.",
+  "Copy Address": "Adresse kopieren",
+  "Directions": "Route",
+  "📋 Address copied!": "📋 Adresse kopiert!",
+  "⏳ Deleting...": "⏳ Wird gelöscht...",
+  "Your account will be disabled. Continue?": "Dein Konto wird deaktiviert. Fortfahren?",
+  "Account disabled.": "Konto deaktiviert.",
+  "Unauthorized!": "Nicht berechtigt!",
+  "Are you sure you want to remove \"{0}\"?": "Möchtest du „{0}“ wirklich entfernen?",
+  "🗑 \"{0}\" removed.": "🗑 „{0}“ entfernt.",
+  "Comment removed.": "Kommentar entfernt.",
+  "Username cannot be empty!": "Benutzername darf nicht leer sein!",
+  "At least 3 characters!": "Mindestens 3 Zeichen!",
+  "Max 30 characters!": "Maximal 30 Zeichen!",
+  "Only letters, numbers and _ allowed!": "Nur Buchstaben, Zahlen und _ erlaubt!",
+  "Please sign in!": "Bitte melde dich an!",
+  "Username already taken!": "Benutzername ist bereits vergeben!",
+  "✓ Username updated to \"{0}\"!": "✓ Benutzername in „{0}“ geändert!",
+  "Current: ": "Aktuell: ",
+  "Pick Location": "Standort wählen",
+  "Drag pin or tap map": "Pin ziehen oder auf die Karte tippen",
+  "Getting location...": "Standort wird ermittelt...",
+  "Use This Location ✓": "Diesen Standort verwenden ✓",
+  "Looking up...": "Wird gesucht...",
+  "📍 Location added!": "📍 Standort hinzugefügt!",
+  "Geolocation not supported.": "Standortbestimmung wird nicht unterstützt.",
+  "📡 Getting location...": "📡 Standort wird ermittelt...",
+  "Location found": "Standort gefunden",
+  "accuracy": "Genauigkeit",
+  "⚠️ Address lookup failed, coordinates added.": "⚠️ Adresse nicht gefunden, Koordinaten hinzugefügt.",
+  "📍 New Place Added!": "📍 Neuer Ort hinzugefügt!",
+  "✈️ New place in {0} — you've been there!": "✈️ Neuer Ort in {0} — da warst du schon!",
+  "Recently added places": "Kürzlich hinzugefügte Orte",
+  "Notifs": "Mitteilungen",
+  "No places added yet": "Noch keine Orte hinzugefügt",
+  "Select country...": "Land wählen...",
+  "Select city...": "Stadt wählen...",
+  "✓ Used": "✓ Verwendet",
+  "Available": "Verfügbar",
+  "Copy": "Kopieren",
+  "You invited {0} · {1} remaining": "Du hast {0} eingeladen · {1} übrig",
+  "\"{0}\" copied!": "„{0}“ kopiert!",
+  "No rate — prices in USD": "Kein Kurs — Preise in USD",
+  "No saved places yet": "Noch keine gespeicherten Orte",
+  "Tap 🔖 Save on places you like": "Tippe bei Orten, die dir gefallen, auf 🔖 Speichern",
+  "No saved places in this category": "Keine gespeicherten Orte in dieser Kategorie",
+  "Food": "Essen",
+  "Shopping": "Shopping",
+  "Sightseeing": "Sehenswürdigkeiten",
+  "Remove": "Entfernen",
+  "Please sign in": "Bitte melde dich an",
+  "Loading...": "Wird geladen...",
+  "places": "Orte",
+  "In review": "In Prüfung",
+  "Not published": "Nicht veröffentlicht",
+  "No places added yet. Add your first one!": "Noch keine Orte. Füge deinen ersten hinzu!",
+  "Could not load": "Konnte nicht geladen werden",
+  "Cities I've Visited": "Besuchte Städte",
+  "No cities visited yet": "Noch keine besuchten Städte",
+  "✈️ CITIES YOU'VE VISITED": "✈️ BESUCHTE STÄDTE",
+  "You'll be notified when new places are added": "Du wirst benachrichtigt, wenn neue Orte hinzukommen",
+  "Budget meal": "Günstiges Essen",
+  "Mid restaurant": "Mittelklasse-Restaurant",
+  "Fine dining": "Gehobene Küche",
+  "Taxi (5 km)": "Taxi (5 km)",
+  "Café coffee": "Kaffee im Café",
+  "Approximate Price Guide": "Ungefähre Preisübersicht",
+  "● Live rate · as of {0}": "● Aktueller Kurs · Stand {0}",
+  "Rates are approximate and may vary.": "Kurse sind Richtwerte und können abweichen.",
+  "OK": "OK",
+  "{0} ready for offline use ✓": "{0} ist offline verfügbar ✓",
+  "Update available! ": "Update verfügbar! ",
+  "Refresh": "Neu laden",
+  "✓ CrewGuide installed!": "✓ CrewGuide installiert!",
+  "Install App": "App installieren",
+  "📲 Safari: \"Share\" → \"Add to Home Screen\"": "📲 Safari: „Teilen“ → „Zum Home-Bildschirm“",
+  "Browser install not supported.": "Installation im Browser nicht unterstützt.",
+  "✓ Back online": "✓ Wieder online",
+  "📡 Offline — using cached data": "📡 Offline — gespeicherte Daten werden verwendet",
+  "🍳 Breakfast": "🍳 Frühstück",
+  "🥡 Street Food": "🥡 Streetfood",
+  "🍽 Restaurant": "🍽 Restaurant",
+  "☕ Café": "☕ Café",
+  "🍺 Bar & Pub": "🍺 Bar & Pub",
+  "🍰 Dessert": "🍰 Dessert",
+  "👕 Clothing": "👕 Kleidung",
+  "📱 Electronics": "📱 Elektronik",
+  "💄 Cosmetics": "💄 Kosmetik",
+  "👜 Bags & Luggage": "👜 Taschen & Koffer",
+  "💍 Jewelry & Accessories": "💍 Schmuck & Accessoires",
+  "🏪 General Store": "🏪 Gemischtwaren",
+  "🏛 Museum": "🏛 Museum",
+  "🌿 Nature & Park": "🌿 Natur & Park",
+  "🏰 Historical Sites": "🏰 Historische Stätten",
+  "🎡 Entertainment": "🎡 Unterhaltung",
+  "🌙 Nightlife": "🌙 Nachtleben",
+  "🛕 Religious Sites": "🛕 Religiöse Stätten",
+  "Rating": "Bewertung",
+  "Rate:": "Bewerten:",
+  "Budget": "Günstig",
+  "Mid-range": "Mittel",
+  "Expensive": "Teuer",
+  "🔔 On": "🔔 An",
+  "🔕 Off": "🔕 Aus",
+  "⏳ Pending": "⏳ Ausstehend",
+  "Price Range": "Preisspanne",
+  "Min Rating": "Mindestbewertung",
+  "Sort By": "Sortieren nach",
+  "Price": "Preis",
+  "Sort": "Sortieren",
+  "Top Rated ⭐": "Bestbewertet ⭐",
+  "Most Liked ♥": "Beliebteste ♥",
+  "Newest 🆕": "Neueste 🆕",
+  "Location permission denied. Enable in browser settings.": "Standortzugriff verweigert. Aktiviere ihn in den Browser-Einstellungen.",
+  "Could not get location. Try again.": "Standort nicht verfügbar. Versuch es erneut.",
+  "Location request timed out.": "Zeitüberschreitung bei der Standortabfrage.",
+  "Location error.": "Standortfehler.",
+  "All": "Alle",
+  "🍜 Food": "🍜 Essen",
+  "🛍 Shopping": "🛍 Shopping",
+  "🗺 Sightseeing": "🗺 Sehenswürdigkeiten",
+  "⬇ Download": "⬇ Herunterladen",
+  "Total: ~2.5 MB to download": "Gesamt: ~2.5 MB Download",
+  "✕ Clear": "✕ Zurücksetzen",
+  "Filter": "Filter",
+  "$ Budget": "$ Günstig",
+  "$$ Mid-range": "$$ Mittel",
+  "$$$ Expensive": "$$$ Teuer",
+  "Minimum Rating": "Mindestbewertung",
+  "Default": "Standard",
+  "Highest Rated": "Bestbewertet",
+  "Most Liked": "Beliebteste",
+  "Newest": "Neueste",
+  "Clear": "Zurücksetzen",
+  "Apply": "Anwenden",
+  "Your display name (e.g. CaptainSeoul)": "Dein Anzeigename (z. B. CaptainSeoul)",
+  "Remove Place": "Ort entfernen",
+  "COUNTRY & CITY": "LAND & STADT",
+  "Type another city...": "Andere Stadt eingeben...",
+  "All-you-can-eat, 90 min, busy in the evening...": "All-you-can-eat, 90 Min., abends voll...",
+  "PHOTOS": "FOTOS",
+  "⚠️ Deactivate My Account": "⚠️ Mein Konto deaktivieren"
+ },
+ "fr": {
+  "Ask a colleague for an invite code.": "Demande un code d'invitation à un collègue.",
+  "Code copied!": "Code copié !",
+  "places found": "lieux trouvés",
+  "No results found.": "Aucun résultat.",
+  "Write a Review": "Écrire un avis",
+  "Share your experience...": "Partage ton expérience...",
+  "Send Comment": "Envoyer le commentaire",
+  "✓ You rated {0} ★": "✓ Ta note : {0} ★",
+  "Update": "Mettre à jour",
+  "Rate": "Noter",
+  "ratings": "notes",
+  "No ratings yet": "Pas encore de notes",
+  "✓ Rated": "✓ Noté",
+  "Select a star first!": "Choisis d'abord une étoile !",
+  "You rated {0} stars! ★": "Tu as donné {0} étoiles ! ★",
+  "Liked": "Aimé",
+  "Like": "J'aime",
+  "🔖 Added to saved!": "🔖 Ajouté aux favoris !",
+  "Removed from saved.": "Retiré des favoris.",
+  "Saved": "Favoris",
+  "Save": "Enregistrer",
+  "Edit Place": "Modifier le lieu",
+  "Update →": "Mettre à jour →",
+  "Place updated! ✓": "Lieu mis à jour ! ✓",
+  "Thanks! 🙌 Your suggestion will appear after review.": "Merci ! 🙌 Ta suggestion apparaîtra après vérification.",
+  "Place added successfully! 🎉": "Lieu ajouté avec succès ! 🎉",
+  "Place name is required!": "Le nom du lieu est obligatoire !",
+  "Please sign in to suggest a place": "Connecte-toi pour suggérer un lieu",
+  "Select a city first": "Choisis d'abord une ville",
+  "Could not save: ": "Échec de l'enregistrement : ",
+  "Editing requires a connection": "La modification nécessite une connexion",
+  "Uploading photos...": "Envoi des photos...",
+  "Share →": "Partager →",
+  "Add Place": "Ajouter un lieu",
+  "Display name is required!": "Le nom affiché est obligatoire !",
+  "Download {0}": "Télécharger {0}",
+  "Access {0} data when you're offline.": "Accède aux données de {0} hors ligne.",
+  "Total: ~{0} MB to download": "Total : ~{0} Mo à télécharger",
+  "Downloading {0}... ✓": "Téléchargement de {0}... ✓",
+  "Select City": "Choisir une ville",
+  "Use current location or search a city": "Utilise ta position ou cherche une ville",
+  "Search city...": "Rechercher une ville...",
+  "My Current Location": "Ma position actuelle",
+  "Detect via GPS": "Détecter par GPS",
+  "City not found": "Ville introuvable",
+  "Share your experience": "Partage ton expérience",
+  "📍 Getting location...": "📍 Localisation...",
+  "📍 Not supported": "📍 Non pris en charge",
+  "📍 Could not get location": "📍 Position introuvable",
+  "📍 Permission denied": "📍 Autorisation refusée",
+  "✅ All data synced!": "✅ Toutes les données sont synchronisées !",
+  "☁️ Pending: {0} places, {1} comments, {2} ratings": "☁️ En attente : {0} lieux, {1} commentaires, {2} notes",
+  " — Syncing...": " — Synchronisation...",
+  " (Offline)": " (Hors ligne)",
+  "Theme reset.": "Thème réinitialisé.",
+  "✅ {0} item synced!": "✅ {0} élément(s) synchronisé(s) !",
+  "🌐 Connected, syncing data...": "🌐 Connecté, synchronisation...",
+  "✈️ Offline mode — data will be saved": "✈️ Mode hors ligne — les données seront enregistrées",
+  "Loading comments...": "Chargement des commentaires...",
+  "Could not load comments.": "Impossible de charger les commentaires.",
+  "No comments yet. Be the first!": "Aucun commentaire. Sois le premier !",
+  "Translate": "Traduire",
+  "Edit": "Modifier",
+  "Delete": "Supprimer",
+  "Hide": "Masquer",
+  "Translation failed": "Échec de la traduction",
+  "Using your profile name": "Ton nom de profil sera utilisé",
+  "Profile": "Profil",
+  "Display name required!": "Nom affiché obligatoire !",
+  "Comment text required!": "Le texte du commentaire est obligatoire !",
+  "Comment too short!": "Commentaire trop court !",
+  "Sending...": "Envoi...",
+  "✓ Comment added!": "✓ Commentaire ajouté !",
+  "☁️ Comment saved, will send when online": "☁️ Commentaire enregistré, envoi dès la reconnexion",
+  "Could not send comment. Try again.": "Impossible d'envoyer le commentaire. Réessaie.",
+  "Cancel": "Annuler",
+  "Comment cannot be empty!": "Le commentaire ne peut pas être vide !",
+  "Saving...": "Enregistrement...",
+  "✓ Comment updated!": "✓ Commentaire mis à jour !",
+  "Update failed.": "Échec de la mise à jour.",
+  "Are you sure you want to delete this comment?": "Veux-tu vraiment supprimer ce commentaire ?",
+  "🗑 Comment deleted.": "🗑 Commentaire supprimé.",
+  "Delete failed.": "Échec de la suppression.",
+  "Notifications": "Notifications",
+  "Get notified when new places are added to your city.": "Sois averti quand de nouveaux lieux sont ajoutés dans ta ville.",
+  "✓ Allow": "✓ Autoriser",
+  "Not Now": "Plus tard",
+  "🔔 Notifications enabled!": "🔔 Notifications activées !",
+  "Notifications disabled.": "Notifications désactivées.",
+  "{0} too large (max 5 MB)": "{0} est trop volumineux (max 5 Mo)",
+  "Images only": "Images uniquement",
+  "Max {0} photos allowed": "{0} photos maximum",
+  "{0} more photos allowed": "Encore {0} photos possibles",
+  "Photo {0} failed ({1})": "Échec de la photo {0} ({1})",
+  "Photo {0} failed": "Échec de la photo {0}",
+  "Enter invite code!": "Saisis le code d'invitation !",
+  "Checking...": "Vérification...",
+  "Invalid or used code!": "Code invalide ou déjà utilisé !",
+  "Connection error, try again.": "Erreur de connexion, réessaie.",
+  "Continue →": "Continuer →",
+  "Email required!": "E-mail obligatoire !",
+  "Password must be 6+ chars!": "Le mot de passe doit contenir au moins 6 caractères !",
+  "Creating account...": "Création du compte...",
+  "📧 Verification email sent! Check your inbox.": "📧 E-mail de vérification envoyé ! Consulte ta boîte de réception.",
+  "Email sent ✓": "E-mail envoyé ✓",
+  "Email already registered!": "E-mail déjà utilisé !",
+  "Error: {0}": "Erreur : {0}",
+  "Create Account →": "Créer le compte →",
+  "Email and password required!": "E-mail et mot de passe obligatoires !",
+  "Signing in...": "Connexion...",
+  "Invalid email or password!": "E-mail ou mot de passe incorrect !",
+  "Sign In →": "Se connecter →",
+  "Your account has been disabled.": "Ton compte a été désactivé.",
+  "Session invalid.": "Session invalide.",
+  "✈️ Offline mode": "✈️ Mode hors ligne",
+  "Logged in account": "Compte connecté",
+  "Loading hours...": "Chargement des horaires...",
+  "· Until {0}": "· Jusqu'à {0}",
+  "· Opens at {0}": "· Ouvre à {0}",
+  "Open": "Ouvert",
+  "Closed": "Fermé",
+  "▴ Less": "▴ Moins",
+  "▾ All": "▾ Tout",
+  "Finding location...": "Recherche de l'emplacement...",
+  "View on Map": "Voir sur la carte",
+  "Could not load map.": "Impossible de charger la carte.",
+  "Copy Address": "Copier l'adresse",
+  "Directions": "Itinéraire",
+  "📋 Address copied!": "📋 Adresse copiée !",
+  "⏳ Deleting...": "⏳ Suppression...",
+  "Your account will be disabled. Continue?": "Ton compte va être désactivé. Continuer ?",
+  "Account disabled.": "Compte désactivé.",
+  "Unauthorized!": "Non autorisé !",
+  "Are you sure you want to remove \"{0}\"?": "Veux-tu vraiment retirer « {0} » ?",
+  "🗑 \"{0}\" removed.": "🗑 « {0} » retiré.",
+  "Comment removed.": "Commentaire retiré.",
+  "Username cannot be empty!": "Le nom d'utilisateur ne peut pas être vide !",
+  "At least 3 characters!": "Au moins 3 caractères !",
+  "Max 30 characters!": "30 caractères maximum !",
+  "Only letters, numbers and _ allowed!": "Lettres, chiffres et _ uniquement !",
+  "Please sign in!": "Connecte-toi !",
+  "Username already taken!": "Nom d'utilisateur déjà pris !",
+  "✓ Username updated to \"{0}\"!": "✓ Nom d'utilisateur changé en « {0} » !",
+  "Current: ": "Actuel : ",
+  "Pick Location": "Choisir l'emplacement",
+  "Drag pin or tap map": "Déplace l'épingle ou touche la carte",
+  "Getting location...": "Localisation...",
+  "Use This Location ✓": "Utiliser cet emplacement ✓",
+  "Looking up...": "Recherche...",
+  "📍 Location added!": "📍 Emplacement ajouté !",
+  "Geolocation not supported.": "Géolocalisation non prise en charge.",
+  "📡 Getting location...": "📡 Localisation...",
+  "Location found": "Position trouvée",
+  "accuracy": "précision",
+  "⚠️ Address lookup failed, coordinates added.": "⚠️ Adresse introuvable, coordonnées ajoutées.",
+  "📍 New Place Added!": "📍 Nouveau lieu ajouté !",
+  "✈️ New place in {0} — you've been there!": "✈️ Nouveau lieu à {0} — tu y es déjà allé !",
+  "Recently added places": "Lieux ajoutés récemment",
+  "Notifs": "Notifs",
+  "No places added yet": "Aucun lieu ajouté pour l'instant",
+  "Select country...": "Choisir un pays...",
+  "Select city...": "Choisir une ville...",
+  "✓ Used": "✓ Utilisé",
+  "Available": "Disponible",
+  "Copy": "Copier",
+  "You invited {0} · {1} remaining": "Tu as invité {0} personne(s) · il en reste {1}",
+  "\"{0}\" copied!": "« {0} » copié !",
+  "No rate — prices in USD": "Pas de taux — prix en USD",
+  "No saved places yet": "Aucun lieu enregistré",
+  "Tap 🔖 Save on places you like": "Touche 🔖 Enregistrer sur les lieux qui te plaisent",
+  "No saved places in this category": "Aucun lieu enregistré dans cette catégorie",
+  "Food": "Restauration",
+  "Shopping": "Shopping",
+  "Sightseeing": "Visites",
+  "Remove": "Retirer",
+  "Please sign in": "Connecte-toi",
+  "Loading...": "Chargement...",
+  "places": "lieux",
+  "In review": "En cours de vérification",
+  "Not published": "Non publié",
+  "No places added yet. Add your first one!": "Aucun lieu pour l'instant. Ajoute ton premier !",
+  "Could not load": "Chargement impossible",
+  "Cities I've Visited": "Villes visitées",
+  "No cities visited yet": "Aucune ville visitée",
+  "✈️ CITIES YOU'VE VISITED": "✈️ VILLES VISITÉES",
+  "You'll be notified when new places are added": "Tu seras averti quand de nouveaux lieux seront ajoutés",
+  "Budget meal": "Repas bon marché",
+  "Mid restaurant": "Restaurant moyen",
+  "Fine dining": "Gastronomique",
+  "Taxi (5 km)": "Taxi (5 km)",
+  "Café coffee": "Café en terrasse",
+  "Approximate Price Guide": "Guide des prix approximatifs",
+  "● Live rate · as of {0}": "● Taux en direct · à {0}",
+  "Rates are approximate and may vary.": "Les taux sont approximatifs et peuvent varier.",
+  "OK": "OK",
+  "{0} ready for offline use ✓": "{0} est prêt hors ligne ✓",
+  "Update available! ": "Mise à jour disponible ! ",
+  "Refresh": "Actualiser",
+  "✓ CrewGuide installed!": "✓ CrewGuide installé !",
+  "Install App": "Installer l'app",
+  "📲 Safari: \"Share\" → \"Add to Home Screen\"": "📲 Safari : « Partager » → « Sur l'écran d'accueil »",
+  "Browser install not supported.": "Installation non prise en charge par le navigateur.",
+  "✓ Back online": "✓ De nouveau en ligne",
+  "📡 Offline — using cached data": "📡 Hors ligne — données en cache utilisées",
+  "🍳 Breakfast": "🍳 Petit-déjeuner",
+  "🥡 Street Food": "🥡 Street food",
+  "🍽 Restaurant": "🍽 Restaurant",
+  "☕ Café": "☕ Café",
+  "🍺 Bar & Pub": "🍺 Bar & pub",
+  "🍰 Dessert": "🍰 Dessert",
+  "👕 Clothing": "👕 Vêtements",
+  "📱 Electronics": "📱 Électronique",
+  "💄 Cosmetics": "💄 Cosmétiques",
+  "👜 Bags & Luggage": "👜 Sacs & bagages",
+  "💍 Jewelry & Accessories": "💍 Bijoux & accessoires",
+  "🏪 General Store": "🏪 Épicerie",
+  "🏛 Museum": "🏛 Musée",
+  "🌿 Nature & Park": "🌿 Nature & parc",
+  "🏰 Historical Sites": "🏰 Sites historiques",
+  "🎡 Entertainment": "🎡 Divertissement",
+  "🌙 Nightlife": "🌙 Vie nocturne",
+  "🛕 Religious Sites": "🛕 Lieux de culte",
+  "Rating": "Note",
+  "Rate:": "Noter :",
+  "Budget": "Bon marché",
+  "Mid-range": "Moyen",
+  "Expensive": "Cher",
+  "🔔 On": "🔔 Activé",
+  "🔕 Off": "🔕 Désactivé",
+  "⏳ Pending": "⏳ En attente",
+  "Price Range": "Gamme de prix",
+  "Min Rating": "Note minimale",
+  "Sort By": "Trier par",
+  "Price": "Prix",
+  "Sort": "Trier",
+  "Top Rated ⭐": "Mieux notés ⭐",
+  "Most Liked ♥": "Les plus aimés ♥",
+  "Newest 🆕": "Plus récents 🆕",
+  "Location permission denied. Enable in browser settings.": "Accès à la position refusé. Active-le dans les réglages du navigateur.",
+  "Could not get location. Try again.": "Position introuvable. Réessaie.",
+  "Location request timed out.": "La demande de position a expiré.",
+  "Location error.": "Erreur de localisation.",
+  "All": "Tout",
+  "🍜 Food": "🍜 Restauration",
+  "🛍 Shopping": "🛍 Shopping",
+  "🗺 Sightseeing": "🗺 Visites",
+  "⬇ Download": "⬇ Télécharger",
+  "Total: ~2.5 MB to download": "Total : ~2.5 Mo à télécharger",
+  "✕ Clear": "✕ Effacer",
+  "Filter": "Filtrer",
+  "$ Budget": "$ Bon marché",
+  "$$ Mid-range": "$$ Moyen",
+  "$$$ Expensive": "$$$ Cher",
+  "Minimum Rating": "Note minimale",
+  "Default": "Par défaut",
+  "Highest Rated": "Mieux notés",
+  "Most Liked": "Les plus aimés",
+  "Newest": "Plus récents",
+  "Clear": "Effacer",
+  "Apply": "Appliquer",
+  "Your display name (e.g. CaptainSeoul)": "Ton nom affiché (ex. CaptainSeoul)",
+  "Remove Place": "Retirer le lieu",
+  "COUNTRY & CITY": "PAYS & VILLE",
+  "Type another city...": "Saisis une autre ville...",
+  "All-you-can-eat, 90 min, busy in the evening...": "À volonté, 90 min, bondé le soir...",
+  "PHOTOS": "PHOTOS",
+  "⚠️ Deactivate My Account": "⚠️ Désactiver mon compte"
+ },
+ "es": {
+  "Ask a colleague for an invite code.": "Pide un código de invitación a un compañero.",
+  "Code copied!": "¡Código copiado!",
+  "places found": "lugares encontrados",
+  "No results found.": "No se encontraron resultados.",
+  "Write a Review": "Escribir una reseña",
+  "Share your experience...": "Comparte tu experiencia...",
+  "Send Comment": "Enviar comentario",
+  "✓ You rated {0} ★": "✓ Tu valoración: {0} ★",
+  "Update": "Actualizar",
+  "Rate": "Valorar",
+  "ratings": "valoraciones",
+  "No ratings yet": "Aún no hay valoraciones",
+  "✓ Rated": "✓ Valorado",
+  "Select a star first!": "¡Elige primero una estrella!",
+  "You rated {0} stars! ★": "¡Diste {0} estrellas! ★",
+  "Liked": "Te gusta",
+  "Like": "Me gusta",
+  "🔖 Added to saved!": "🔖 ¡Guardado!",
+  "Removed from saved.": "Eliminado de guardados.",
+  "Saved": "Guardados",
+  "Save": "Guardar",
+  "Edit Place": "Editar lugar",
+  "Update →": "Actualizar →",
+  "Place updated! ✓": "¡Lugar actualizado! ✓",
+  "Thanks! 🙌 Your suggestion will appear after review.": "¡Gracias! 🙌 Tu sugerencia aparecerá tras la revisión.",
+  "Place added successfully! 🎉": "¡Lugar añadido con éxito! 🎉",
+  "Place name is required!": "¡El nombre del lugar es obligatorio!",
+  "Please sign in to suggest a place": "Inicia sesión para sugerir un lugar",
+  "Select a city first": "Elige primero una ciudad",
+  "Could not save: ": "No se pudo guardar: ",
+  "Editing requires a connection": "Para editar necesitas conexión",
+  "Uploading photos...": "Subiendo fotos...",
+  "Share →": "Compartir →",
+  "Add Place": "Añadir lugar",
+  "Display name is required!": "¡El nombre visible es obligatorio!",
+  "Download {0}": "Descargar {0}",
+  "Access {0} data when you're offline.": "Accede a los datos de {0} sin conexión.",
+  "Total: ~{0} MB to download": "Total: ~{0} MB a descargar",
+  "Downloading {0}... ✓": "Descargando {0}... ✓",
+  "Select City": "Elegir ciudad",
+  "Use current location or search a city": "Usa tu ubicación o busca una ciudad",
+  "Search city...": "Buscar ciudad...",
+  "My Current Location": "Mi ubicación actual",
+  "Detect via GPS": "Detectar por GPS",
+  "City not found": "Ciudad no encontrada",
+  "Share your experience": "Comparte tu experiencia",
+  "📍 Getting location...": "📍 Obteniendo ubicación...",
+  "📍 Not supported": "📍 No compatible",
+  "📍 Could not get location": "📍 No se pudo obtener la ubicación",
+  "📍 Permission denied": "📍 Permiso denegado",
+  "✅ All data synced!": "✅ ¡Todo sincronizado!",
+  "☁️ Pending: {0} places, {1} comments, {2} ratings": "☁️ Pendiente: {0} lugares, {1} comentarios, {2} valoraciones",
+  " — Syncing...": " — Sincronizando...",
+  " (Offline)": " (Sin conexión)",
+  "Theme reset.": "Tema restablecido.",
+  "✅ {0} item synced!": "✅ ¡{0} elemento(s) sincronizado(s)!",
+  "🌐 Connected, syncing data...": "🌐 Conectado, sincronizando datos...",
+  "✈️ Offline mode — data will be saved": "✈️ Modo sin conexión: los datos se guardarán",
+  "Loading comments...": "Cargando comentarios...",
+  "Could not load comments.": "No se pudieron cargar los comentarios.",
+  "No comments yet. Be the first!": "Aún no hay comentarios. ¡Sé el primero!",
+  "Translate": "Traducir",
+  "Edit": "Editar",
+  "Delete": "Eliminar",
+  "Hide": "Ocultar",
+  "Translation failed": "Error al traducir",
+  "Using your profile name": "Se usará tu nombre de perfil",
+  "Profile": "Perfil",
+  "Display name required!": "¡Nombre visible obligatorio!",
+  "Comment text required!": "¡Escribe un comentario!",
+  "Comment too short!": "¡Comentario demasiado corto!",
+  "Sending...": "Enviando...",
+  "✓ Comment added!": "✓ ¡Comentario añadido!",
+  "☁️ Comment saved, will send when online": "☁️ Comentario guardado, se enviará al conectarte",
+  "Could not send comment. Try again.": "No se pudo enviar el comentario. Inténtalo de nuevo.",
+  "Cancel": "Cancelar",
+  "Comment cannot be empty!": "¡El comentario no puede estar vacío!",
+  "Saving...": "Guardando...",
+  "✓ Comment updated!": "✓ ¡Comentario actualizado!",
+  "Update failed.": "Error al actualizar.",
+  "Are you sure you want to delete this comment?": "¿Seguro que quieres eliminar este comentario?",
+  "🗑 Comment deleted.": "🗑 Comentario eliminado.",
+  "Delete failed.": "Error al eliminar.",
+  "Notifications": "Notificaciones",
+  "Get notified when new places are added to your city.": "Recibe un aviso cuando se añadan lugares nuevos en tu ciudad.",
+  "✓ Allow": "✓ Permitir",
+  "Not Now": "Ahora no",
+  "🔔 Notifications enabled!": "🔔 ¡Notificaciones activadas!",
+  "Notifications disabled.": "Notificaciones desactivadas.",
+  "{0} too large (max 5 MB)": "{0} es demasiado grande (máx. 5 MB)",
+  "Images only": "Solo imágenes",
+  "Max {0} photos allowed": "Máximo {0} fotos",
+  "{0} more photos allowed": "Puedes añadir {0} fotos más",
+  "Photo {0} failed ({1})": "Error en la foto {0} ({1})",
+  "Photo {0} failed": "Error en la foto {0}",
+  "Enter invite code!": "¡Introduce el código de invitación!",
+  "Checking...": "Comprobando...",
+  "Invalid or used code!": "¡Código no válido o ya usado!",
+  "Connection error, try again.": "Error de conexión, inténtalo de nuevo.",
+  "Continue →": "Continuar →",
+  "Email required!": "¡El correo es obligatorio!",
+  "Password must be 6+ chars!": "¡La contraseña debe tener al menos 6 caracteres!",
+  "Creating account...": "Creando cuenta...",
+  "📧 Verification email sent! Check your inbox.": "📧 ¡Correo de verificación enviado! Revisa tu bandeja.",
+  "Email sent ✓": "Correo enviado ✓",
+  "Email already registered!": "¡Este correo ya está registrado!",
+  "Error: {0}": "Error: {0}",
+  "Create Account →": "Crear cuenta →",
+  "Email and password required!": "¡Correo y contraseña obligatorios!",
+  "Signing in...": "Iniciando sesión...",
+  "Invalid email or password!": "¡Correo o contraseña incorrectos!",
+  "Sign In →": "Iniciar sesión →",
+  "Your account has been disabled.": "Tu cuenta ha sido desactivada.",
+  "Session invalid.": "Sesión no válida.",
+  "✈️ Offline mode": "✈️ Modo sin conexión",
+  "Logged in account": "Cuenta conectada",
+  "Loading hours...": "Cargando horario...",
+  "· Until {0}": "· Hasta las {0}",
+  "· Opens at {0}": "· Abre a las {0}",
+  "Open": "Abierto",
+  "Closed": "Cerrado",
+  "▴ Less": "▴ Menos",
+  "▾ All": "▾ Todo",
+  "Finding location...": "Buscando ubicación...",
+  "View on Map": "Ver en el mapa",
+  "Could not load map.": "No se pudo cargar el mapa.",
+  "Copy Address": "Copiar dirección",
+  "Directions": "Cómo llegar",
+  "📋 Address copied!": "📋 ¡Dirección copiada!",
+  "⏳ Deleting...": "⏳ Eliminando...",
+  "Your account will be disabled. Continue?": "Tu cuenta se desactivará. ¿Continuar?",
+  "Account disabled.": "Cuenta desactivada.",
+  "Unauthorized!": "¡No autorizado!",
+  "Are you sure you want to remove \"{0}\"?": "¿Seguro que quieres quitar «{0}»?",
+  "🗑 \"{0}\" removed.": "🗑 «{0}» eliminado.",
+  "Comment removed.": "Comentario eliminado.",
+  "Username cannot be empty!": "¡El nombre de usuario no puede estar vacío!",
+  "At least 3 characters!": "¡Al menos 3 caracteres!",
+  "Max 30 characters!": "¡Máximo 30 caracteres!",
+  "Only letters, numbers and _ allowed!": "¡Solo letras, números y _!",
+  "Please sign in!": "¡Inicia sesión!",
+  "Username already taken!": "¡Ese nombre de usuario ya está en uso!",
+  "✓ Username updated to \"{0}\"!": "✓ ¡Nombre de usuario cambiado a «{0}»!",
+  "Current: ": "Actual: ",
+  "Pick Location": "Elegir ubicación",
+  "Drag pin or tap map": "Arrastra el pin o toca el mapa",
+  "Getting location...": "Obteniendo ubicación...",
+  "Use This Location ✓": "Usar esta ubicación ✓",
+  "Looking up...": "Buscando...",
+  "📍 Location added!": "📍 ¡Ubicación añadida!",
+  "Geolocation not supported.": "La geolocalización no es compatible.",
+  "📡 Getting location...": "📡 Obteniendo ubicación...",
+  "Location found": "Ubicación encontrada",
+  "accuracy": "precisión",
+  "⚠️ Address lookup failed, coordinates added.": "⚠️ No se encontró la dirección; se añadieron las coordenadas.",
+  "📍 New Place Added!": "📍 ¡Nuevo lugar añadido!",
+  "✈️ New place in {0} — you've been there!": "✈️ Nuevo lugar en {0}: ¡ya estuviste allí!",
+  "Recently added places": "Lugares añadidos recientemente",
+  "Notifs": "Avisos",
+  "No places added yet": "Aún no se han añadido lugares",
+  "Select country...": "Elegir país...",
+  "Select city...": "Elegir ciudad...",
+  "✓ Used": "✓ Usado",
+  "Available": "Disponible",
+  "Copy": "Copiar",
+  "You invited {0} · {1} remaining": "Has invitado a {0} · te quedan {1}",
+  "\"{0}\" copied!": "¡«{0}» copiado!",
+  "No rate — prices in USD": "Sin tipo de cambio: precios en USD",
+  "No saved places yet": "Aún no hay lugares guardados",
+  "Tap 🔖 Save on places you like": "Toca 🔖 Guardar en los lugares que te gusten",
+  "No saved places in this category": "No hay lugares guardados en esta categoría",
+  "Food": "Comida",
+  "Shopping": "Compras",
+  "Sightseeing": "Turismo",
+  "Remove": "Quitar",
+  "Please sign in": "Inicia sesión",
+  "Loading...": "Cargando...",
+  "places": "lugares",
+  "In review": "En revisión",
+  "Not published": "No publicado",
+  "No places added yet. Add your first one!": "Aún no hay lugares. ¡Añade el primero!",
+  "Could not load": "No se pudo cargar",
+  "Cities I've Visited": "Ciudades visitadas",
+  "No cities visited yet": "Aún no has visitado ciudades",
+  "✈️ CITIES YOU'VE VISITED": "✈️ CIUDADES VISITADAS",
+  "You'll be notified when new places are added": "Te avisaremos cuando se añadan lugares nuevos",
+  "Budget meal": "Comida económica",
+  "Mid restaurant": "Restaurante medio",
+  "Fine dining": "Alta cocina",
+  "Taxi (5 km)": "Taxi (5 km)",
+  "Café coffee": "Café en cafetería",
+  "Approximate Price Guide": "Guía de precios aproximados",
+  "● Live rate · as of {0}": "● Tipo en vivo · a las {0}",
+  "Rates are approximate and may vary.": "Los tipos son aproximados y pueden variar.",
+  "OK": "Aceptar",
+  "{0} ready for offline use ✓": "{0} listo para usar sin conexión ✓",
+  "Update available! ": "¡Actualización disponible! ",
+  "Refresh": "Actualizar",
+  "✓ CrewGuide installed!": "✓ ¡CrewGuide instalado!",
+  "Install App": "Instalar app",
+  "📲 Safari: \"Share\" → \"Add to Home Screen\"": "📲 Safari: «Compartir» → «Añadir a pantalla de inicio»",
+  "Browser install not supported.": "Tu navegador no permite instalar la app.",
+  "✓ Back online": "✓ Conectado de nuevo",
+  "📡 Offline — using cached data": "📡 Sin conexión: usando datos guardados",
+  "🍳 Breakfast": "🍳 Desayuno",
+  "🥡 Street Food": "🥡 Comida callejera",
+  "🍽 Restaurant": "🍽 Restaurante",
+  "☕ Café": "☕ Cafetería",
+  "🍺 Bar & Pub": "🍺 Bar y pub",
+  "🍰 Dessert": "🍰 Postres",
+  "👕 Clothing": "👕 Ropa",
+  "📱 Electronics": "📱 Electrónica",
+  "💄 Cosmetics": "💄 Cosmética",
+  "👜 Bags & Luggage": "👜 Bolsos y maletas",
+  "💍 Jewelry & Accessories": "💍 Joyas y accesorios",
+  "🏪 General Store": "🏪 Tienda",
+  "🏛 Museum": "🏛 Museo",
+  "🌿 Nature & Park": "🌿 Naturaleza y parques",
+  "🏰 Historical Sites": "🏰 Lugares históricos",
+  "🎡 Entertainment": "🎡 Ocio",
+  "🌙 Nightlife": "🌙 Vida nocturna",
+  "🛕 Religious Sites": "🛕 Lugares religiosos",
+  "Rating": "Valoración",
+  "Rate:": "Valorar:",
+  "Budget": "Económico",
+  "Mid-range": "Medio",
+  "Expensive": "Caro",
+  "🔔 On": "🔔 Activado",
+  "🔕 Off": "🔕 Desactivado",
+  "⏳ Pending": "⏳ Pendiente",
+  "Price Range": "Rango de precios",
+  "Min Rating": "Valoración mínima",
+  "Sort By": "Ordenar por",
+  "Price": "Precio",
+  "Sort": "Ordenar",
+  "Top Rated ⭐": "Mejor valorados ⭐",
+  "Most Liked ♥": "Más gustados ♥",
+  "Newest 🆕": "Más nuevos 🆕",
+  "Location permission denied. Enable in browser settings.": "Permiso de ubicación denegado. Actívalo en los ajustes del navegador.",
+  "Could not get location. Try again.": "No se pudo obtener la ubicación. Inténtalo de nuevo.",
+  "Location request timed out.": "Se agotó el tiempo para obtener la ubicación.",
+  "Location error.": "Error de ubicación.",
+  "All": "Todo",
+  "🍜 Food": "🍜 Comida",
+  "🛍 Shopping": "🛍 Compras",
+  "🗺 Sightseeing": "🗺 Turismo",
+  "⬇ Download": "⬇ Descargar",
+  "Total: ~2.5 MB to download": "Total: ~2.5 MB a descargar",
+  "✕ Clear": "✕ Borrar",
+  "Filter": "Filtrar",
+  "$ Budget": "$ Económico",
+  "$$ Mid-range": "$$ Medio",
+  "$$$ Expensive": "$$$ Caro",
+  "Minimum Rating": "Valoración mínima",
+  "Default": "Predeterminado",
+  "Highest Rated": "Mejor valorados",
+  "Most Liked": "Más gustados",
+  "Newest": "Más nuevos",
+  "Clear": "Borrar",
+  "Apply": "Aplicar",
+  "Your display name (e.g. CaptainSeoul)": "Tu nombre visible (p. ej. CaptainSeoul)",
+  "Remove Place": "Quitar lugar",
+  "COUNTRY & CITY": "PAÍS Y CIUDAD",
+  "Type another city...": "Escribe otra ciudad...",
+  "All-you-can-eat, 90 min, busy in the evening...": "Libre, 90 min, lleno por la noche...",
+  "PHOTOS": "FOTOS",
+  "⚠️ Deactivate My Account": "⚠️ Desactivar mi cuenta"
+ },
+ "ar": {
+  "Ask a colleague for an invite code.": "اطلب رمز دعوة من أحد زملائك.",
+  "Code copied!": "تم نسخ الرمز!",
+  "places found": "أماكن",
+  "No results found.": "لا توجد نتائج.",
+  "Write a Review": "اكتب تقييمًا",
+  "Share your experience...": "شارك تجربتك...",
+  "Send Comment": "إرسال التعليق",
+  "✓ You rated {0} ★": "✓ تقييمك: {0} ★",
+  "Update": "تحديث",
+  "Rate": "قيّم",
+  "ratings": "تقييمات",
+  "No ratings yet": "لا توجد تقييمات بعد",
+  "✓ Rated": "✓ تم التقييم",
+  "Select a star first!": "اختر نجمة أولًا!",
+  "You rated {0} stars! ★": "لقد منحت {0} نجوم! ★",
+  "Liked": "أعجبك",
+  "Like": "إعجاب",
+  "🔖 Added to saved!": "🔖 تمت الإضافة إلى المحفوظات!",
+  "Removed from saved.": "تمت الإزالة من المحفوظات.",
+  "Saved": "المحفوظات",
+  "Save": "حفظ",
+  "Edit Place": "تعديل المكان",
+  "Update →": "تحديث ←",
+  "Place updated! ✓": "تم تحديث المكان! ✓",
+  "Thanks! 🙌 Your suggestion will appear after review.": "شكرًا! 🙌 سيظهر اقتراحك بعد المراجعة.",
+  "Place added successfully! 🎉": "تمت إضافة المكان بنجاح! 🎉",
+  "Place name is required!": "اسم المكان مطلوب!",
+  "Please sign in to suggest a place": "سجّل الدخول لاقتراح مكان",
+  "Select a city first": "اختر مدينة أولًا",
+  "Could not save: ": "تعذّر الحفظ: ",
+  "Editing requires a connection": "يتطلب التعديل اتصالًا بالإنترنت",
+  "Uploading photos...": "جارٍ رفع الصور...",
+  "Share →": "مشاركة ←",
+  "Add Place": "إضافة مكان",
+  "Display name is required!": "اسم العرض مطلوب!",
+  "Download {0}": "تنزيل {0}",
+  "Access {0} data when you're offline.": "تصفّح بيانات {0} دون اتصال.",
+  "Total: ~{0} MB to download": "الإجمالي: ~{0} ميغابايت للتنزيل",
+  "Downloading {0}... ✓": "جارٍ تنزيل {0}... ✓",
+  "Select City": "اختر مدينة",
+  "Use current location or search a city": "استخدم موقعك الحالي أو ابحث عن مدينة",
+  "Search city...": "ابحث عن مدينة...",
+  "My Current Location": "موقعي الحالي",
+  "Detect via GPS": "تحديد عبر GPS",
+  "City not found": "لم يتم العثور على المدينة",
+  "Share your experience": "شارك تجربتك",
+  "📍 Getting location...": "📍 جارٍ تحديد الموقع...",
+  "📍 Not supported": "📍 غير مدعوم",
+  "📍 Could not get location": "📍 تعذّر تحديد الموقع",
+  "📍 Permission denied": "📍 تم رفض الإذن",
+  "✅ All data synced!": "✅ تمت مزامنة كل البيانات!",
+  "☁️ Pending: {0} places, {1} comments, {2} ratings": "☁️ قيد الانتظار: {0} أماكن، {1} تعليقات، {2} تقييمات",
+  " — Syncing...": " — جارٍ المزامنة...",
+  " (Offline)": " (غير متصل)",
+  "Theme reset.": "تمت إعادة تعيين المظهر.",
+  "✅ {0} item synced!": "✅ تمت مزامنة {0} عنصر!",
+  "🌐 Connected, syncing data...": "🌐 متصل، جارٍ مزامنة البيانات...",
+  "✈️ Offline mode — data will be saved": "✈️ وضع عدم الاتصال — سيتم حفظ البيانات",
+  "Loading comments...": "جارٍ تحميل التعليقات...",
+  "Could not load comments.": "تعذّر تحميل التعليقات.",
+  "No comments yet. Be the first!": "لا توجد تعليقات بعد. كن الأول!",
+  "Translate": "ترجمة",
+  "Edit": "تعديل",
+  "Delete": "حذف",
+  "Hide": "إخفاء",
+  "Translation failed": "فشلت الترجمة",
+  "Using your profile name": "سيُستخدم اسم ملفك الشخصي",
+  "Profile": "الملف الشخصي",
+  "Display name required!": "اسم العرض مطلوب!",
+  "Comment text required!": "نص التعليق مطلوب!",
+  "Comment too short!": "التعليق قصير جدًا!",
+  "Sending...": "جارٍ الإرسال...",
+  "✓ Comment added!": "✓ تمت إضافة التعليق!",
+  "☁️ Comment saved, will send when online": "☁️ تم حفظ التعليق وسيُرسل عند الاتصال",
+  "Could not send comment. Try again.": "تعذّر إرسال التعليق. حاول مرة أخرى.",
+  "Cancel": "إلغاء",
+  "Comment cannot be empty!": "لا يمكن أن يكون التعليق فارغًا!",
+  "Saving...": "جارٍ الحفظ...",
+  "✓ Comment updated!": "✓ تم تحديث التعليق!",
+  "Update failed.": "فشل التحديث.",
+  "Are you sure you want to delete this comment?": "هل تريد حذف هذا التعليق بالتأكيد؟",
+  "🗑 Comment deleted.": "🗑 تم حذف التعليق.",
+  "Delete failed.": "فشل الحذف.",
+  "Notifications": "الإشعارات",
+  "Get notified when new places are added to your city.": "احصل على إشعار عند إضافة أماكن جديدة في مدينتك.",
+  "✓ Allow": "✓ السماح",
+  "Not Now": "ليس الآن",
+  "🔔 Notifications enabled!": "🔔 تم تفعيل الإشعارات!",
+  "Notifications disabled.": "تم إيقاف الإشعارات.",
+  "{0} too large (max 5 MB)": "{0} كبير جدًا (الحد الأقصى 5 ميغابايت)",
+  "Images only": "الصور فقط",
+  "Max {0} photos allowed": "الحد الأقصى {0} صور",
+  "{0} more photos allowed": "يمكنك إضافة {0} صور أخرى",
+  "Photo {0} failed ({1})": "فشل رفع الصورة {0} ({1})",
+  "Photo {0} failed": "فشل رفع الصورة {0}",
+  "Enter invite code!": "أدخل رمز الدعوة!",
+  "Checking...": "جارٍ التحقق...",
+  "Invalid or used code!": "رمز غير صالح أو مستخدم!",
+  "Connection error, try again.": "خطأ في الاتصال، حاول مرة أخرى.",
+  "Continue →": "متابعة ←",
+  "Email required!": "البريد الإلكتروني مطلوب!",
+  "Password must be 6+ chars!": "يجب أن تتكون كلمة المرور من 6 أحرف على الأقل!",
+  "Creating account...": "جارٍ إنشاء الحساب...",
+  "📧 Verification email sent! Check your inbox.": "📧 تم إرسال رسالة التحقق! تفقد بريدك.",
+  "Email sent ✓": "تم إرسال البريد ✓",
+  "Email already registered!": "البريد الإلكتروني مسجل مسبقًا!",
+  "Error: {0}": "خطأ: {0}",
+  "Create Account →": "إنشاء حساب ←",
+  "Email and password required!": "البريد الإلكتروني وكلمة المرور مطلوبان!",
+  "Signing in...": "جارٍ تسجيل الدخول...",
+  "Invalid email or password!": "البريد الإلكتروني أو كلمة المرور غير صحيحة!",
+  "Sign In →": "تسجيل الدخول ←",
+  "Your account has been disabled.": "تم تعطيل حسابك.",
+  "Session invalid.": "الجلسة غير صالحة.",
+  "✈️ Offline mode": "✈️ وضع عدم الاتصال",
+  "Logged in account": "الحساب المسجّل",
+  "Loading hours...": "جارٍ تحميل ساعات العمل...",
+  "· Until {0}": "· حتى {0}",
+  "· Opens at {0}": "· يفتح الساعة {0}",
+  "Open": "مفتوح",
+  "Closed": "مغلق",
+  "▴ Less": "▴ أقل",
+  "▾ All": "▾ الكل",
+  "Finding location...": "جارٍ البحث عن الموقع...",
+  "View on Map": "عرض على الخريطة",
+  "Could not load map.": "تعذّر تحميل الخريطة.",
+  "Copy Address": "نسخ العنوان",
+  "Directions": "الاتجاهات",
+  "📋 Address copied!": "📋 تم نسخ العنوان!",
+  "⏳ Deleting...": "⏳ جارٍ الحذف...",
+  "Your account will be disabled. Continue?": "سيتم تعطيل حسابك. هل تريد المتابعة؟",
+  "Account disabled.": "تم تعطيل الحساب.",
+  "Unauthorized!": "غير مصرح!",
+  "Are you sure you want to remove \"{0}\"?": "هل تريد إزالة \"{0}\" بالتأكيد؟",
+  "🗑 \"{0}\" removed.": "🗑 تمت إزالة \"{0}\".",
+  "Comment removed.": "تمت إزالة التعليق.",
+  "Username cannot be empty!": "لا يمكن ترك اسم المستخدم فارغًا!",
+  "At least 3 characters!": "3 أحرف على الأقل!",
+  "Max 30 characters!": "30 حرفًا كحد أقصى!",
+  "Only letters, numbers and _ allowed!": "يُسمح بالأحرف والأرقام و _ فقط!",
+  "Please sign in!": "يرجى تسجيل الدخول!",
+  "Username already taken!": "اسم المستخدم مستخدم بالفعل!",
+  "✓ Username updated to \"{0}\"!": "✓ تم تغيير اسم المستخدم إلى \"{0}\"!",
+  "Current: ": "الحالي: ",
+  "Pick Location": "اختر الموقع",
+  "Drag pin or tap map": "اسحب الدبوس أو اضغط على الخريطة",
+  "Getting location...": "جارٍ تحديد الموقع...",
+  "Use This Location ✓": "استخدم هذا الموقع ✓",
+  "Looking up...": "جارٍ البحث...",
+  "📍 Location added!": "📍 تمت إضافة الموقع!",
+  "Geolocation not supported.": "تحديد الموقع غير مدعوم.",
+  "📡 Getting location...": "📡 جارٍ تحديد الموقع...",
+  "Location found": "تم العثور على الموقع",
+  "accuracy": "الدقة",
+  "⚠️ Address lookup failed, coordinates added.": "⚠️ تعذّر العثور على العنوان، أُضيفت الإحداثيات.",
+  "📍 New Place Added!": "📍 تمت إضافة مكان جديد!",
+  "✈️ New place in {0} — you've been there!": "✈️ مكان جديد في {0} — لقد زرتها من قبل!",
+  "Recently added places": "أماكن أضيفت مؤخرًا",
+  "Notifs": "الإشعارات",
+  "No places added yet": "لم تتم إضافة أماكن بعد",
+  "Select country...": "اختر الدولة...",
+  "Select city...": "اختر المدينة...",
+  "✓ Used": "✓ مستخدم",
+  "Available": "متاح",
+  "Copy": "نسخ",
+  "You invited {0} · {1} remaining": "دعوت {0} · المتبقي {1}",
+  "\"{0}\" copied!": "تم نسخ \"{0}\"!",
+  "No rate — prices in USD": "لا يوجد سعر صرف — الأسعار بالدولار",
+  "No saved places yet": "لا توجد أماكن محفوظة بعد",
+  "Tap 🔖 Save on places you like": "اضغط 🔖 حفظ على الأماكن التي تعجبك",
+  "No saved places in this category": "لا توجد أماكن محفوظة في هذه الفئة",
+  "Food": "طعام",
+  "Shopping": "تسوق",
+  "Sightseeing": "معالم",
+  "Remove": "إزالة",
+  "Please sign in": "يرجى تسجيل الدخول",
+  "Loading...": "جارٍ التحميل...",
+  "places": "أماكن",
+  "In review": "قيد المراجعة",
+  "Not published": "غير منشور",
+  "No places added yet. Add your first one!": "لم تضف أي مكان بعد. أضف أول مكان!",
+  "Could not load": "تعذّر التحميل",
+  "Cities I've Visited": "المدن التي زرتها",
+  "No cities visited yet": "لم تزر أي مدينة بعد",
+  "✈️ CITIES YOU'VE VISITED": "✈️ المدن التي زرتها",
+  "You'll be notified when new places are added": "ستصلك إشعارات عند إضافة أماكن جديدة",
+  "Budget meal": "وجبة اقتصادية",
+  "Mid restaurant": "مطعم متوسط",
+  "Fine dining": "مطعم فاخر",
+  "Taxi (5 km)": "تاكسي (5 كم)",
+  "Café coffee": "قهوة في مقهى",
+  "Approximate Price Guide": "دليل الأسعار التقريبي",
+  "● Live rate · as of {0}": "● سعر مباشر · حتى {0}",
+  "Rates are approximate and may vary.": "الأسعار تقريبية وقد تختلف.",
+  "OK": "حسنًا",
+  "{0} ready for offline use ✓": "{0} جاهزة للاستخدام دون اتصال ✓",
+  "Update available! ": "يتوفر تحديث! ",
+  "Refresh": "تحديث",
+  "✓ CrewGuide installed!": "✓ تم تثبيت CrewGuide!",
+  "Install App": "تثبيت التطبيق",
+  "📲 Safari: \"Share\" → \"Add to Home Screen\"": "📲 سفاري: \"مشاركة\" ← \"إضافة إلى الشاشة الرئيسية\"",
+  "Browser install not supported.": "المتصفح لا يدعم التثبيت.",
+  "✓ Back online": "✓ عاد الاتصال",
+  "📡 Offline — using cached data": "📡 غير متصل — يتم استخدام البيانات المحفوظة",
+  "🍳 Breakfast": "🍳 فطور",
+  "🥡 Street Food": "🥡 طعام الشارع",
+  "🍽 Restaurant": "🍽 مطعم",
+  "☕ Café": "☕ مقهى",
+  "🍺 Bar & Pub": "🍺 بار وحانة",
+  "🍰 Dessert": "🍰 حلويات",
+  "👕 Clothing": "👕 ملابس",
+  "📱 Electronics": "📱 إلكترونيات",
+  "💄 Cosmetics": "💄 مستحضرات تجميل",
+  "👜 Bags & Luggage": "👜 حقائب وأمتعة",
+  "💍 Jewelry & Accessories": "💍 مجوهرات وإكسسوارات",
+  "🏪 General Store": "🏪 متجر",
+  "🏛 Museum": "🏛 متحف",
+  "🌿 Nature & Park": "🌿 طبيعة وحدائق",
+  "🏰 Historical Sites": "🏰 مواقع تاريخية",
+  "🎡 Entertainment": "🎡 ترفيه",
+  "🌙 Nightlife": "🌙 حياة ليلية",
+  "🛕 Religious Sites": "🛕 أماكن دينية",
+  "Rating": "التقييم",
+  "Rate:": "قيّم:",
+  "Budget": "اقتصادي",
+  "Mid-range": "متوسط",
+  "Expensive": "مرتفع",
+  "🔔 On": "🔔 مفعّل",
+  "🔕 Off": "🔕 متوقف",
+  "⏳ Pending": "⏳ قيد الانتظار",
+  "Price Range": "نطاق السعر",
+  "Min Rating": "أدنى تقييم",
+  "Sort By": "ترتيب حسب",
+  "Price": "السعر",
+  "Sort": "ترتيب",
+  "Top Rated ⭐": "الأعلى تقييمًا ⭐",
+  "Most Liked ♥": "الأكثر إعجابًا ♥",
+  "Newest 🆕": "الأحدث 🆕",
+  "Location permission denied. Enable in browser settings.": "تم رفض إذن الموقع. فعّله من إعدادات المتصفح.",
+  "Could not get location. Try again.": "تعذّر تحديد الموقع. حاول مرة أخرى.",
+  "Location request timed out.": "انتهت مهلة طلب الموقع.",
+  "Location error.": "خطأ في الموقع.",
+  "All": "الكل",
+  "🍜 Food": "🍜 طعام",
+  "🛍 Shopping": "🛍 تسوق",
+  "🗺 Sightseeing": "🗺 معالم",
+  "⬇ Download": "⬇ تنزيل",
+  "Total: ~2.5 MB to download": "الإجمالي: ~2.5 ميغابايت للتنزيل",
+  "✕ Clear": "✕ مسح",
+  "Filter": "تصفية",
+  "$ Budget": "$ اقتصادي",
+  "$$ Mid-range": "$$ متوسط",
+  "$$$ Expensive": "$$$ مرتفع",
+  "Minimum Rating": "أدنى تقييم",
+  "Default": "افتراضي",
+  "Highest Rated": "الأعلى تقييمًا",
+  "Most Liked": "الأكثر إعجابًا",
+  "Newest": "الأحدث",
+  "Clear": "مسح",
+  "Apply": "تطبيق",
+  "Your display name (e.g. CaptainSeoul)": "اسم العرض (مثال: CaptainSeoul)",
+  "Remove Place": "إزالة المكان",
+  "COUNTRY & CITY": "الدولة والمدينة",
+  "Type another city...": "اكتب مدينة أخرى...",
+  "All-you-can-eat, 90 min, busy in the evening...": "بوفيه مفتوح، 90 دقيقة، مزدحم مساءً...",
+  "PHOTOS": "الصور",
+  "⚠️ Deactivate My Account": "⚠️ تعطيل حسابي"
+ },
+ "ja": {
+  "Ask a colleague for an invite code.": "同僚に招待コードをもらってください。",
+  "Code copied!": "コードをコピーしました！",
+  "places found": "件見つかりました",
+  "No results found.": "結果が見つかりません。",
+  "Write a Review": "レビューを書く",
+  "Share your experience...": "体験をシェアしよう...",
+  "Send Comment": "コメントを送信",
+  "✓ You rated {0} ★": "✓ あなたの評価：{0} ★",
+  "Update": "更新",
+  "Rate": "評価する",
+  "ratings": "件の評価",
+  "No ratings yet": "まだ評価はありません",
+  "✓ Rated": "✓ 評価済み",
+  "Select a star first!": "先に星を選んでください！",
+  "You rated {0} stars! ★": "{0}つ星を付けました！★",
+  "Liked": "いいね済み",
+  "Like": "いいね",
+  "🔖 Added to saved!": "🔖 保存しました！",
+  "Removed from saved.": "保存から削除しました。",
+  "Saved": "保存済み",
+  "Save": "保存",
+  "Edit Place": "スポットを編集",
+  "Update →": "更新 →",
+  "Place updated! ✓": "スポットを更新しました！✓",
+  "Thanks! 🙌 Your suggestion will appear after review.": "ありがとう！🙌 審査後に公開されます。",
+  "Place added successfully! 🎉": "スポットを追加しました！🎉",
+  "Place name is required!": "スポット名は必須です！",
+  "Please sign in to suggest a place": "スポットを提案するにはログインしてください",
+  "Select a city first": "先に都市を選んでください",
+  "Could not save: ": "保存できませんでした：",
+  "Editing requires a connection": "編集にはインターネット接続が必要です",
+  "Uploading photos...": "写真をアップロード中...",
+  "Share →": "シェア →",
+  "Add Place": "スポットを追加",
+  "Display name is required!": "表示名は必須です！",
+  "Download {0}": "{0}をダウンロード",
+  "Access {0} data when you're offline.": "オフラインでも{0}のデータを見られます。",
+  "Total: ~{0} MB to download": "合計：約{0} MBをダウンロード",
+  "Downloading {0}... ✓": "{0}をダウンロード中... ✓",
+  "Select City": "都市を選択",
+  "Use current location or search a city": "現在地を使うか都市を検索",
+  "Search city...": "都市を検索...",
+  "My Current Location": "現在地",
+  "Detect via GPS": "GPSで取得",
+  "City not found": "都市が見つかりません",
+  "Share your experience": "体験をシェアしよう",
+  "📍 Getting location...": "📍 位置情報を取得中...",
+  "📍 Not supported": "📍 非対応",
+  "📍 Could not get location": "📍 位置情報を取得できません",
+  "📍 Permission denied": "📍 許可されていません",
+  "✅ All data synced!": "✅ すべて同期しました！",
+  "☁️ Pending: {0} places, {1} comments, {2} ratings": "☁️ 未送信：スポット{0}件・コメント{1}件・評価{2}件",
+  " — Syncing...": " — 同期中...",
+  " (Offline)": "（オフライン）",
+  "Theme reset.": "テーマをリセットしました。",
+  "✅ {0} item synced!": "✅ {0}件を同期しました！",
+  "🌐 Connected, syncing data...": "🌐 接続しました。同期中...",
+  "✈️ Offline mode — data will be saved": "✈️ オフラインモード — データは保存されます",
+  "Loading comments...": "コメントを読み込み中...",
+  "Could not load comments.": "コメントを読み込めませんでした。",
+  "No comments yet. Be the first!": "まだコメントはありません。最初の一人になろう！",
+  "Translate": "翻訳",
+  "Edit": "編集",
+  "Delete": "削除",
+  "Hide": "非表示",
+  "Translation failed": "翻訳できませんでした",
+  "Using your profile name": "プロフィール名を使用します",
+  "Profile": "プロフィール",
+  "Display name required!": "表示名が必要です！",
+  "Comment text required!": "コメントを入力してください！",
+  "Comment too short!": "コメントが短すぎます！",
+  "Sending...": "送信中...",
+  "✓ Comment added!": "✓ コメントを追加しました！",
+  "☁️ Comment saved, will send when online": "☁️ コメントを保存しました。オンライン時に送信します",
+  "Could not send comment. Try again.": "コメントを送信できませんでした。もう一度お試しください。",
+  "Cancel": "キャンセル",
+  "Comment cannot be empty!": "コメントを入力してください！",
+  "Saving...": "保存中...",
+  "✓ Comment updated!": "✓ コメントを更新しました！",
+  "Update failed.": "更新できませんでした。",
+  "Are you sure you want to delete this comment?": "このコメントを削除しますか？",
+  "🗑 Comment deleted.": "🗑 コメントを削除しました。",
+  "Delete failed.": "削除できませんでした。",
+  "Notifications": "通知",
+  "Get notified when new places are added to your city.": "あなたの都市に新しいスポットが追加されたら通知します。",
+  "✓ Allow": "✓ 許可",
+  "Not Now": "後で",
+  "🔔 Notifications enabled!": "🔔 通知をオンにしました！",
+  "Notifications disabled.": "通知をオフにしました。",
+  "{0} too large (max 5 MB)": "{0}は大きすぎます（最大5 MB）",
+  "Images only": "画像のみ",
+  "Max {0} photos allowed": "写真は最大{0}枚です",
+  "{0} more photos allowed": "あと{0}枚追加できます",
+  "Photo {0} failed ({1})": "写真{0}のアップロードに失敗（{1}）",
+  "Photo {0} failed": "写真{0}のアップロードに失敗",
+  "Enter invite code!": "招待コードを入力してください！",
+  "Checking...": "確認中...",
+  "Invalid or used code!": "無効または使用済みのコードです！",
+  "Connection error, try again.": "接続エラーです。もう一度お試しください。",
+  "Continue →": "続ける →",
+  "Email required!": "メールアドレスが必要です！",
+  "Password must be 6+ chars!": "パスワードは6文字以上にしてください！",
+  "Creating account...": "アカウント作成中...",
+  "📧 Verification email sent! Check your inbox.": "📧 確認メールを送信しました！受信箱を確認してください。",
+  "Email sent ✓": "メール送信済み ✓",
+  "Email already registered!": "このメールアドレスは登録済みです！",
+  "Error: {0}": "エラー：{0}",
+  "Create Account →": "アカウント作成 →",
+  "Email and password required!": "メールアドレスとパスワードを入力してください！",
+  "Signing in...": "ログイン中...",
+  "Invalid email or password!": "メールアドレスまたはパスワードが違います！",
+  "Sign In →": "ログイン →",
+  "Your account has been disabled.": "アカウントは無効化されています。",
+  "Session invalid.": "セッションが無効です。",
+  "✈️ Offline mode": "✈️ オフラインモード",
+  "Logged in account": "ログイン中のアカウント",
+  "Loading hours...": "営業時間を読み込み中...",
+  "· Until {0}": "· {0}まで",
+  "· Opens at {0}": "· {0}に開店",
+  "Open": "営業中",
+  "Closed": "営業時間外",
+  "▴ Less": "▴ 閉じる",
+  "▾ All": "▾ すべて",
+  "Finding location...": "場所を検索中...",
+  "View on Map": "地図で見る",
+  "Could not load map.": "地図を読み込めませんでした。",
+  "Copy Address": "住所をコピー",
+  "Directions": "ルート",
+  "📋 Address copied!": "📋 住所をコピーしました！",
+  "⏳ Deleting...": "⏳ 削除中...",
+  "Your account will be disabled. Continue?": "アカウントを無効化します。続けますか？",
+  "Account disabled.": "アカウントを無効化しました。",
+  "Unauthorized!": "権限がありません！",
+  "Are you sure you want to remove \"{0}\"?": "「{0}」を削除しますか？",
+  "🗑 \"{0}\" removed.": "🗑 「{0}」を削除しました。",
+  "Comment removed.": "コメントを削除しました。",
+  "Username cannot be empty!": "ユーザー名を入力してください！",
+  "At least 3 characters!": "3文字以上にしてください！",
+  "Max 30 characters!": "30文字以内にしてください！",
+  "Only letters, numbers and _ allowed!": "英数字と _ のみ使用できます！",
+  "Please sign in!": "ログインしてください！",
+  "Username already taken!": "このユーザー名は使用されています！",
+  "✓ Username updated to \"{0}\"!": "✓ ユーザー名を「{0}」に変更しました！",
+  "Current: ": "現在：",
+  "Pick Location": "場所を選択",
+  "Drag pin or tap map": "ピンをドラッグするか地図をタップ",
+  "Getting location...": "位置情報を取得中...",
+  "Use This Location ✓": "この場所を使う ✓",
+  "Looking up...": "検索中...",
+  "📍 Location added!": "📍 位置を追加しました！",
+  "Geolocation not supported.": "位置情報に対応していません。",
+  "📡 Getting location...": "📡 位置情報を取得中...",
+  "Location found": "位置を取得しました",
+  "accuracy": "精度",
+  "⚠️ Address lookup failed, coordinates added.": "⚠️ 住所を取得できなかったため座標を追加しました。",
+  "📍 New Place Added!": "📍 新しいスポットが追加されました！",
+  "✈️ New place in {0} — you've been there!": "✈️ 訪れた{0}に新しいスポット！",
+  "Recently added places": "最近追加されたスポット",
+  "Notifs": "通知",
+  "No places added yet": "まだスポットはありません",
+  "Select country...": "国を選択...",
+  "Select city...": "都市を選択...",
+  "✓ Used": "✓ 使用済み",
+  "Available": "未使用",
+  "Copy": "コピー",
+  "You invited {0} · {1} remaining": "{0}人を招待済み・残り{1}人",
+  "\"{0}\" copied!": "「{0}」をコピーしました！",
+  "No rate — prices in USD": "為替レートなし — 価格はUSD表示",
+  "No saved places yet": "保存したスポットはまだありません",
+  "Tap 🔖 Save on places you like": "気に入ったスポットで 🔖 保存 をタップ",
+  "No saved places in this category": "このカテゴリに保存したスポットはありません",
+  "Food": "グルメ",
+  "Shopping": "ショッピング",
+  "Sightseeing": "観光",
+  "Remove": "削除",
+  "Please sign in": "ログインしてください",
+  "Loading...": "読み込み中...",
+  "places": "件",
+  "In review": "審査中",
+  "Not published": "非公開",
+  "No places added yet. Add your first one!": "まだスポットがありません。最初の1件を追加しよう！",
+  "Could not load": "読み込めませんでした",
+  "Cities I've Visited": "訪れた都市",
+  "No cities visited yet": "訪れた都市はまだありません",
+  "✈️ CITIES YOU'VE VISITED": "✈️ 訪れた都市",
+  "You'll be notified when new places are added": "新しいスポットが追加されると通知が届きます",
+  "Budget meal": "手頃な食事",
+  "Mid restaurant": "中級レストラン",
+  "Fine dining": "高級レストラン",
+  "Taxi (5 km)": "タクシー（5 km）",
+  "Café coffee": "カフェのコーヒー",
+  "Approximate Price Guide": "目安の価格",
+  "● Live rate · as of {0}": "● リアルタイムレート・{0}時点",
+  "Rates are approximate and may vary.": "レートは目安で、変動することがあります。",
+  "OK": "OK",
+  "{0} ready for offline use ✓": "{0}をオフラインで使えます ✓",
+  "Update available! ": "アップデートがあります！",
+  "Refresh": "更新",
+  "✓ CrewGuide installed!": "✓ CrewGuideをインストールしました！",
+  "Install App": "アプリをインストール",
+  "📲 Safari: \"Share\" → \"Add to Home Screen\"": "📲 Safari：「共有」→「ホーム画面に追加」",
+  "Browser install not supported.": "このブラウザはインストールに対応していません。",
+  "✓ Back online": "✓ オンラインに戻りました",
+  "📡 Offline — using cached data": "📡 オフライン — 保存済みデータを使用中",
+  "🍳 Breakfast": "🍳 朝食",
+  "🥡 Street Food": "🥡 屋台グルメ",
+  "🍽 Restaurant": "🍽 レストラン",
+  "☕ Café": "☕ カフェ",
+  "🍺 Bar & Pub": "🍺 バー・パブ",
+  "🍰 Dessert": "🍰 スイーツ",
+  "👕 Clothing": "👕 衣料品",
+  "📱 Electronics": "📱 家電",
+  "💄 Cosmetics": "💄 コスメ",
+  "👜 Bags & Luggage": "👜 バッグ・スーツケース",
+  "💍 Jewelry & Accessories": "💍 ジュエリー・小物",
+  "🏪 General Store": "🏪 スーパー・雑貨",
+  "🏛 Museum": "🏛 博物館",
+  "🌿 Nature & Park": "🌿 自然・公園",
+  "🏰 Historical Sites": "🏰 史跡",
+  "🎡 Entertainment": "🎡 エンタメ",
+  "🌙 Nightlife": "🌙 ナイトライフ",
+  "🛕 Religious Sites": "🛕 宗教施設",
+  "Rating": "評価",
+  "Rate:": "評価：",
+  "Budget": "手頃",
+  "Mid-range": "普通",
+  "Expensive": "高め",
+  "🔔 On": "🔔 オン",
+  "🔕 Off": "🔕 オフ",
+  "⏳ Pending": "⏳ 保留中",
+  "Price Range": "価格帯",
+  "Min Rating": "最低評価",
+  "Sort By": "並び替え",
+  "Price": "価格",
+  "Sort": "並び替え",
+  "Top Rated ⭐": "高評価順 ⭐",
+  "Most Liked ♥": "いいね順 ♥",
+  "Newest 🆕": "新着順 🆕",
+  "Location permission denied. Enable in browser settings.": "位置情報が許可されていません。ブラウザの設定で有効にしてください。",
+  "Could not get location. Try again.": "位置情報を取得できません。もう一度お試しください。",
+  "Location request timed out.": "位置情報の取得がタイムアウトしました。",
+  "Location error.": "位置情報エラー。",
+  "All": "すべて",
+  "🍜 Food": "🍜 グルメ",
+  "🛍 Shopping": "🛍 ショッピング",
+  "🗺 Sightseeing": "🗺 観光",
+  "⬇ Download": "⬇ ダウンロード",
+  "Total: ~2.5 MB to download": "合計：約2.5 MBをダウンロード",
+  "✕ Clear": "✕ クリア",
+  "Filter": "絞り込み",
+  "$ Budget": "$ 手頃",
+  "$$ Mid-range": "$$ 普通",
+  "$$$ Expensive": "$$$ 高め",
+  "Minimum Rating": "最低評価",
+  "Default": "標準",
+  "Highest Rated": "高評価順",
+  "Most Liked": "いいね順",
+  "Newest": "新着順",
+  "Clear": "クリア",
+  "Apply": "適用",
+  "Your display name (e.g. CaptainSeoul)": "表示名（例：CaptainSeoul）",
+  "Remove Place": "スポットを削除",
+  "COUNTRY & CITY": "国・都市",
+  "Type another city...": "別の都市を入力...",
+  "All-you-can-eat, 90 min, busy in the evening...": "食べ放題・90分・夜は混雑...",
+  "PHOTOS": "写真",
+  "⚠️ Deactivate My Account": "⚠️ アカウントを無効化"
+ },
+ "ko": {
+  "Ask a colleague for an invite code.": "동료에게 초대 코드를 요청하세요.",
+  "Code copied!": "코드가 복사되었습니다!",
+  "places found": "곳 찾음",
+  "No results found.": "결과가 없습니다.",
+  "Write a Review": "리뷰 작성",
+  "Share your experience...": "경험을 공유하세요...",
+  "Send Comment": "댓글 보내기",
+  "✓ You rated {0} ★": "✓ 내 평점: {0} ★",
+  "Update": "수정",
+  "Rate": "평가",
+  "ratings": "개 평가",
+  "No ratings yet": "아직 평가가 없습니다",
+  "✓ Rated": "✓ 평가 완료",
+  "Select a star first!": "먼저 별을 선택하세요!",
+  "You rated {0} stars! ★": "별 {0}개를 주었습니다! ★",
+  "Liked": "좋아요 함",
+  "Like": "좋아요",
+  "🔖 Added to saved!": "🔖 저장되었습니다!",
+  "Removed from saved.": "저장 목록에서 삭제되었습니다.",
+  "Saved": "저장됨",
+  "Save": "저장",
+  "Edit Place": "장소 수정",
+  "Update →": "수정 →",
+  "Place updated! ✓": "장소가 수정되었습니다! ✓",
+  "Thanks! 🙌 Your suggestion will appear after review.": "감사합니다! 🙌 검토 후 게시됩니다.",
+  "Place added successfully! 🎉": "장소가 추가되었습니다! 🎉",
+  "Place name is required!": "장소 이름을 입력하세요!",
+  "Please sign in to suggest a place": "장소를 제안하려면 로그인하세요",
+  "Select a city first": "먼저 도시를 선택하세요",
+  "Could not save: ": "저장하지 못했습니다: ",
+  "Editing requires a connection": "수정하려면 인터넷 연결이 필요합니다",
+  "Uploading photos...": "사진 업로드 중...",
+  "Share →": "공유 →",
+  "Add Place": "장소 추가",
+  "Display name is required!": "표시 이름을 입력하세요!",
+  "Download {0}": "{0} 다운로드",
+  "Access {0} data when you're offline.": "오프라인에서도 {0} 정보를 볼 수 있어요.",
+  "Total: ~{0} MB to download": "총 ~{0} MB 다운로드",
+  "Downloading {0}... ✓": "{0} 다운로드 중... ✓",
+  "Select City": "도시 선택",
+  "Use current location or search a city": "현재 위치를 사용하거나 도시를 검색하세요",
+  "Search city...": "도시 검색...",
+  "My Current Location": "현재 위치",
+  "Detect via GPS": "GPS로 찾기",
+  "City not found": "도시를 찾을 수 없습니다",
+  "Share your experience": "경험을 공유하세요",
+  "📍 Getting location...": "📍 위치 확인 중...",
+  "📍 Not supported": "📍 지원되지 않음",
+  "📍 Could not get location": "📍 위치를 가져올 수 없습니다",
+  "📍 Permission denied": "📍 권한이 거부됨",
+  "✅ All data synced!": "✅ 모든 데이터가 동기화되었습니다!",
+  "☁️ Pending: {0} places, {1} comments, {2} ratings": "☁️ 대기 중: 장소 {0}, 댓글 {1}, 평가 {2}",
+  " — Syncing...": " — 동기화 중...",
+  " (Offline)": " (오프라인)",
+  "Theme reset.": "테마가 초기화되었습니다.",
+  "✅ {0} item synced!": "✅ {0}개 항목 동기화 완료!",
+  "🌐 Connected, syncing data...": "🌐 연결됨, 데이터 동기화 중...",
+  "✈️ Offline mode — data will be saved": "✈️ 오프라인 모드 — 데이터가 저장됩니다",
+  "Loading comments...": "댓글 불러오는 중...",
+  "Could not load comments.": "댓글을 불러오지 못했습니다.",
+  "No comments yet. Be the first!": "아직 댓글이 없습니다. 첫 댓글을 남겨보세요!",
+  "Translate": "번역",
+  "Edit": "수정",
+  "Delete": "삭제",
+  "Hide": "숨기기",
+  "Translation failed": "번역 실패",
+  "Using your profile name": "프로필 이름을 사용합니다",
+  "Profile": "프로필",
+  "Display name required!": "표시 이름이 필요합니다!",
+  "Comment text required!": "댓글 내용을 입력하세요!",
+  "Comment too short!": "댓글이 너무 짧습니다!",
+  "Sending...": "보내는 중...",
+  "✓ Comment added!": "✓ 댓글이 등록되었습니다!",
+  "☁️ Comment saved, will send when online": "☁️ 댓글이 저장되었습니다. 온라인이 되면 전송됩니다",
+  "Could not send comment. Try again.": "댓글을 보내지 못했습니다. 다시 시도하세요.",
+  "Cancel": "취소",
+  "Comment cannot be empty!": "댓글을 비워둘 수 없습니다!",
+  "Saving...": "저장 중...",
+  "✓ Comment updated!": "✓ 댓글이 수정되었습니다!",
+  "Update failed.": "수정하지 못했습니다.",
+  "Are you sure you want to delete this comment?": "이 댓글을 삭제할까요?",
+  "🗑 Comment deleted.": "🗑 댓글이 삭제되었습니다.",
+  "Delete failed.": "삭제하지 못했습니다.",
+  "Notifications": "알림",
+  "Get notified when new places are added to your city.": "내 도시에 새 장소가 추가되면 알려드려요.",
+  "✓ Allow": "✓ 허용",
+  "Not Now": "나중에",
+  "🔔 Notifications enabled!": "🔔 알림이 켜졌습니다!",
+  "Notifications disabled.": "알림이 꺼졌습니다.",
+  "{0} too large (max 5 MB)": "{0} 파일이 너무 큽니다 (최대 5MB)",
+  "Images only": "이미지만 가능",
+  "Max {0} photos allowed": "사진은 최대 {0}장까지 가능합니다",
+  "{0} more photos allowed": "{0}장 더 추가할 수 있습니다",
+  "Photo {0} failed ({1})": "사진 {0} 업로드 실패 ({1})",
+  "Photo {0} failed": "사진 {0} 업로드 실패",
+  "Enter invite code!": "초대 코드를 입력하세요!",
+  "Checking...": "확인 중...",
+  "Invalid or used code!": "유효하지 않거나 이미 사용된 코드입니다!",
+  "Connection error, try again.": "연결 오류입니다. 다시 시도하세요.",
+  "Continue →": "계속 →",
+  "Email required!": "이메일을 입력하세요!",
+  "Password must be 6+ chars!": "비밀번호는 6자 이상이어야 합니다!",
+  "Creating account...": "계정 만드는 중...",
+  "📧 Verification email sent! Check your inbox.": "📧 인증 메일을 보냈습니다! 받은편지함을 확인하세요.",
+  "Email sent ✓": "메일 전송됨 ✓",
+  "Email already registered!": "이미 가입된 이메일입니다!",
+  "Error: {0}": "오류: {0}",
+  "Create Account →": "계정 만들기 →",
+  "Email and password required!": "이메일과 비밀번호를 입력하세요!",
+  "Signing in...": "로그인 중...",
+  "Invalid email or password!": "이메일 또는 비밀번호가 올바르지 않습니다!",
+  "Sign In →": "로그인 →",
+  "Your account has been disabled.": "계정이 비활성화되었습니다.",
+  "Session invalid.": "세션이 유효하지 않습니다.",
+  "✈️ Offline mode": "✈️ 오프라인 모드",
+  "Logged in account": "로그인된 계정",
+  "Loading hours...": "영업시간 불러오는 중...",
+  "· Until {0}": "· {0}까지",
+  "· Opens at {0}": "· {0}에 오픈",
+  "Open": "영업 중",
+  "Closed": "영업 종료",
+  "▴ Less": "▴ 접기",
+  "▾ All": "▾ 전체",
+  "Finding location...": "위치 찾는 중...",
+  "View on Map": "지도에서 보기",
+  "Could not load map.": "지도를 불러오지 못했습니다.",
+  "Copy Address": "주소 복사",
+  "Directions": "길찾기",
+  "📋 Address copied!": "📋 주소가 복사되었습니다!",
+  "⏳ Deleting...": "⏳ 삭제 중...",
+  "Your account will be disabled. Continue?": "계정이 비활성화됩니다. 계속할까요?",
+  "Account disabled.": "계정이 비활성화되었습니다.",
+  "Unauthorized!": "권한이 없습니다!",
+  "Are you sure you want to remove \"{0}\"?": "'{0}'을(를) 삭제할까요?",
+  "🗑 \"{0}\" removed.": "🗑 '{0}' 삭제됨.",
+  "Comment removed.": "댓글이 삭제되었습니다.",
+  "Username cannot be empty!": "사용자 이름을 입력하세요!",
+  "At least 3 characters!": "3자 이상 입력하세요!",
+  "Max 30 characters!": "최대 30자까지 가능합니다!",
+  "Only letters, numbers and _ allowed!": "문자, 숫자, _만 사용할 수 있습니다!",
+  "Please sign in!": "로그인하세요!",
+  "Username already taken!": "이미 사용 중인 사용자 이름입니다!",
+  "✓ Username updated to \"{0}\"!": "✓ 사용자 이름이 '{0}'(으)로 변경되었습니다!",
+  "Current: ": "현재: ",
+  "Pick Location": "위치 선택",
+  "Drag pin or tap map": "핀을 끌거나 지도를 탭하세요",
+  "Getting location...": "위치 확인 중...",
+  "Use This Location ✓": "이 위치 사용 ✓",
+  "Looking up...": "찾는 중...",
+  "📍 Location added!": "📍 위치가 추가되었습니다!",
+  "Geolocation not supported.": "위치 서비스를 지원하지 않습니다.",
+  "📡 Getting location...": "📡 위치 확인 중...",
+  "Location found": "위치를 찾았습니다",
+  "accuracy": "정확도",
+  "⚠️ Address lookup failed, coordinates added.": "⚠️ 주소를 찾지 못해 좌표를 추가했습니다.",
+  "📍 New Place Added!": "📍 새 장소가 추가되었습니다!",
+  "✈️ New place in {0} — you've been there!": "✈️ 방문했던 {0}에 새 장소가 생겼어요!",
+  "Recently added places": "최근 추가된 장소",
+  "Notifs": "알림",
+  "No places added yet": "아직 추가된 장소가 없습니다",
+  "Select country...": "국가 선택...",
+  "Select city...": "도시 선택...",
+  "✓ Used": "✓ 사용됨",
+  "Available": "사용 가능",
+  "Copy": "복사",
+  "You invited {0} · {1} remaining": "{0}명 초대함 · {1}명 남음",
+  "\"{0}\" copied!": "'{0}' 복사됨!",
+  "No rate — prices in USD": "환율 정보 없음 — 가격은 USD로 표시",
+  "No saved places yet": "저장한 장소가 없습니다",
+  "Tap 🔖 Save on places you like": "마음에 드는 장소에서 🔖 저장을 누르세요",
+  "No saved places in this category": "이 카테고리에 저장한 장소가 없습니다",
+  "Food": "음식",
+  "Shopping": "쇼핑",
+  "Sightseeing": "관광",
+  "Remove": "삭제",
+  "Please sign in": "로그인하세요",
+  "Loading...": "불러오는 중...",
+  "places": "곳",
+  "In review": "검토 중",
+  "Not published": "게시되지 않음",
+  "No places added yet. Add your first one!": "아직 추가한 장소가 없습니다. 첫 장소를 추가해 보세요!",
+  "Could not load": "불러오지 못했습니다",
+  "Cities I've Visited": "방문한 도시",
+  "No cities visited yet": "방문한 도시가 없습니다",
+  "✈️ CITIES YOU'VE VISITED": "✈️ 방문한 도시",
+  "You'll be notified when new places are added": "새 장소가 추가되면 알림을 받게 됩니다",
+  "Budget meal": "저렴한 식사",
+  "Mid restaurant": "중급 레스토랑",
+  "Fine dining": "파인 다이닝",
+  "Taxi (5 km)": "택시 (5km)",
+  "Café coffee": "카페 커피",
+  "Approximate Price Guide": "대략적인 가격 안내",
+  "● Live rate · as of {0}": "● 실시간 환율 · {0} 기준",
+  "Rates are approximate and may vary.": "환율은 대략적인 값이며 달라질 수 있습니다.",
+  "OK": "확인",
+  "{0} ready for offline use ✓": "{0} 오프라인 사용 준비 완료 ✓",
+  "Update available! ": "업데이트가 있습니다! ",
+  "Refresh": "새로고침",
+  "✓ CrewGuide installed!": "✓ CrewGuide가 설치되었습니다!",
+  "Install App": "앱 설치",
+  "📲 Safari: \"Share\" → \"Add to Home Screen\"": "📲 Safari: '공유' → '홈 화면에 추가'",
+  "Browser install not supported.": "브라우저에서 설치를 지원하지 않습니다.",
+  "✓ Back online": "✓ 다시 온라인",
+  "📡 Offline — using cached data": "📡 오프라인 — 저장된 데이터 사용 중",
+  "🍳 Breakfast": "🍳 아침 식사",
+  "🥡 Street Food": "🥡 길거리 음식",
+  "🍽 Restaurant": "🍽 레스토랑",
+  "☕ Café": "☕ 카페",
+  "🍺 Bar & Pub": "🍺 바 & 펍",
+  "🍰 Dessert": "🍰 디저트",
+  "👕 Clothing": "👕 의류",
+  "📱 Electronics": "📱 전자제품",
+  "💄 Cosmetics": "💄 화장품",
+  "👜 Bags & Luggage": "👜 가방 & 캐리어",
+  "💍 Jewelry & Accessories": "💍 주얼리 & 액세서리",
+  "🏪 General Store": "🏪 마트",
+  "🏛 Museum": "🏛 박물관",
+  "🌿 Nature & Park": "🌿 자연 & 공원",
+  "🏰 Historical Sites": "🏰 역사 유적",
+  "🎡 Entertainment": "🎡 엔터테인먼트",
+  "🌙 Nightlife": "🌙 나이트라이프",
+  "🛕 Religious Sites": "🛕 종교 시설",
+  "Rating": "평점",
+  "Rate:": "평가:",
+  "Budget": "저렴",
+  "Mid-range": "보통",
+  "Expensive": "비쌈",
+  "🔔 On": "🔔 켜짐",
+  "🔕 Off": "🔕 꺼짐",
+  "⏳ Pending": "⏳ 대기 중",
+  "Price Range": "가격대",
+  "Min Rating": "최소 평점",
+  "Sort By": "정렬 기준",
+  "Price": "가격",
+  "Sort": "정렬",
+  "Top Rated ⭐": "평점 높은 순 ⭐",
+  "Most Liked ♥": "좋아요 많은 순 ♥",
+  "Newest 🆕": "최신순 🆕",
+  "Location permission denied. Enable in browser settings.": "위치 권한이 거부되었습니다. 브라우저 설정에서 허용하세요.",
+  "Could not get location. Try again.": "위치를 가져올 수 없습니다. 다시 시도하세요.",
+  "Location request timed out.": "위치 요청 시간이 초과되었습니다.",
+  "Location error.": "위치 오류.",
+  "All": "전체",
+  "🍜 Food": "🍜 음식",
+  "🛍 Shopping": "🛍 쇼핑",
+  "🗺 Sightseeing": "🗺 관광",
+  "⬇ Download": "⬇ 다운로드",
+  "Total: ~2.5 MB to download": "총 ~2.5MB 다운로드",
+  "✕ Clear": "✕ 초기화",
+  "Filter": "필터",
+  "$ Budget": "$ 저렴",
+  "$$ Mid-range": "$$ 보통",
+  "$$$ Expensive": "$$$ 비쌈",
+  "Minimum Rating": "최소 평점",
+  "Default": "기본",
+  "Highest Rated": "평점 높은 순",
+  "Most Liked": "좋아요 많은 순",
+  "Newest": "최신순",
+  "Clear": "초기화",
+  "Apply": "적용",
+  "Your display name (e.g. CaptainSeoul)": "표시 이름 (예: CaptainSeoul)",
+  "Remove Place": "장소 삭제",
+  "COUNTRY & CITY": "국가 & 도시",
+  "Type another city...": "다른 도시 입력...",
+  "All-you-can-eat, 90 min, busy in the evening...": "무한리필, 90분, 저녁엔 붐빔...",
+  "PHOTOS": "사진",
+  "⚠️ Deactivate My Account": "⚠️ 내 계정 비활성화"
+ },
+ "zh": {
+  "Ask a colleague for an invite code.": "请向同事索取邀请码。",
+  "Code copied!": "邀请码已复制！",
+  "places found": "个地点",
+  "No results found.": "未找到结果。",
+  "Write a Review": "撰写评价",
+  "Share your experience...": "分享你的体验...",
+  "Send Comment": "发送评论",
+  "✓ You rated {0} ★": "✓ 你的评分：{0} ★",
+  "Update": "更新",
+  "Rate": "评分",
+  "ratings": "条评分",
+  "No ratings yet": "暂无评分",
+  "✓ Rated": "✓ 已评分",
+  "Select a star first!": "请先选择星级！",
+  "You rated {0} stars! ★": "你给了 {0} 星！★",
+  "Liked": "已赞",
+  "Like": "点赞",
+  "🔖 Added to saved!": "🔖 已收藏！",
+  "Removed from saved.": "已取消收藏。",
+  "Saved": "已收藏",
+  "Save": "收藏",
+  "Edit Place": "编辑地点",
+  "Update →": "更新 →",
+  "Place updated! ✓": "地点已更新！✓",
+  "Thanks! 🙌 Your suggestion will appear after review.": "谢谢！🙌 审核通过后即会显示。",
+  "Place added successfully! 🎉": "地点添加成功！🎉",
+  "Place name is required!": "请填写地点名称！",
+  "Please sign in to suggest a place": "请登录后推荐地点",
+  "Select a city first": "请先选择城市",
+  "Could not save: ": "保存失败：",
+  "Editing requires a connection": "编辑需要联网",
+  "Uploading photos...": "正在上传照片...",
+  "Share →": "分享 →",
+  "Add Place": "添加地点",
+  "Display name is required!": "请填写显示名称！",
+  "Download {0}": "下载{0}",
+  "Access {0} data when you're offline.": "离线也能查看{0}的数据。",
+  "Total: ~{0} MB to download": "共需下载约 {0} MB",
+  "Downloading {0}... ✓": "正在下载{0}... ✓",
+  "Select City": "选择城市",
+  "Use current location or search a city": "使用当前位置或搜索城市",
+  "Search city...": "搜索城市...",
+  "My Current Location": "我的当前位置",
+  "Detect via GPS": "通过 GPS 定位",
+  "City not found": "未找到该城市",
+  "Share your experience": "分享你的体验",
+  "📍 Getting location...": "📍 正在定位...",
+  "📍 Not supported": "📍 不支持",
+  "📍 Could not get location": "📍 无法获取位置",
+  "📍 Permission denied": "📍 权限被拒绝",
+  "✅ All data synced!": "✅ 所有数据已同步！",
+  "☁️ Pending: {0} places, {1} comments, {2} ratings": "☁️ 待同步：{0} 个地点、{1} 条评论、{2} 条评分",
+  " — Syncing...": " — 正在同步...",
+  " (Offline)": "（离线）",
+  "Theme reset.": "主题已重置。",
+  "✅ {0} item synced!": "✅ 已同步 {0} 项！",
+  "🌐 Connected, syncing data...": "🌐 已连接，正在同步数据...",
+  "✈️ Offline mode — data will be saved": "✈️ 离线模式 — 数据将被保存",
+  "Loading comments...": "正在加载评论...",
+  "Could not load comments.": "无法加载评论。",
+  "No comments yet. Be the first!": "暂无评论，快来抢沙发！",
+  "Translate": "翻译",
+  "Edit": "编辑",
+  "Delete": "删除",
+  "Hide": "隐藏",
+  "Translation failed": "翻译失败",
+  "Using your profile name": "将使用你的个人资料名称",
+  "Profile": "我的",
+  "Display name required!": "需要显示名称！",
+  "Comment text required!": "请输入评论内容！",
+  "Comment too short!": "评论太短！",
+  "Sending...": "发送中...",
+  "✓ Comment added!": "✓ 评论已发布！",
+  "☁️ Comment saved, will send when online": "☁️ 评论已保存，联网后发送",
+  "Could not send comment. Try again.": "评论发送失败，请重试。",
+  "Cancel": "取消",
+  "Comment cannot be empty!": "评论不能为空！",
+  "Saving...": "保存中...",
+  "✓ Comment updated!": "✓ 评论已更新！",
+  "Update failed.": "更新失败。",
+  "Are you sure you want to delete this comment?": "确定要删除这条评论吗？",
+  "🗑 Comment deleted.": "🗑 评论已删除。",
+  "Delete failed.": "删除失败。",
+  "Notifications": "通知",
+  "Get notified when new places are added to your city.": "你所在城市有新地点时通知你。",
+  "✓ Allow": "✓ 允许",
+  "Not Now": "暂不",
+  "🔔 Notifications enabled!": "🔔 通知已开启！",
+  "Notifications disabled.": "通知已关闭。",
+  "{0} too large (max 5 MB)": "{0} 过大（最大 5 MB）",
+  "Images only": "仅限图片",
+  "Max {0} photos allowed": "最多 {0} 张照片",
+  "{0} more photos allowed": "还可添加 {0} 张照片",
+  "Photo {0} failed ({1})": "第 {0} 张照片上传失败（{1}）",
+  "Photo {0} failed": "第 {0} 张照片上传失败",
+  "Enter invite code!": "请输入邀请码！",
+  "Checking...": "验证中...",
+  "Invalid or used code!": "邀请码无效或已被使用！",
+  "Connection error, try again.": "连接错误，请重试。",
+  "Continue →": "继续 →",
+  "Email required!": "请输入邮箱！",
+  "Password must be 6+ chars!": "密码至少 6 位！",
+  "Creating account...": "正在创建账号...",
+  "📧 Verification email sent! Check your inbox.": "📧 验证邮件已发送！请查收邮箱。",
+  "Email sent ✓": "邮件已发送 ✓",
+  "Email already registered!": "该邮箱已注册！",
+  "Error: {0}": "错误：{0}",
+  "Create Account →": "创建账号 →",
+  "Email and password required!": "请输入邮箱和密码！",
+  "Signing in...": "登录中...",
+  "Invalid email or password!": "邮箱或密码错误！",
+  "Sign In →": "登录 →",
+  "Your account has been disabled.": "你的账号已被停用。",
+  "Session invalid.": "会话无效。",
+  "✈️ Offline mode": "✈️ 离线模式",
+  "Logged in account": "当前登录账号",
+  "Loading hours...": "正在加载营业时间...",
+  "· Until {0}": "· 营业至 {0}",
+  "· Opens at {0}": "· {0} 开门",
+  "Open": "营业中",
+  "Closed": "已打烊",
+  "▴ Less": "▴ 收起",
+  "▾ All": "▾ 全部",
+  "Finding location...": "正在查找位置...",
+  "View on Map": "在地图上查看",
+  "Could not load map.": "无法加载地图。",
+  "Copy Address": "复制地址",
+  "Directions": "导航",
+  "📋 Address copied!": "📋 地址已复制！",
+  "⏳ Deleting...": "⏳ 删除中...",
+  "Your account will be disabled. Continue?": "你的账号将被停用。是否继续？",
+  "Account disabled.": "账号已停用。",
+  "Unauthorized!": "无权限！",
+  "Are you sure you want to remove \"{0}\"?": "确定要移除“{0}”吗？",
+  "🗑 \"{0}\" removed.": "🗑 已移除“{0}”。",
+  "Comment removed.": "评论已移除。",
+  "Username cannot be empty!": "用户名不能为空！",
+  "At least 3 characters!": "至少 3 个字符！",
+  "Max 30 characters!": "最多 30 个字符！",
+  "Only letters, numbers and _ allowed!": "只能使用字母、数字和 _！",
+  "Please sign in!": "请先登录！",
+  "Username already taken!": "用户名已被占用！",
+  "✓ Username updated to \"{0}\"!": "✓ 用户名已改为“{0}”！",
+  "Current: ": "当前：",
+  "Pick Location": "选择位置",
+  "Drag pin or tap map": "拖动图钉或点按地图",
+  "Getting location...": "正在定位...",
+  "Use This Location ✓": "使用此位置 ✓",
+  "Looking up...": "查询中...",
+  "📍 Location added!": "📍 位置已添加！",
+  "Geolocation not supported.": "不支持定位。",
+  "📡 Getting location...": "📡 正在定位...",
+  "Location found": "已定位",
+  "accuracy": "精度",
+  "⚠️ Address lookup failed, coordinates added.": "⚠️ 未找到地址，已添加坐标。",
+  "📍 New Place Added!": "📍 新地点已添加！",
+  "✈️ New place in {0} — you've been there!": "✈️ 你去过的{0}有新地点了！",
+  "Recently added places": "最近添加的地点",
+  "Notifs": "通知",
+  "No places added yet": "暂无地点",
+  "Select country...": "选择国家...",
+  "Select city...": "选择城市...",
+  "✓ Used": "✓ 已使用",
+  "Available": "可用",
+  "Copy": "复制",
+  "You invited {0} · {1} remaining": "已邀请 {0} 人 · 剩余 {1} 个名额",
+  "\"{0}\" copied!": "已复制“{0}”！",
+  "No rate — prices in USD": "暂无汇率 — 价格以美元显示",
+  "No saved places yet": "暂无收藏的地点",
+  "Tap 🔖 Save on places you like": "在喜欢的地点点按 🔖 收藏",
+  "No saved places in this category": "此分类下暂无收藏",
+  "Food": "美食",
+  "Shopping": "购物",
+  "Sightseeing": "观光",
+  "Remove": "移除",
+  "Please sign in": "请先登录",
+  "Loading...": "加载中...",
+  "places": "个地点",
+  "In review": "审核中",
+  "Not published": "未发布",
+  "No places added yet. Add your first one!": "还没有添加地点，快添加第一个吧！",
+  "Could not load": "加载失败",
+  "Cities I've Visited": "去过的城市",
+  "No cities visited yet": "还没有去过的城市",
+  "✈️ CITIES YOU'VE VISITED": "✈️ 去过的城市",
+  "You'll be notified when new places are added": "有新地点时会通知你",
+  "Budget meal": "平价餐",
+  "Mid restaurant": "中档餐厅",
+  "Fine dining": "高档餐厅",
+  "Taxi (5 km)": "出租车（5 公里）",
+  "Café coffee": "咖啡馆咖啡",
+  "Approximate Price Guide": "参考价格",
+  "● Live rate · as of {0}": "● 实时汇率 · 截至 {0}",
+  "Rates are approximate and may vary.": "汇率仅供参考，可能有所变动。",
+  "OK": "好的",
+  "{0} ready for offline use ✓": "{0} 已可离线使用 ✓",
+  "Update available! ": "有新版本！",
+  "Refresh": "刷新",
+  "✓ CrewGuide installed!": "✓ CrewGuide 已安装！",
+  "Install App": "安装应用",
+  "📲 Safari: \"Share\" → \"Add to Home Screen\"": "📲 Safari：“分享” → “添加到主屏幕”",
+  "Browser install not supported.": "浏览器不支持安装。",
+  "✓ Back online": "✓ 已恢复联网",
+  "📡 Offline — using cached data": "📡 离线 — 使用缓存数据",
+  "🍳 Breakfast": "🍳 早餐",
+  "🥡 Street Food": "🥡 街头小吃",
+  "🍽 Restaurant": "🍽 餐厅",
+  "☕ Café": "☕ 咖啡馆",
+  "🍺 Bar & Pub": "🍺 酒吧",
+  "🍰 Dessert": "🍰 甜品",
+  "👕 Clothing": "👕 服装",
+  "📱 Electronics": "📱 电子产品",
+  "💄 Cosmetics": "💄 美妆",
+  "👜 Bags & Luggage": "👜 箱包",
+  "💍 Jewelry & Accessories": "💍 珠宝配饰",
+  "🏪 General Store": "🏪 便利店/超市",
+  "🏛 Museum": "🏛 博物馆",
+  "🌿 Nature & Park": "🌿 自然公园",
+  "🏰 Historical Sites": "🏰 历史古迹",
+  "🎡 Entertainment": "🎡 娱乐",
+  "🌙 Nightlife": "🌙 夜生活",
+  "🛕 Religious Sites": "🛕 宗教场所",
+  "Rating": "评分",
+  "Rate:": "评分：",
+  "Budget": "实惠",
+  "Mid-range": "中等",
+  "Expensive": "较贵",
+  "🔔 On": "🔔 开",
+  "🔕 Off": "🔕 关",
+  "⏳ Pending": "⏳ 待定",
+  "Price Range": "价格区间",
+  "Min Rating": "最低评分",
+  "Sort By": "排序方式",
+  "Price": "价格",
+  "Sort": "排序",
+  "Top Rated ⭐": "评分最高 ⭐",
+  "Most Liked ♥": "最受喜爱 ♥",
+  "Newest 🆕": "最新 🆕",
+  "Location permission denied. Enable in browser settings.": "位置权限被拒绝，请在浏览器设置中开启。",
+  "Could not get location. Try again.": "无法获取位置，请重试。",
+  "Location request timed out.": "定位请求超时。",
+  "Location error.": "定位错误。",
+  "All": "全部",
+  "🍜 Food": "🍜 美食",
+  "🛍 Shopping": "🛍 购物",
+  "🗺 Sightseeing": "🗺 观光",
+  "⬇ Download": "⬇ 下载",
+  "Total: ~2.5 MB to download": "共需下载约 2.5 MB",
+  "✕ Clear": "✕ 清除",
+  "Filter": "筛选",
+  "$ Budget": "$ 实惠",
+  "$$ Mid-range": "$$ 中等",
+  "$$$ Expensive": "$$$ 较贵",
+  "Minimum Rating": "最低评分",
+  "Default": "默认",
+  "Highest Rated": "评分最高",
+  "Most Liked": "最受喜爱",
+  "Newest": "最新",
+  "Clear": "清除",
+  "Apply": "应用",
+  "Your display name (e.g. CaptainSeoul)": "显示名称（例：CaptainSeoul）",
+  "Remove Place": "移除地点",
+  "COUNTRY & CITY": "国家和城市",
+  "Type another city...": "输入其他城市...",
+  "All-you-can-eat, 90 min, busy in the evening...": "自助不限量，90 分钟，晚上人多...",
+  "PHOTOS": "照片",
+  "⚠️ Deactivate My Account": "⚠️ 停用我的账号"
+ }
+};
+function tx(trS, enS, ...args) {
+  let out = lang === 'tr' ? trS : ((I18N[lang] && I18N[lang][enS]) || enS);
+  if (args.length) out = String(out).replace(/\{(\d+)\}/g, (m, i) => (args[+i] ?? ''));
+  return out;
+}
+function L(o) {
+  if (o == null) return '';
+  if (typeof o === 'string') return o;
+  if (o[lang] != null && o[lang] !== '') return o[lang];
+  return tx(o.tr ?? o.en ?? '', o.en ?? o.tr ?? '');
+}
+function appLocale() {
+  return ({ tr:'tr-TR', en:'en-US', de:'de-DE', fr:'fr-FR', es:'es-ES', ar:'ar', ja:'ja-JP', ko:'ko-KR', zh:'zh-CN' })[lang] || 'en-US';
+}
+function countryLabel(c) {
+  const iso = flagToIso(c?.flag) || c?.country?.code;
+  return iso ? countryNameFromIso(iso, lang) : (L(c?.country) || c?.name || '');
+}
+function currentCountryLabel() {
+  const iso = currentCountry?.code || flagToIso(currentFlag);
+  return iso ? countryNameFromIso(iso, lang) : L(currentCountry);
+}
+function currencyDisplayName(cur) {
+  try { return new Intl.DisplayNames([lang], { type: 'currency' }).of(cur.code) || L(cur.name); }
+  catch (e) { return L(cur.name); }
+}
+// Kayıtlı alt kategori metni hangi dilde girildiyse bulup aktif dile çevir
+function subcatLabel(text) {
+  if (!text) return '';
+  const strip = t => String(t).replace(/^[^\p{L}]+/u, '').trim().toLowerCase();
+  const key = strip(text);
+  for (const list of Object.values(subcats)) {
+    for (const o of list) {
+      const variants = [o.tr, o.en, ...Object.keys(I18N).map(l => I18N[l][o.en]).filter(Boolean)];
+      if (variants.some(v => strip(v) === key)) return L(o);
+    }
+  }
+  return text;
+}
+// Statik HTML: data-t="English" (metin) / data-tph="English" (placeholder); Türkçesi HTML'deki metindir
+function applyStaticTx() {
+  document.querySelectorAll('[data-t]').forEach(el => {
+    if (el.dataset.tr == null) el.dataset.tr = el.textContent;
+    el.textContent = tx(el.dataset.tr, el.dataset.t);
+  });
+  document.querySelectorAll('[data-tph]').forEach(el => {
+    if (el.dataset.trph == null) el.dataset.trph = el.placeholder;
+    el.placeholder = tx(el.dataset.trph, el.dataset.tph);
+  });
+}
 let currentCat = 'all';
 let selectedMainCat = 'food';
 let liked = false;
@@ -3227,7 +5168,10 @@ function applyTranslations() {
   const t = translations[lang];
   // Fallback: eksik anahtarlar için en veya tr kullan
   const fallback = translations['en'] || translations['tr'] || {};
-  const merged = { ...fallback, ...t };
+  // Bu dilde eksik anahtar varsa İngilizcesini değil, I18N sözlüğündeki çevirisini kullan
+  const fallbackTx = {};
+  for (const [k, v] of Object.entries(fallback)) fallbackTx[k] = (I18N[lang] && I18N[lang][v]) || v;
+  const merged = { ...fallbackTx, ...t };
 
   // ID bazlı güncelleme
   for (const [id, val] of Object.entries(merged)) {
@@ -3240,6 +5184,7 @@ function applyTranslations() {
     const val = merged[key];
     if (val) el.textContent = val;
   });
+  applyStaticTx();
   renderCards();
   renderSubCats();
   updateFilterChips();
@@ -3365,7 +5310,7 @@ function renderCards() {
       p.name.toLowerCase().includes(q) ||
       p.addr.toLowerCase().includes(q) ||
       p.subcat.toLowerCase().includes(q) ||
-      (p.desc[lang] && p.desc[lang].toLowerCase().includes(q))
+      (L(p.desc) && L(p.desc).toLowerCase().includes(q))
     );
   }
 
@@ -3399,18 +5344,18 @@ function renderCards() {
   const countEl = document.getElementById('results-count');
   if (countEl) {
     countEl.textContent = filtered.length > 0
-      ? `${filtered.length} ${lang==='tr'?'yer bulundu':'places found'}`
+      ? `${filtered.length} ${tx('yer bulundu', 'places found')}`
       : '';
   }
 
   if (filtered.length === 0) {
-    container.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text-muted);"><div style="font-size:36px;margin-bottom:10px;">🔍</div><div style="font-size:14px;">' + (lang==='tr'?'Sonuç bulunamadı.':'No results found.') + '</div></div>';
+    container.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text-muted);"><div style="font-size:36px;margin-bottom:10px;">🔍</div><div style="font-size:14px;">' + (tx('Sonuç bulunamadı.', 'No results found.')) + '</div></div>';
     return;
   }
   container.innerHTML = filtered.map(p => `
     <div class="place-card" onclick="openDetail('${p.id}')">
       <div class="place-card-img ${p.cat}">
-        <div class="card-badge">${p.subcat}</div>
+        <div class="card-badge">${subcatLabel(p.subcat)}</div>
         ${p.isAdult ? '<div class="card-adult-badge">🔞 +18</div>' : ''}
         <span>${p.emoji}</span>
       </div>
@@ -3449,12 +5394,12 @@ function openDetail(id) {
   document.getElementById('detail-emoji').textContent = p.emoji;
   document.getElementById('detail-name').textContent = p.name;
   document.getElementById('detail-addr').textContent = p.addr;
-  document.getElementById('detail-cat-badge').textContent = lang==='tr' ? (p.cat==='food'?'Yemek':p.cat==='shopping'?'Alışveriş':'Gezi') : (p.cat==='food'?'Food':p.cat==='shopping'?'Shopping':'Sightseeing');
-  document.getElementById('detail-sub-badge').textContent = p.subcat;
+  document.getElementById('detail-cat-badge').textContent = L(catLabels[p.cat] || catLabels.sightseeing);
+  document.getElementById('detail-sub-badge').textContent = subcatLabel(p.subcat);
   const localAmt = getPriceRangeLocal(p.price, currentCurrency);
   document.getElementById('detail-price-badge').innerHTML =
-    `${p.price} ${p.priceName[lang]} <span style="color:#92400e;font-weight:700;">· ${localAmt} ${currentCurrency.code}</span>`;
-  document.getElementById('detail-desc').textContent = p.desc[lang];
+    `${p.price} ${L(p.priceName)} <span style="color:#92400e;font-weight:700;">· ${localAmt} ${currentCurrency.code}</span>`;
+  document.getElementById('detail-desc').textContent = L(p.desc);
   renderRatingBar(p);
   // Yorum input başlığını ve placeholder'ı güncelle
   commentPlaceId = p.id;
@@ -3463,9 +5408,9 @@ function openDetail(id) {
   const titleEl = document.getElementById('comment-input-title');
   const taEl = document.getElementById('comment-text');
   const btnEl = document.getElementById('comment-submit-label');
-  if (titleEl) titleEl.textContent = lang==='tr' ? 'Yorum Yaz' : 'Write a Review';
-  if (taEl) taEl.placeholder = lang==='tr' ? 'Deneyimini paylaş...' : 'Share your experience...';
-  if (btnEl) btnEl.textContent = lang==='tr' ? 'Yorum Gönder' : 'Send Comment';
+  if (titleEl) titleEl.textContent = tx('Yorum Yaz', 'Write a Review');
+  if (taEl) taEl.placeholder = tx('Deneyimini paylaş...', 'Share your experience...');
+  if (btnEl) btnEl.textContent = tx('Yorum Gönder', 'Send Comment');
   // Giriş yapılmışsa ismi kilitle
   const usernameInput = document.getElementById('comment-username');
   if (usernameInput && currentProfile) {
@@ -3513,17 +5458,17 @@ function renderRatingBar(p) {
   const ratePromptEl = document.getElementById('rate-prompt');
   if (ratePromptEl) {
     if (userRatedAlready) {
-      ratePromptEl.textContent = lang==='tr' ? `✓ ${p.userRating} yıldız verdin` : `✓ You rated ${p.userRating} ★`;
+      ratePromptEl.textContent = tx('✓ {0} yıldız verdin', '✓ You rated {0} ★', p.userRating);
       ratePromptEl.style.color = 'var(--gold)';
     } else {
       ratePromptEl.textContent = ratePrompts[_l] || ratePrompts.en;
       ratePromptEl.style.color = '';
     }
   }
-  document.getElementById('btn-rate').textContent = lang === 'tr' ? (userRatedAlready ? 'Güncelle' : 'Oyla') : (userRatedAlready ? 'Update' : 'Rate');
+  document.getElementById('btn-rate').textContent = userRatedAlready ? tx('Güncelle', 'Update') : tx('Oyla', 'Rate');
   document.getElementById('rating-count').textContent = count > 0
-    ? `${count} ${lang === 'tr' ? 'değerlendirme' : 'ratings'}`
-    : (lang === 'tr' ? 'Henüz puan yok' : 'No ratings yet');
+    ? `${count} ${tx('değerlendirme', 'ratings')}`
+    : (tx('Henüz puan yok', 'No ratings yet'));
 
   // Yıldız display
   const starsEl = document.getElementById('rating-stars-display');
@@ -3594,14 +5539,14 @@ function updateStarInput(n, submitted) {
     s.style.color = i < n ? '#f59e0b' : '';
   });
   if (submitted) {
-    document.getElementById('btn-rate').textContent = lang === 'tr' ? '✓ Oylandı' : '✓ Rated';
+    document.getElementById('btn-rate').textContent = tx('✓ Oylandı', '✓ Rated');
     document.getElementById('btn-rate').style.background = '#10b981';
   }
 }
 
 async function submitRating() {
   if (pendingRating === 0) {
-    showToast(lang === 'tr' ? 'Önce bir yıldız seç!' : 'Select a star first!');
+    showToast(tx('Önce bir yıldız seç!', 'Select a star first!'));
     return;
   }
   const p = places.find(x => x.id === currentDetailId);
@@ -3680,16 +5625,14 @@ async function submitRating() {
     [1,2,3,4,5].forEach(s => { total += s*(p.ratings[s]||0); count+=(p.ratings[s]||0); });
     p.rating = count > 0 ? Math.round((total/count)*10)/10 : 0;
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = lang==='tr'?'Oyla':'Rate'; }
+    if (btn) { btn.disabled = false; btn.textContent = tx('Oyla', 'Rate'); }
   }
 
   p.userRating = pendingRating;
   renderRatingBar(p);
   updateStarInput(pendingRating, true);
   renderCards();
-  showToast(lang === 'tr'
-    ? `${pendingRating} yıldız verdin! ★`
-    : `You rated ${pendingRating} stars! ★`);
+  showToast(tx('{0} yıldız verdin! ★', 'You rated {0} stars! ★', pendingRating));
 }
 
 function toggleLike() {
@@ -3697,7 +5640,7 @@ function toggleLike() {
   const btn = document.getElementById('btn-like');
   btn.style.color = liked ? '#ef4444' : '';
   btn.style.borderColor = liked ? '#fca5a5' : '';
-  document.getElementById('like-label').textContent = liked ? (lang==='tr'?'Beğenildi':'Liked') : (lang==='tr'?'Beğen':'Like');
+  document.getElementById('like-label').textContent = liked ? (tx('Beğenildi', 'Liked')) : (tx('Beğen', 'Like'));
 }
 
 async function toggleSave() {
@@ -3712,8 +5655,8 @@ async function toggleSave() {
   persistSavedIds();
 
   showToast(saved
-    ? (lang==='tr' ? '🔖 Kayıtlılara eklendi!' : '🔖 Added to saved!')
-    : (lang==='tr' ? 'Kaydedilenlerden çıkarıldı.' : 'Removed from saved.'));
+    ? (tx('🔖 Kayıtlılara eklendi!', '🔖 Added to saved!'))
+    : (tx('Kaydedilenlerden çıkarıldı.', 'Removed from saved.')));
 
   if (currentUser) {
     const token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token') || SUPABASE_KEY;
@@ -3742,8 +5685,8 @@ function updateSaveUI(isSavedState) {
     btn.style.borderColor = isSavedState ? 'var(--gold)' : '';
   }
   if (labelEl) labelEl.textContent = isSavedState
-    ? (lang==='tr' ? 'Kaydedildi' : 'Saved')
-    : (lang==='tr' ? 'Kaydet' : 'Save');
+    ? (tx('Kaydedildi', 'Saved'))
+    : (tx('Kaydet', 'Save'));
 }
 
 function selectMainCat(cat, el) {
@@ -3756,7 +5699,7 @@ function selectMainCat(cat, el) {
 function renderSubCats() {
   const wrap = document.getElementById('sub-cats');
   const cats = subcats[selectedMainCat];
-  wrap.innerHTML = cats.map((c,i) => `<div class="sub-cat-btn${i===0?' selected':''}" onclick="this.parentNode.querySelectorAll('.sub-cat-btn').forEach(b=>b.classList.remove('selected'));this.classList.add('selected')">${c[lang]}</div>`).join('');
+  wrap.innerHTML = cats.map((c,i) => `<div class="sub-cat-btn${i===0?' selected':''}" onclick="this.parentNode.querySelectorAll('.sub-cat-btn').forEach(b=>b.classList.remove('selected'));this.classList.add('selected')">${L(c)}</div>`).join('');
 }
 
 function selectPrice(el) {
@@ -3827,8 +5770,8 @@ function openEditPlace() {
   // Form başlığı ve buton
   const addTitle = document.getElementById('add-title');
   const submitBtn = document.getElementById('btn-submit');
-  if (addTitle) addTitle.textContent = lang==='tr' ? 'Yeri Düzenle' : 'Edit Place';
-  if (submitBtn) submitBtn.textContent = lang==='tr' ? 'Güncelle →' : 'Update →';
+  if (addTitle) addTitle.textContent = tx('Yeri Düzenle', 'Edit Place');
+  if (submitBtn) submitBtn.textContent = tx('Güncelle →', 'Update →');
 
   goTo('screen-add');
 }
@@ -3836,18 +5779,16 @@ function openEditPlace() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function submitSuccessMessage(editMode, isPending) {
-  if (editMode) return lang==='tr' ? 'Yer güncellendi! ✓' : 'Place updated! ✓';
-  if (isPending) return lang==='tr'
-    ? 'Önerin alındı! 🙌 Onaylandıktan sonra yayınlanacak.'
-    : 'Thanks! 🙌 Your suggestion will appear after review.';
-  return lang==='tr' ? 'Yer başarıyla eklendi! 🎉' : 'Place added successfully! 🎉';
+  if (editMode) return tx('Yer güncellendi! ✓', 'Place updated! ✓');
+  if (isPending) return tx('Önerin alındı! 🙌 Onaylandıktan sonra yayınlanacak.', 'Thanks! 🙌 Your suggestion will appear after review.');
+  return tx('Yer başarıyla eklendi! 🎉', 'Place added successfully! 🎉');
 }
 
 async function submitPlace() {
   const name = document.getElementById('input-place-name').value.trim();
   const addr = document.getElementById('input-place-addr').value.trim();
   const desc = document.getElementById('input-desc').value.trim();
-  if (!name) { showToast(lang==='tr'?'Yer adı gerekli!':'Place name is required!'); return; }
+  if (!name) { showToast(tx('Yer adı gerekli!', 'Place name is required!')); return; }
 
   const selectedPrice = document.querySelector('.price-opt.selected .price-sym');
   const priceVal = selectedPrice ? selectedPrice.textContent : '$';
@@ -3862,7 +5803,7 @@ async function submitPlace() {
   const placeId = editMode ? window._editingPlaceId : 'place_' + Date.now();
 
   if (!currentUser) {
-    showToast(lang==='tr' ? 'Yer önermek için giriş yapmalısın' : 'Please sign in to suggest a place');
+    showToast(tx('Yer önermek için giriş yapmalısın', 'Please sign in to suggest a place'));
     return;
   }
 
@@ -3877,7 +5818,7 @@ async function submitPlace() {
   const trusted = isTrustedContributor();
   const isPending = !editMode && !trusted;
   const cityName = currentCity || '';
-  if (!cityName) { showToast(lang==='tr' ? 'Önce şehir seç' : 'Select a city first'); return; }
+  if (!cityName) { showToast(tx('Önce şehir seç', 'Select a city first')); return; }
 
   const newPlace = {
     id: placeId,
@@ -3965,7 +5906,7 @@ async function submitPlace() {
         queued = true;
       } else {
         reenable();
-        showToast((lang==='tr' ? 'Kaydedilemedi: ' : 'Could not save: ') + String(e.message || e).slice(0, 80));
+        showToast((tx('Kaydedilemedi: ', 'Could not save: ')) + String(e.message || e).slice(0, 80));
         return;
       }
     }
@@ -3976,7 +5917,7 @@ async function submitPlace() {
     console.log('[submitPlace] Offline — queue ya eklendi');
   } else {
     reenable();
-    showToast(lang==='tr' ? 'Düzenleme için internet gerekli' : 'Editing requires a connection');
+    showToast(tx('Düzenleme için internet gerekli', 'Editing requires a connection'));
     return;
   }
   reenable();
@@ -4004,11 +5945,11 @@ async function submitPlace() {
   // Fotoğrafları yükle
   if (selectedPhotos.length > 0) {
     const btn = document.getElementById('btn-submit');
-    if (btn) { btn.textContent = lang==='tr'?'Fotoğraflar yükleniyor...':'Uploading photos...'; btn.disabled = true; }
+    if (btn) { btn.textContent = tx('Fotoğraflar yükleniyor...', 'Uploading photos...'); btn.disabled = true; }
     uploadPhotos(newPlace.id).then(urls => {
       selectedPhotos = [];
       renderPhotoPreviews();
-      if (btn) { btn.textContent = lang==='tr'?'Paylaş →':'Share →'; btn.disabled = false; }
+      if (btn) { btn.textContent = tx('Paylaş →', 'Share →'); btn.disabled = false; }
       showToast(submitSuccessMessage(editMode, isPending));
       window._editingPlaceId = null;
       // Yeni şehri dynamicCities'e ekle (onaylı yerler için)
@@ -4021,15 +5962,15 @@ async function submitPlace() {
     window._editingPlaceId = null;
     const addTitle = document.getElementById('add-title');
     const submitBtn2 = document.getElementById('btn-submit');
-    if (addTitle) addTitle.textContent = lang==='tr' ? 'Yeni Yer Ekle' : 'Add Place';
-    if (submitBtn2) submitBtn2.textContent = lang==='tr' ? 'Paylaş →' : 'Share →';
+    if (addTitle) addTitle.textContent = tx('Yeni Yer Ekle', 'Add Place');
+    if (submitBtn2) submitBtn2.textContent = tx('Paylaş →', 'Share →');
     setTimeout(() => { goTo('screen-home'); renderCards(); }, 1000);
   }
 }
 
 function createAccount() {
   const name = document.getElementById('input-displayname').value.trim();
-  if (!name) { showToast(lang==='tr'?'Görünen ad gerekli!':'Display name is required!'); return; }
+  if (!name) { showToast(tx('Görünen ad gerekli!', 'Display name is required!')); return; }
   goTo('screen-welcome');
 }
 
@@ -4042,8 +5983,8 @@ function showToast(msg) {
 
 function openDownloadModal(city, flag) {
   const modal = document.getElementById('downloadModal');
-  document.getElementById('downloadCityName').textContent = lang==='tr' ? `${city} İndir` : `Download ${city}`;
-  document.getElementById('downloadCitySub').textContent = lang==='tr' ? `İnternetsiz kaldığında ${city} verilerine ulaşabilirsin.` : `Access ${city} data when you're offline.`;
+  document.getElementById('downloadCityName').textContent = tx('{0} İndir', 'Download {0}', city);
+  document.getElementById('downloadCitySub').textContent = tx('İnternetsiz kaldığında {0} verilerine ulaşabilirsin.', 'Access {0} data when you\'re offline.', city);
   modal.classList.add('open');
 }
 
@@ -4061,12 +6002,12 @@ function updateDownloadSize() {
   const photosOn = document.getElementById('togglePhotos').classList.contains('on');
   const reviewsOn = document.getElementById('toggleReviews').classList.contains('on');
   let size = 2.1 + (reviewsOn ? 0.4 : 0) + (photosOn ? 16 : 0);
-  document.getElementById('downloadSize').textContent = lang==='tr' ? `Toplam: ~${size.toFixed(1)} MB indirilecek` : `Total: ~${size.toFixed(1)} MB to download`;
+  document.getElementById('downloadSize').textContent = tx('Toplam: ~{0} MB indirilecek', 'Total: ~{0} MB to download', size.toFixed(1));
 }
 
 function confirmDownload() {
   closeModal();
-  showToast(lang==='tr'?'Paris indiriliyor... ✓':'Downloading Paris... ✓');
+  showToast(tx('{0} indiriliyor... ✓', 'Downloading {0}... ✓', currentCity));
 }
 
 // SEARCH
@@ -4309,7 +6250,7 @@ function formatLocalPrice(usdPrice, currency) {
   if (!currency || !(currency.rate > 0)) return `$${Math.round(usdPrice)}`;
   const local = Math.round(usdPrice / currency.rate);
   // Binlik ayraç
-  const formatted = local.toLocaleString('tr-TR');
+  const formatted = local.toLocaleString(appLocale());
   return `${currency.symbol}${formatted}`;
 }
 
@@ -4370,10 +6311,10 @@ function detectLocation() {
 }
 
 function openCityModal() {
-  document.getElementById('city-modal-title').textContent = lang==='tr' ? 'Şehir Seç' : 'Select City';
-  document.getElementById('city-modal-sub').textContent = lang==='tr' ? 'Mevcut konumun veya başka bir şehir ara' : 'Use current location or search a city';
+  document.getElementById('city-modal-title').textContent = tx('Şehir Seç', 'Select City');
+  document.getElementById('city-modal-sub').textContent = tx('Mevcut konumun veya başka bir şehir ara', 'Use current location or search a city');
   document.getElementById('city-search-input').value = '';
-  document.getElementById('city-search-input').placeholder = lang==='tr' ? 'Şehir ara...' : 'Search city...';
+  document.getElementById('city-search-input').placeholder = tx('Şehir ara...', 'Search city...');
   // Dinamik şehirleri yükle, sonra filtrele
   loadDynamicCities().then(() => filterCities(''));
   goTo('screen-city');
@@ -4449,7 +6390,7 @@ function filterCities(q) {
     .replace(/i̇/g,'i');
   const nQuery = normalize(q.trim());
   const filtered = nQuery
-    ? allCities.filter(c => normalize(c.name).includes(nQuery) || normalize(c.country[lang]||'').includes(nQuery))
+    ? allCities.filter(c => normalize(c.name).includes(nQuery) || normalize(countryLabel(c)).includes(nQuery))
     : allCities;
 
   let html = '';
@@ -4457,8 +6398,8 @@ function filterCities(q) {
   html += `<div onclick="useCurrentLocation()" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--cream);cursor:pointer;margin-bottom:4px;border:1px solid var(--border);">
     <span style="font-size:16px;">📍</span>
     <div style="display:flex;align-items:baseline;gap:6px;">
-      <div style="font-size:13px;font-weight:500;color:var(--navy);">${lang==='tr'?'Mevcut Konumum':'My Current Location'}</div>
-      <div style="font-size:11px;color:var(--text-muted);">${lang==='tr'?'GPS ile algıla':'Detect via GPS'}</div>
+      <div style="font-size:13px;font-weight:500;color:var(--navy);">${tx('Mevcut Konumum', 'My Current Location')}</div>
+      <div style="font-size:11px;color:var(--text-muted);">${tx('GPS ile algıla', 'Detect via GPS')}</div>
     </div>
   </div>`;
 
@@ -4471,7 +6412,7 @@ function filterCities(q) {
       const key = iso || (c.country.en || c.name);
       if (!byCountry[key]) byCountry[key] = {
         flag: c.flag,
-        name: iso ? countryNameFromIso(iso, lang) : (c.country[lang] || c.country.en || ''),
+        name: iso ? countryNameFromIso(iso, lang) : countryLabel(c),
         cities: []
       };
       byCountry[key].cities.push(c);
@@ -4484,25 +6425,25 @@ function filterCities(q) {
         <span>${group.flag}</span> ${countryName.toUpperCase()}
       </div>`;
       group.cities.forEach(c => {
-        html += `<div onclick="selectCity('${jsq(c.name)}','${jsq(c.country[lang]||'')}','${c.flag}')" style="display:flex;align-items:center;gap:8px;padding:7px 10px 7px 22px;border-radius:8px;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background=''">
+        html += `<div onclick="selectCity('${jsq(c.name)}','${jsq(countryLabel(c))}','${c.flag}')" style="display:flex;align-items:center;gap:8px;padding:7px 10px 7px 22px;border-radius:8px;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background=''">
           <div style="font-size:13px;font-weight:500;color:var(--text-primary);">${c.name}</div>
         </div>`;
       });
     });
   } else {
     filtered.forEach(c => {
-      html += `<div onclick="selectCity('${jsq(c.name)}','${jsq(c.country[lang]||'')}','${c.flag}')" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background=''">
+      html += `<div onclick="selectCity('${jsq(c.name)}','${jsq(countryLabel(c))}','${c.flag}')" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background=''">
         <span style="font-size:18px;flex-shrink:0;">${c.flag}</span>
         <div style="display:flex;align-items:baseline;gap:6px;">
           <div style="font-size:13px;font-weight:500;color:var(--text-primary);">${c.name}</div>
-          <div style="font-size:11px;color:var(--text-muted);">${c.country[lang]||''}</div>
+          <div style="font-size:11px;color:var(--text-muted);">${countryLabel(c)}</div>
         </div>
       </div>`;
     });
   }
 
   if (filtered.length === 0 && query) {
-    html += `<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">${lang==='tr'?'Şehir bulunamadı':'City not found'}</div>`;
+    html += `<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">${tx('Şehir bulunamadı', 'City not found')}</div>`;
   }
   list.innerHTML = html;
 }
@@ -4576,7 +6517,7 @@ function updateLocationText() {
     text.textContent = (currentFlag || '📍') + ' ' + currentCity +
       (countryName && normCity(countryName) !== normCity(currentCity) ? ', ' + countryName : '');
     const addSub = document.getElementById('add-sub');
-    if (addSub) addSub.textContent = currentCity + ' · ' + (lang==='tr'?'Deneyimini paylaş':'Share your experience');
+    if (addSub) addSub.textContent = currentCity + ' · ' + (tx('Deneyimini paylaş', 'Share your experience'));
   } catch(e) {}
 }
 
@@ -4663,9 +6604,9 @@ function useCurrentLocation() {
   const dot = document.getElementById('location-dot');
   const text = document.getElementById('location-text');
   dot.style.background = '#f59e0b';
-  text.textContent = lang === 'tr' ? '📍 Konum alınıyor...' : '📍 Getting location...';
+  text.textContent = tx('📍 Konum alınıyor...', '📍 Getting location...');
   if (!navigator.geolocation) {
-    text.textContent = lang === 'tr' ? '📍 Desteklenmiyor' : '📍 Not supported';
+    text.textContent = tx('📍 Desteklenmiyor', '📍 Not supported');
     dot.style.background = '#ef4444';
     return;
   }
@@ -4702,12 +6643,12 @@ function useCurrentLocation() {
       } catch(e) {
         console.warn('[useCurrentLocation]', e);
         dot.style.background = '#ef4444';
-        text.textContent = lang === 'tr' ? '📍 Konum alınamadı' : '📍 Could not get location';
+        text.textContent = tx('📍 Konum alınamadı', '📍 Could not get location');
       }
     },
     () => {
       dot.style.background = '#ef4444';
-      text.textContent = lang === 'tr' ? '📍 İzin reddedildi' : '📍 Permission denied';
+      text.textContent = tx('📍 İzin reddedildi', '📍 Permission denied');
     },
     { enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 }
   );
@@ -4912,7 +6853,7 @@ async function sendPushForNewPlace({ city, name, emoji, placeId }) {
 async function showQueueStatus() {
   const items = await getQueueItems();
   if (!items.length) {
-    showToast(lang==='tr' ? '✅ Tüm veriler senkronize!' : '✅ All data synced!');
+    showToast(tx('✅ Tüm veriler senkronize!', '✅ All data synced!'));
     return;
   }
 
@@ -4920,16 +6861,14 @@ async function showQueueStatus() {
   const commentCount = items.filter(i => i.type === 'comment_insert').length;
   const ratingCount = items.filter(i => i.type === 'rating_upsert').length;
 
-  let msg = lang==='tr'
-    ? `☁️ Bekleyen: ${placeCount} yer, ${commentCount} yorum, ${ratingCount} puan`
-    : `☁️ Pending: ${placeCount} places, ${commentCount} comments, ${ratingCount} ratings`;
+  let msg = tx('☁️ Bekleyen: {0} yer, {1} yorum, {2} puan', '☁️ Pending: {0} places, {1} comments, {2} ratings', placeCount, commentCount, ratingCount);
 
   if (navigator.onLine) {
-    msg += lang==='tr' ? ' — Senkronize ediliyor...' : ' — Syncing...';
+    msg += tx(' — Senkronize ediliyor...', ' — Syncing...');
     showToast(msg);
     setTimeout(processQueue, 500);
   } else {
-    msg += lang==='tr' ? ' (Çevrimdışı)' : ' (Offline)';
+    msg += tx(' (Çevrimdışı)', ' (Offline)');
     showToast(msg);
   }
 }
@@ -4945,7 +6884,7 @@ function resetTheme() {
   localStorage.removeItem('theme_accent');
   localStorage.removeItem('theme_bg');
   localStorage.removeItem('theme_mode');
-  showToast(lang==='tr' ? 'Tema sıfırlandı.' : 'Theme reset.');
+  showToast(tx('Tema sıfırlandı.', 'Theme reset.'));
 }
 
 // ── SUPABASE CONFIG ──────────────────────────────────────────────────────────
@@ -5074,9 +7013,7 @@ async function processQueue() {
 
   const remaining = items.length - synced;
   if (synced > 0) {
-    showToast(lang==='tr'
-      ? `✅ ${synced} kayıt senkronize edildi!`
-      : `✅ ${synced} item synced!`);
+    showToast(tx('✅ {0} kayıt senkronize edildi!', '✅ {0} item synced!', synced));
     console.log('[Queue] Sync tamamlandı:', synced, 'item');
     // Sync edilen item'ların şehirlerini bul
     const syncedCities = [...new Set(items.filter(i => i.payload?.city).map(i => i.payload.city))];
@@ -5158,12 +7095,12 @@ async function processQueueItem(item) {
 // Internet gelince sync başlat
 window.addEventListener('online', () => {
   console.log('[Queue] Online oldu, sync başlıyor...');
-  showToast(lang==='tr' ? '🌐 Bağlandı, veriler senkronize ediliyor...' : '🌐 Connected, syncing data...');
+  showToast(tx('🌐 Bağlandı, veriler senkronize ediliyor...', '🌐 Connected, syncing data...'));
   setTimeout(processQueue, 1000);
 });
 
 window.addEventListener('offline', () => {
-  showToast(lang==='tr' ? '✈️ Çevrimdışı mod — veriler kaydedilecek' : '✈️ Offline mode — data will be saved');
+  showToast(tx('✈️ Çevrimdışı mod — veriler kaydedilecek', '✈️ Offline mode — data will be saved'));
 });
 
 // ── SUPABASE ─────────────────────────────────────────────────────────────────
@@ -5264,7 +7201,7 @@ let commentStar = 0;
 
 async function loadComments(placeId) {
   const listEl = document.getElementById('comments-list');
-  listEl.innerHTML = '<div class="comment-loading">⏳ ' + (lang==='tr'?'Yorumlar yükleniyor...':'Loading comments...') + '</div>';
+  listEl.innerHTML = '<div class="comment-loading">⏳ ' + (tx('Yorumlar yükleniyor...', 'Loading comments...')) + '</div>';
   try {
     const data = await sbFetch(
       `comments?place_id=eq.${encodeURIComponent(placeId)}&order=created_at.desc&limit=20`,
@@ -5272,7 +7209,7 @@ async function loadComments(placeId) {
     );
     renderComments(data || []);
   } catch(e) {
-    listEl.innerHTML = '<div class="comment-empty">⚠️ ' + (lang==='tr'?'Yorumlar yüklenemedi.':'Could not load comments.') + '</div>';
+    listEl.innerHTML = '<div class="comment-empty">⚠️ ' + (tx('Yorumlar yüklenemedi.', 'Could not load comments.')) + '</div>';
     console.warn('[Comments]', e);
   }
 }
@@ -5280,7 +7217,7 @@ async function loadComments(placeId) {
 function renderComments(comments) {
   const listEl = document.getElementById('comments-list');
   if (!comments.length) {
-    listEl.innerHTML = '<div class="comment-empty">💬 ' + (lang==='tr'?'Henüz yorum yok. İlk yorumu sen yaz!':'No comments yet. Be the first!') + '</div>';
+    listEl.innerHTML = '<div class="comment-empty">💬 ' + (tx('Henüz yorum yok. İlk yorumu sen yaz!', 'No comments yet. Be the first!')) + '</div>';
     const box = document.getElementById('comment-input-box');
     const section = listEl.parentNode;
     if (box && section) section.appendChild(box);
@@ -5291,7 +7228,7 @@ function renderComments(comments) {
 
   listEl.innerHTML = comments.map(c => {
     const stars = c.stars ? '★'.repeat(c.stars) + '☆'.repeat(5 - c.stars) : '';
-    const date = new Date(c.created_at).toLocaleDateString(lang==='tr'?'tr-TR':'en-US', {day:'numeric',month:'short',year:'numeric'});
+    const date = new Date(c.created_at).toLocaleDateString(appLocale(), {day:'numeric',month:'short',year:'numeric'});
     const isOwn = myUserId && c.user_id === myUserId;
 
     return `
@@ -5307,16 +7244,16 @@ function renderComments(comments) {
         <div id="comment-translation-${c.id}" style="display:none;margin-top:6px;padding:6px 8px;background:rgba(201,168,76,0.08);border-radius:8px;border-left:2px solid var(--gold);font-size:11px;color:var(--text-secondary);line-height:1.5;"></div>
         <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
           <button onclick="translateComment('${c.id}', this)" style="background:none;border:none;padding:2px 6px;cursor:pointer;font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:3px;border-radius:4px;transition:background 0.15s;" onmouseover="this.style.background='var(--cream-dark)'" onmouseout="this.style.background='none'">
-            🌐 <span>${lang==='tr'?'Çevir':'Translate'}</span>
+            🌐 <span>${tx('Çevir', 'Translate')}</span>
           </button>
         </div>
         ${isOwn ? `
           <div class="comment-actions">
             <button class="comment-action-btn edit" onclick="startEditComment('${c.id}', '${c.text.replace(/'/g, "\'")}')">
-              ✏️ ${lang==='tr'?'Düzenle':'Edit'}
+              ✏️ ${tx('Düzenle', 'Edit')}
             </button>
             <button class="comment-action-btn delete" onclick="deleteComment('${c.id}')">
-              🗑 ${lang==='tr'?'Sil':'Delete'}
+              🗑 ${tx('Sil', 'Delete')}
             </button>
           </div>` : ''}
       </div>`;
@@ -5343,7 +7280,7 @@ async function translateComment(commentId, btn) {
   if (translEl.style.display !== 'none') {
     translEl.style.display = 'none';
     const spanEl = btn.querySelector('span');
-    if (spanEl) spanEl.textContent = lang==='tr' ? 'Çevir' : 'Translate';
+    if (spanEl) spanEl.textContent = tx('Çevir', 'Translate');
     return;
   }
 
@@ -5352,7 +7289,7 @@ async function translateComment(commentId, btn) {
     translEl.textContent = commentTranslations[commentId];
     translEl.style.display = 'block';
     const spanEl = btn.querySelector('span');
-    if (spanEl) spanEl.textContent = lang==='tr' ? 'Gizle' : 'Hide';
+    if (spanEl) spanEl.textContent = tx('Gizle', 'Hide');
     return;
   }
 
@@ -5386,15 +7323,15 @@ async function translateComment(commentId, btn) {
       commentTranslations[commentId] = translation;
       translEl.textContent = translation;
       translEl.style.display = 'block';
-      if (spanEl) spanEl.textContent = lang==='tr' ? 'Gizle' : 'Hide';
+      if (spanEl) spanEl.textContent = tx('Gizle', 'Hide');
     } else {
-      if (spanEl) spanEl.textContent = lang==='tr' ? 'Çevir' : 'Translate';
-      showToast(lang==='tr' ? 'Çeviri başarısız' : 'Translation failed');
+      if (spanEl) spanEl.textContent = tx('Çevir', 'Translate');
+      showToast(tx('Çeviri başarısız', 'Translation failed'));
     }
   } catch(e) {
     console.warn('[Translate]', e);
-    if (spanEl) spanEl.textContent = lang==='tr' ? 'Çevir' : 'Translate';
-    showToast(lang==='tr' ? 'Çeviri başarısız' : 'Translation failed');
+    if (spanEl) spanEl.textContent = tx('Çevir', 'Translate');
+    showToast(tx('Çeviri başarısız', 'Translation failed'));
   } finally {
     btn.disabled = false;
   }
@@ -5411,7 +7348,7 @@ function prefillCommentUsername() {
     input.style.background = 'var(--cream-dark)';
     input.style.color = 'var(--text-secondary)';
     input.style.cursor = 'default';
-    input.title = lang==='tr' ? 'Profil adın kullanılıyor' : 'Using your profile name';
+    input.title = tx('Profil adın kullanılıyor', 'Using your profile name');
 
     // Küçük "profil" etiketi
     const row = input.parentNode;
@@ -5419,7 +7356,7 @@ function prefillCommentUsername() {
       const badge = document.createElement('span');
       badge.className = 'comment-profile-badge';
       badge.style.cssText = 'font-size:10px;color:var(--gold);font-weight:600;white-space:nowrap;flex-shrink:0;';
-      badge.textContent = '✓ ' + (lang==='tr' ? 'Profil' : 'Profile');
+      badge.textContent = '✓ ' + (tx('Profil', 'Profile'));
       row.insertBefore(badge, input.nextSibling);
     }
   } else {
@@ -5468,12 +7405,12 @@ async function submitComment() {
   let _offlineQueued = false;
   const btn = document.getElementById('comment-submit-btn');
 
-  if (!username) { showToast(lang==='tr'?'Görünen ad gerekli!':'Display name required!'); return; }
-  if (!text) { showToast(lang==='tr'?'Yorum metni gerekli!':'Comment text required!'); return; }
-  if (text.length < 3) { showToast(lang==='tr'?'Yorum çok kısa!':'Comment too short!'); return; }
+  if (!username) { showToast(tx('Görünen ad gerekli!', 'Display name required!')); return; }
+  if (!text) { showToast(tx('Yorum metni gerekli!', 'Comment text required!')); return; }
+  if (text.length < 3) { showToast(tx('Yorum çok kısa!', 'Comment too short!')); return; }
 
   btn.classList.add('loading');
-  document.getElementById('comment-submit-label').textContent = lang==='tr'?'Gönderiliyor...':'Sending...';
+  document.getElementById('comment-submit-label').textContent = tx('Gönderiliyor...', 'Sending...');
 
   const commentPayload = {
     place_id: commentPlaceId,
@@ -5503,18 +7440,18 @@ async function submitComment() {
     updateCommentStars(0, true);
 
     const msg = navigator.onLine
-      ? (lang==='tr'?'✓ Yorum eklendi!':'✓ Comment added!')
-      : (lang==='tr'?'☁️ Yorum kaydedildi, internet gelince gönderilecek':'☁️ Comment saved, will send when online');
+      ? (tx('✓ Yorum eklendi!', '✓ Comment added!'))
+      : (tx('☁️ Yorum kaydedildi, internet gelince gönderilecek', '☁️ Comment saved, will send when online'));
     showToast(msg);
 
     if (navigator.onLine) await loadComments(commentPlaceId);
 
   } catch(e) {
-    showToast(lang==='tr'?'Yorum gönderilemedi. Tekrar dene.':'Could not send comment. Try again.');
+    showToast(tx('Yorum gönderilemedi. Tekrar dene.', 'Could not send comment. Try again.'));
     console.warn('[submitComment]', e);
   } finally {
     btn.classList.remove('loading');
-    document.getElementById('comment-submit-label').textContent = lang==='tr'?'Yorum Gönder':'Send Comment';
+    document.getElementById('comment-submit-label').textContent = tx('Yorum Gönder', 'Send Comment');
   }
 }
 
@@ -5539,10 +7476,10 @@ function startEditComment(commentId, currentText) {
     <textarea class="comment-edit-area" id="edit-area-${commentId}" maxlength="300">${currentText}</textarea>
     <div class="comment-edit-actions">
       <button class="comment-edit-cancel" onclick="cancelEditComment('${commentId}')">
-        ${lang==='tr'?'İptal':'Cancel'}
+        ${tx('İptal', 'Cancel')}
       </button>
       <button class="comment-edit-save" onclick="saveEditComment('${commentId}')">
-        ${lang==='tr'?'Kaydet':'Save'}
+        ${tx('Kaydet', 'Save')}
       </button>
     </div>
   `;
@@ -5576,11 +7513,11 @@ async function saveEditComment(commentId) {
   if (!ta) return;
   const newText = ta.value.trim();
 
-  if (!newText) { showToast(lang==='tr'?'Yorum boş olamaz!':'Comment cannot be empty!'); return; }
-  if (newText.length < 3) { showToast(lang==='tr'?'Yorum çok kısa!':'Comment too short!'); return; }
+  if (!newText) { showToast(tx('Yorum boş olamaz!', 'Comment cannot be empty!')); return; }
+  if (newText.length < 3) { showToast(tx('Yorum çok kısa!', 'Comment too short!')); return; }
 
   const saveBtn = ta.parentNode.querySelector('.comment-edit-save');
-  if (saveBtn) { saveBtn.textContent = lang==='tr'?'Kaydediliyor...':'Saving...'; saveBtn.disabled = true; }
+  if (saveBtn) { saveBtn.textContent = tx('Kaydediliyor...', 'Saving...'); saveBtn.disabled = true; }
 
   try {
     const token = sessionStorage.getItem('sb_access_token');
@@ -5597,19 +7534,19 @@ async function saveEditComment(commentId) {
 
     if (!res.ok) throw new Error(await res.text());
 
-    showToast(lang==='tr'?'✓ Yorum güncellendi!':'✓ Comment updated!');
+    showToast(tx('✓ Yorum güncellendi!', '✓ Comment updated!'));
     await loadComments(commentPlaceId);
 
   } catch(e) {
-    showToast(lang==='tr'?'Güncelleme başarısız.':'Update failed.');
+    showToast(tx('Güncelleme başarısız.', 'Update failed.'));
     console.warn('[saveEditComment]', e);
-    if (saveBtn) { saveBtn.textContent = lang==='tr'?'Kaydet':'Save'; saveBtn.disabled = false; }
+    if (saveBtn) { saveBtn.textContent = tx('Kaydet', 'Save'); saveBtn.disabled = false; }
   }
 }
 
 async function deleteComment(commentId) {
   // Onay iste
-  const confirmed = confirm(lang==='tr'?'Yorumu silmek istediğinden emin misin?':'Are you sure you want to delete this comment?');
+  const confirmed = confirm(tx('Yorumu silmek istediğinden emin misin?', 'Are you sure you want to delete this comment?'));
   if (!confirmed) return;
 
   try {
@@ -5636,15 +7573,15 @@ async function deleteComment(commentId) {
         // Liste boşaldıysa boş mesaj göster
         const listEl = document.getElementById('comments-list');
         if (listEl && !listEl.querySelector('.comment-card')) {
-          listEl.innerHTML = '<div class="comment-empty">💬 ' + (lang==='tr'?'Henüz yorum yok. İlk yorumu sen yaz!':'No comments yet. Be the first!') + '</div>';
+          listEl.innerHTML = '<div class="comment-empty">💬 ' + (tx('Henüz yorum yok. İlk yorumu sen yaz!', 'No comments yet. Be the first!')) + '</div>';
         }
       }, 200);
     }
 
-    showToast(lang==='tr'?'🗑 Yorum silindi.':'🗑 Comment deleted.');
+    showToast(tx('🗑 Yorum silindi.', '🗑 Comment deleted.'));
 
   } catch(e) {
-    showToast(lang==='tr'?'Silme başarısız.':'Delete failed.');
+    showToast(tx('Silme başarısız.', 'Delete failed.'));
     console.warn('[deleteComment]', e);
   }
 }
@@ -5705,12 +7642,10 @@ function showNotifPrompt() {
       <span style="font-size:22px;flex-shrink:0;">🔔</span>
       <div>
         <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:3px;" id="notif-prompt-title">
-          ${lang==='tr' ? 'Bildirimler' : 'Notifications'}
+          ${tx('Bildirimler', 'Notifications')}
         </div>
         <div style="font-size:12px;color:rgba(255,255,255,0.65);line-height:1.5;" id="notif-prompt-desc">
-          ${lang==='tr'
-            ? 'Gittiğin şehre yeni yer eklenince haberdar ol.'
-            : 'Get notified when new places are added to your city.'}
+          ${tx('Gittiğin şehre yeni yer eklenince haberdar ol.', 'Get notified when new places are added to your city.')}
         </div>
       </div>
     </div>
@@ -5720,14 +7655,14 @@ function showNotifPrompt() {
         background:var(--gold); color:var(--navy);
         font-family:'Syne',sans-serif; font-size:13px; font-weight:700;
         border:none; cursor:pointer;">
-        ${lang==='tr' ? '✓ İzin Ver' : '✓ Allow'}
+        ${tx('✓ İzin Ver', '✓ Allow')}
       </button>
       <button onclick="dismissNotifPrompt()" style="
         flex:1; padding:10px; border-radius:10px;
         background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.7);
         font-size:13px; font-weight:500;
         border:1px solid rgba(255,255,255,0.15); cursor:pointer;">
-        ${lang==='tr' ? 'Şimdi Değil' : 'Not Now'}
+        ${tx('Şimdi Değil', 'Not Now')}
       </button>
     </div>
   `;
@@ -5744,7 +7679,7 @@ async function grantNotifPermission() {
     const result = await Notification.requestPermission();
     updateNotifStatus(result);
     if (result === 'granted') {
-      showToast(lang==='tr' ? '🔔 Bildirimler açık!' : '🔔 Notifications enabled!');
+      showToast(tx('🔔 Bildirimler açık!', '🔔 Notifications enabled!'));
       // SW'a bildir
       if (navigator.serviceWorker.controller) {
         navigator.serviceWorker.controller.postMessage({ type: 'NOTIF_GRANTED' });
@@ -5752,7 +7687,7 @@ async function grantNotifPermission() {
       // Push subscription kaydet
       subscribePush();
     } else {
-      showToast(lang==='tr' ? 'Bildirimler kapalı.' : 'Notifications disabled.');
+      showToast(tx('Bildirimler kapalı.', 'Notifications disabled.'));
     }
   } catch(e) {
     console.warn('[Notif]', e);
@@ -5780,7 +7715,7 @@ function updateNotifStatus(status) {
     default: { tr:'⏳ İzin bekleniyor', en:'⏳ Pending', de:'⏳ Ausstehend', fr:'⏳ En attente', es:'⏳ Pendiente', ar:'⏳ في الانتظار', ja:'⏳ 保留中', ko:'⏳ 대기 중', zh:'⏳ 待定' },
   };
   const lbl = labels[status] || labels['default'];
-  el.textContent = lbl[lang] || lbl['en'];
+  el.textContent = L(lbl);
   el.style.color = status === 'granted' ? '#10b981' : status === 'denied' ? '#ef4444' : '#f59e0b';
 }
 
@@ -5806,11 +7741,11 @@ function handlePhotoSelect(input) {
 
   toAdd.forEach(file => {
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-      showToast(lang==='tr' ? `${file.name} çok büyük (max 5 MB)` : `${file.name} too large (max 5 MB)`);
+      showToast(tx('{0} çok büyük (max 5 MB)', '{0} too large (max 5 MB)', file.name));
       return;
     }
     if (!file.type.startsWith('image/')) {
-      showToast(lang==='tr' ? 'Sadece görsel dosyaları' : 'Images only');
+      showToast(tx('Sadece görsel dosyaları', 'Images only'));
       return;
     }
     const reader = new FileReader();
@@ -5822,7 +7757,7 @@ function handlePhotoSelect(input) {
   });
 
   if (files.length > remaining) {
-    showToast(lang==='tr' ? `En fazla ${MAX_PHOTOS} fotoğraf eklenebilir` : `Max ${MAX_PHOTOS} photos allowed`);
+    showToast(tx('En fazla {0} fotoğraf eklenebilir', 'Max {0} photos allowed', MAX_PHOTOS));
   }
   input.value = '';
 }
@@ -5845,9 +7780,7 @@ function renderPhotoPreviews() {
   } else {
     area.style.display = '';
     document.getElementById('photo-opt').textContent =
-      lang==='tr'
-        ? `${MAX_PHOTOS - selectedPhotos.length} fotoğraf daha ekleyebilirsin`
-        : `${MAX_PHOTOS - selectedPhotos.length} more photos allowed`;
+      tx('{0} fotoğraf daha ekleyebilirsin', '{0} more photos allowed', MAX_PHOTOS - selectedPhotos.length);
   }
 }
 
@@ -5895,7 +7828,7 @@ async function uploadPhotos(placeId) {
       if (!res.ok) {
         const errText = await res.text();
         console.error(`[Photo ${i+1}] Storage hatasi ${res.status}:`, errText);
-        showToast(lang==='tr' ? `Fotograf ${i+1} yuklenemedi (${res.status})` : `Photo ${i+1} failed (${res.status})`);
+        showToast(tx('Fotograf {0} yuklenemedi ({1})', 'Photo {0} failed ({1})', i+1, res.status));
         if (fill) fill.style.width = `${((i+1)/selectedPhotos.length)*100}%`;
         continue;
       }
@@ -5917,7 +7850,7 @@ async function uploadPhotos(placeId) {
 
     } catch(e) {
       console.error(`[Photo ${i+1}] Beklenmedik hata:`, e);
-      showToast(lang==='tr' ? `Fotograf ${i+1} yuklenemedi` : `Photo ${i+1} failed`);
+      showToast(tx('Fotograf {0} yuklenemedi', 'Photo {0} failed', i+1));
     }
 
     if (fill) fill.style.width = `${((i+1)/selectedPhotos.length)*100}%`;
@@ -6009,12 +7942,12 @@ async function verifyInviteCode() {
   const inputCode = inputEl ? inputEl.value.trim().toUpperCase() : '';
   
   if (!inputCode) {
-    showToast(lang==='tr' ? 'Davet kodu gir!' : 'Enter invite code!');
+    showToast(tx('Davet kodu gir!', 'Enter invite code!'));
     return;
   }
   
   const btn = document.getElementById('btn-continue');
-  btn.textContent = lang==='tr'?'Kontrol ediliyor...':'Checking...';
+  btn.textContent = tx('Kontrol ediliyor...', 'Checking...');
   btn.disabled = true;
 
   try {
@@ -6030,17 +7963,17 @@ async function verifyInviteCode() {
       return;
     }
     if (!data || data.length === 0) {
-      showToast(lang==='tr'?'Geçersiz veya kullanılmış kod!':'Invalid or used code!');
+      showToast(tx('Geçersiz veya kullanılmış kod!', 'Invalid or used code!'));
       return;
     }
     // Kodu sessionStorage'a kaydet
     sessionStorage.setItem('pendingInviteCode', inputCode);
     goTo('screen-profile');
   } catch(e) {
-    showToast(lang==='tr'?'Bağlantı hatası, tekrar dene.':'Connection error, try again.');
+    showToast(tx('Bağlantı hatası, tekrar dene.', 'Connection error, try again.'));
     console.warn('[verifyInviteCode]', e);
   } finally {
-    btn.textContent = lang==='tr'?'Devam Et →':'Continue →';
+    btn.textContent = tx('Devam Et →', 'Continue →');
     btn.disabled = false;
   }
 }
@@ -6052,12 +7985,12 @@ async function createAccount() {
   const password = document.getElementById('input-password').value;
   const inviteCode = sessionStorage.getItem('pendingInviteCode') || 'CRW-X7K';
 
-  if (!username) { showToast(lang==='tr'?'Görünen ad gerekli!':'Display name required!'); return; }
-  if (!email)    { showToast(lang==='tr'?'E-posta gerekli!':'Email required!'); return; }
-  if (password.length < 6) { showToast(lang==='tr'?'Şifre en az 6 karakter!':'Password must be 6+ chars!'); return; }
+  if (!username) { showToast(tx('Görünen ad gerekli!', 'Display name required!')); return; }
+  if (!email)    { showToast(tx('E-posta gerekli!', 'Email required!')); return; }
+  if (password.length < 6) { showToast(tx('Şifre en az 6 karakter!', 'Password must be 6+ chars!')); return; }
 
   const btn = document.getElementById('btn-create-account');
-  btn.textContent = lang==='tr'?'Hesap oluşturuluyor...':'Creating account...';
+  btn.textContent = tx('Hesap oluşturuluyor...', 'Creating account...');
   btn.disabled = true;
 
   try {
@@ -6121,10 +8054,8 @@ async function createAccount() {
 
     // 4. Email doğrulama gerekiyorsa — bilgi ekranı göster
     if (!accessToken) {
-      showToast(lang === 'tr'
-        ? '📧 Doğrulama emaili gönderildi! Emailini kontrol et.'
-        : '📧 Verification email sent! Check your inbox.');
-      btn.textContent = lang === 'tr' ? 'Email gönderildi ✓' : 'Email sent ✓';
+      showToast(tx('📧 Doğrulama emaili gönderildi! Emailini kontrol et.', '📧 Verification email sent! Check your inbox.'));
+      btn.textContent = tx('Email gönderildi ✓', 'Email sent ✓');
       btn.disabled = false;
       sessionStorage.removeItem('pendingInviteCode');
       setTimeout(() => goTo('screen-login'), 2500);
@@ -6151,13 +8082,13 @@ async function createAccount() {
   } catch(e) {
     const msg = e.message || '';
     if (msg.includes('already registered') || msg.includes('already been registered')) {
-      showToast(lang==='tr'?'Bu e-posta zaten kayıtlı!':'Email already registered!');
+      showToast(tx('Bu e-posta zaten kayıtlı!', 'Email already registered!'));
     } else {
-      showToast(lang==='tr'?`Hata: ${msg}`:`Error: ${msg}`);
+      showToast(tx('Hata: {0}', 'Error: {0}', msg));
     }
     console.warn('[createAccount]', e);
   } finally {
-    btn.textContent = lang==='tr'?'Hesap Oluştur →':'Create Account →';
+    btn.textContent = tx('Hesap Oluştur →', 'Create Account →');
     btn.disabled = false;
   }
 }
@@ -6168,12 +8099,12 @@ async function signIn() {
   const password = document.getElementById('login-password').value;
 
   if (!email || !password) {
-    showToast(lang==='tr'?'E-posta ve şifre gerekli!':'Email and password required!');
+    showToast(tx('E-posta ve şifre gerekli!', 'Email and password required!'));
     return;
   }
 
   const btn = document.getElementById('btn-sign-in');
-  btn.textContent = lang==='tr'?'Giriş yapılıyor...':'Signing in...';
+  btn.textContent = tx('Giriş yapılıyor...', 'Signing in...');
   btn.disabled = true;
 
   try {
@@ -6198,13 +8129,13 @@ async function signIn() {
   } catch(e) {
     const msg = e.message || '';
     if (msg.includes('Invalid login')) {
-      showToast(lang==='tr'?'E-posta veya şifre hatalı!':'Invalid email or password!');
+      showToast(tx('E-posta veya şifre hatalı!', 'Invalid email or password!'));
     } else {
-      showToast(lang==='tr'?`Hata: ${msg}`:`Error: ${msg}`);
+      showToast(tx('Hata: {0}', 'Error: {0}', msg));
     }
     console.warn('[signIn]', e);
   } finally {
-    btn.textContent = lang==='tr'?'Giriş Yap →':'Sign In →';
+    btn.textContent = tx('Giriş Yap →', 'Sign In →');
     btn.disabled = false;
   }
 }
@@ -6230,7 +8161,7 @@ async function loadProfile(userId, token) {
       // Hesap devre dışıysa çıkış yap
       if (currentProfile.is_disabled) {
         console.warn('[loadProfile] Hesap devre dışı — çıkış yapılıyor');
-        showToast(lang === 'tr' ? 'Hesabın devre dışı bırakılmış.' : 'Your account has been disabled.');
+        showToast(tx('Hesabın devre dışı bırakılmış.', 'Your account has been disabled.'));
         setTimeout(() => signOut(), 1500);
         return;
       }
@@ -6244,7 +8175,7 @@ async function loadProfile(userId, token) {
       sessionStorage.clear();
       currentUser = null;
       currentProfile = null;
-      showToast(lang === 'tr' ? 'Oturum geçersiz.' : 'Session invalid.');
+      showToast(tx('Oturum geçersiz.', 'Session invalid.'));
       setTimeout(() => goTo('screen-splash'), 1000);
       return;
     }
@@ -6310,7 +8241,7 @@ async function checkSession() {
         }
         loadPlaces(); // cache'den yükler
         goTo('screen-home');
-        showToast(lang==='tr' ? '✈️ Çevrimdışı mod' : '✈️ Offline mode');
+        showToast(tx('✈️ Çevrimdışı mod', '✈️ Offline mode'));
         console.log('[checkSession] Çevrimdışı — localStorage kullanılıyor');
         return;
       } catch(e) {
@@ -6353,7 +8284,7 @@ async function checkSession() {
         }
         loadPlaces();
         goTo('screen-home');
-        showToast(lang==='tr' ? '✈️ Çevrimdışı mod' : '✈️ Offline mode');
+        showToast(tx('✈️ Çevrimdışı mod', '✈️ Offline mode'));
       } catch(e2) {
         console.warn('[checkSession] Fallback hatası:', e2);
       }
@@ -6399,7 +8330,7 @@ function updateProfileUI() {
     commentInput.readOnly = true;
     commentInput.style.background = 'var(--cream-dark)';
     commentInput.style.color = 'var(--text-secondary)';
-    commentInput.title = lang==='tr' ? 'Giriş yapılan hesap' : 'Logged in account';
+    commentInput.title = tx('Giriş yapılan hesap', 'Logged in account');
   }
 }
 
@@ -6467,7 +8398,7 @@ async function fetchFromGoogle(p) {
   // Loading göster
   badge.className = 'hours-badge loading';
   badge.style.display = 'flex';
-  document.getElementById('hours-main').textContent = lang === 'tr' ? 'Saatler yükleniyor...' : 'Loading hours...';
+  document.getElementById('hours-main').textContent = tx('Saatler yükleniyor...', 'Loading hours...');
   document.getElementById('hours-detail').textContent = '';
   const toggleBtn = document.getElementById('hours-toggle');
   if (toggleBtn) toggleBtn.style.display = 'none';
@@ -6537,13 +8468,13 @@ function parseGoogleHours(oh, cacheKey) {
     const closeH = todayPeriod.close.time.slice(0,2);
     const closeM = todayPeriod.close.time.slice(2,4);
     const closeStr = `${closeH}:${closeM}`;
-    detailText = lang === 'tr' ? `· ${closeStr}'e kadar` : `· Until ${closeStr}`;
+    detailText = tx('· {0}\'e kadar', '· Until {0}', closeStr);
   } else if (!isOpen && todayPeriod) {
     // Kapalıysa açılış saatini göster
     const openH = todayPeriod.open.time.slice(0,2);
     const openM = todayPeriod.open.time.slice(2,4);
     const openStr = `${openH}:${openM}`;
-    detailText = lang === 'tr' ? `· ${openStr}'de açılıyor` : `· Opens at ${openStr}`;
+    detailText = tx('· {0}\'de açılıyor', '· Opens at {0}', openStr);
   }
 
   return {
@@ -6551,8 +8482,8 @@ function parseGoogleHours(oh, cacheKey) {
     cacheKey,
     isOpen,
     badgeText: isOpen
-      ? (lang === 'tr' ? 'Açık' : 'Open')
-      : (lang === 'tr' ? 'Kapalı' : 'Closed'),
+      ? (tx('Açık', 'Open'))
+      : (tx('Kapalı', 'Closed')),
     detailText,
     weeklyText: weekdayText,
     periods
@@ -6611,8 +8542,8 @@ function toggleWeeklyHours() {
   if (!weekEl) return;
   const visible = weekEl.classList.toggle('visible');
   if (toggleBtn) toggleBtn.textContent = visible
-    ? (lang === 'tr' ? '▴ Kapat' : '▴ Less')
-    : (lang === 'tr' ? '▾ Tümü' : '▾ All');
+    ? (tx('▴ Kapat', '▴ Less'))
+    : (tx('▾ Tümü', '▾ All'));
 }
 
 async function saveGooglePlaceId(placeId, googlePlaceId) {
@@ -6697,7 +8628,7 @@ async function fetchFromGoogle(p) {
   // Loading göster
   badge.className = 'hours-badge loading';
   badge.style.display = 'flex';
-  document.getElementById('hours-main').textContent = lang === 'tr' ? 'Saatler yükleniyor...' : 'Loading hours...';
+  document.getElementById('hours-main').textContent = tx('Saatler yükleniyor...', 'Loading hours...');
   document.getElementById('hours-detail').textContent = '';
   const toggleBtn = document.getElementById('hours-toggle');
   if (toggleBtn) toggleBtn.style.display = 'none';
@@ -6767,13 +8698,13 @@ function parseGoogleHours(oh, cacheKey) {
     const closeH = todayPeriod.close.time.slice(0,2);
     const closeM = todayPeriod.close.time.slice(2,4);
     const closeStr = `${closeH}:${closeM}`;
-    detailText = lang === 'tr' ? `· ${closeStr}'e kadar` : `· Until ${closeStr}`;
+    detailText = tx('· {0}\'e kadar', '· Until {0}', closeStr);
   } else if (!isOpen && todayPeriod) {
     // Kapalıysa açılış saatini göster
     const openH = todayPeriod.open.time.slice(0,2);
     const openM = todayPeriod.open.time.slice(2,4);
     const openStr = `${openH}:${openM}`;
-    detailText = lang === 'tr' ? `· ${openStr}'de açılıyor` : `· Opens at ${openStr}`;
+    detailText = tx('· {0}\'de açılıyor', '· Opens at {0}', openStr);
   }
 
   return {
@@ -6781,8 +8712,8 @@ function parseGoogleHours(oh, cacheKey) {
     cacheKey,
     isOpen,
     badgeText: isOpen
-      ? (lang === 'tr' ? 'Açık' : 'Open')
-      : (lang === 'tr' ? 'Kapalı' : 'Closed'),
+      ? (tx('Açık', 'Open'))
+      : (tx('Kapalı', 'Closed')),
     detailText,
     weeklyText: weekdayText,
     periods
@@ -6841,8 +8772,8 @@ function toggleWeeklyHours() {
   if (!weekEl) return;
   const visible = weekEl.classList.toggle('visible');
   if (toggleBtn) toggleBtn.textContent = visible
-    ? (lang === 'tr' ? '▴ Kapat' : '▴ Less')
-    : (lang === 'tr' ? '▾ Tümü' : '▾ All');
+    ? (tx('▴ Kapat', '▴ Less'))
+    : (tx('▾ Tümü', '▾ All'));
 }
 
 async function saveGooglePlaceId(placeId, googlePlaceId) {
@@ -6889,7 +8820,7 @@ async function openMapModal() {
   const btn = document.getElementById('map-placeholder-btn');
   if (btn) {
     btn.classList.add('loading');
-    btn.innerHTML = '⏳ <span>' + (lang==='tr'?'Konum aranıyor...':'Finding location...') + '</span>';
+    btn.innerHTML = '⏳ <span>' + (tx('Konum aranıyor...', 'Finding location...')) + '</span>';
   }
 
   try {
@@ -6898,7 +8829,7 @@ async function openMapModal() {
       showMapModal(p, p.lat, p.lon);
       if (btn) {
         btn.classList.remove('loading');
-        btn.innerHTML = '🗺 <span id="map-text">' + (lang==='tr'?'Haritada Göster':'View on Map') + '</span>';
+        btn.innerHTML = '🗺 <span id="map-text">' + (tx('Haritada Göster', 'View on Map')) + '</span>';
       }
       return;
     }
@@ -6972,11 +8903,11 @@ async function openMapModal() {
 
   } catch(e) {
     console.warn('[Map]', e);
-    showToast(lang==='tr'?'Harita yüklenemedi.':'Could not load map.');
+    showToast(tx('Harita yüklenemedi.', 'Could not load map.'));
   } finally {
     if (btn) {
       btn.classList.remove('loading');
-      btn.innerHTML = '🗺 <span id="map-text">' + (lang==='tr'?'Haritada Göster':'View on Map') + '</span>';
+      btn.innerHTML = '🗺 <span id="map-text">' + (tx('Haritada Göster', 'View on Map')) + '</span>';
     }
   }
 }
@@ -7016,8 +8947,8 @@ function showMapModal(p, lat, lon) {
     </div>
     <div id="map-container"></div>
     <div class="map-actions-bar">
-      <button class="map-action-btn" onclick="copyAddress('${p.addr}')">📋 ${lang==='tr'?'Adresi Kopyala':'Copy Address'}</button>
-      <button class="map-action-btn primary" onclick="openDirections(${lat},${lon},'${p.name.replace(/'/g,"\'")}')">🧭 ${lang==='tr'?'Yol Tarifi':'Directions'}</button>
+      <button class="map-action-btn" onclick="copyAddress('${p.addr}')">📋 ${tx('Adresi Kopyala', 'Copy Address')}</button>
+      <button class="map-action-btn primary" onclick="openDirections(${lat},${lon},'${p.name.replace(/'/g,"\'")}')">🧭 ${tx('Yol Tarifi', 'Directions')}</button>
     </div>
   `;
 
@@ -7088,7 +9019,7 @@ function openDirections(lat, lon, name) {
 function copyAddress(addr) {
   if (navigator.clipboard) {
     navigator.clipboard.writeText(addr).then(() => {
-      showToast(lang==='tr'?'📋 Adres kopyalandı!':'📋 Address copied!');
+      showToast(tx('📋 Adres kopyalandı!', '📋 Address copied!'));
     });
   } else {
     showToast(addr);
@@ -7119,7 +9050,7 @@ function openFilterPanel(section) {
     sort: { tr:'Sıralama', en:'Sort By' }
   };
   const t = titles[section];
-  if (t) document.getElementById('filter-panel-title').textContent = t[lang] || t.tr;
+  if (t) document.getElementById('filter-panel-title').textContent = L(t);
 }
 
 function closeFilterPanel() {
@@ -7420,7 +9351,7 @@ async function adminDeleteUser(userId, username) {
   if (!confirmed) return;
 
   try {
-    showToast(lang === 'tr' ? '⏳ Siliniyor...' : '⏳ Deleting...');
+    showToast(tx('⏳ Siliniyor...', '⏳ Deleting...'));
     await manageUserAction('delete', userId);
     showToast(`✓ "${username}" silindi`);
     allAdminUsers = [];
@@ -7450,15 +9381,13 @@ async function adminEnableUser(userId, username) {
 // Kullanıcı kendi hesabını devre dışı bırakır
 async function disableMyAccount() {
   const confirmed = confirm(
-    lang === 'tr'
-      ? "Hesabın devre dışı bırakılacak. Devam etmek istiyor musun?"
-      : "Your account will be disabled. Continue?"
+    tx('Hesabın devre dışı bırakılacak. Devam etmek istiyor musun?', 'Your account will be disabled. Continue?')
   );
   if (!confirmed) return;
 
   try {
     await manageUserAction('disable', currentUser.id);
-    showToast(lang === 'tr' ? 'Hesabın devre dışı bırakıldı.' : 'Account disabled.');
+    showToast(tx('Hesabın devre dışı bırakıldı.', 'Account disabled.'));
     sessionStorage.clear();
     localStorage.removeItem('sb_access_token');
     localStorage.removeItem('sb_refresh_token');
@@ -7732,13 +9661,11 @@ Bu işlem geri alınamaz.`);
 async function adminDeletePlace() {
   const p = places.find(x => x.id === currentDetailId);
   const isOwner = currentUser && p && p.userId && currentUser.id === p.userId;
-  if (!isAdmin() && !isOwner) { showToast(lang==='tr'?'Yetkisiz işlem!':'Unauthorized!'); return; }
+  if (!isAdmin() && !isOwner) { showToast(tx('Yetkisiz işlem!', 'Unauthorized!')); return; }
   if (!p) return;
 
   const confirmed = confirm(
-    lang==='tr'
-      ? `"${p.name}" yerini kaldırmak istediğinden emin misin?`
-      : `Are you sure you want to remove "${p.name}"?`
+    tx('"{0}" yerini kaldırmak istediğinden emin misin?', 'Are you sure you want to remove "{0}"?', p.name)
   );
   if (!confirmed) return;
 
@@ -7765,7 +9692,7 @@ async function adminDeletePlace() {
   const idx = places.findIndex(x => x.id === currentDetailId);
   if (idx !== -1) places.splice(idx, 1);
 
-  showToast(lang==='tr' ? `🗑 "${p.name}" kaldırıldı.` : `🗑 "${p.name}" removed.`);
+  showToast(tx('🗑 "{0}" kaldırıldı.', '🗑 "{0}" removed.', p.name));
   renderCards();
   goTo('screen-home');
 }
@@ -7778,7 +9705,7 @@ async function adminHideComment(commentId) {
       body: JSON.stringify({ text: '[Bu yorum kaldırılmıştır.]' })
     });
     await loadComments(commentPlaceId);
-    showToast(lang==='tr'?'Yorum kaldırıldı.':'Comment removed.');
+    showToast(tx('Yorum kaldırıldı.', 'Comment removed.'));
   } catch(e) {
     console.warn('[adminHideComment]', e);
   }
@@ -7790,17 +9717,17 @@ async function changeUsername() {
   const input = document.getElementById('settings-username-input');
   const newUsername = input ? input.value.trim() : '';
 
-  if (!newUsername) { showToast(lang==='tr'?'Kullanıcı adı boş olamaz!':'Username cannot be empty!'); return; }
-  if (newUsername.length < 3) { showToast(lang==='tr'?'En az 3 karakter!':'At least 3 characters!'); return; }
-  if (newUsername.length > 30) { showToast(lang==='tr'?'En fazla 30 karakter!':'Max 30 characters!'); return; }
+  if (!newUsername) { showToast(tx('Kullanıcı adı boş olamaz!', 'Username cannot be empty!')); return; }
+  if (newUsername.length < 3) { showToast(tx('En az 3 karakter!', 'At least 3 characters!')); return; }
+  if (newUsername.length > 30) { showToast(tx('En fazla 30 karakter!', 'Max 30 characters!')); return; }
   if (!/^[a-zA-Z0-9_çğışöüÇĞİŞÖÜ]+$/.test(newUsername)) {
-    showToast(lang==='tr'?'Sadece harf, rakam ve _ kullanılabilir!':'Only letters, numbers and _ allowed!');
+    showToast(tx('Sadece harf, rakam ve _ kullanılabilir!', 'Only letters, numbers and _ allowed!'));
     return;
   }
-  if (!currentUser) { showToast(lang==='tr'?'Giriş yapman gerekli!':'Please sign in!'); return; }
+  if (!currentUser) { showToast(tx('Giriş yapman gerekli!', 'Please sign in!')); return; }
 
   const btn = document.getElementById('btn-change-username');
-  if (btn) { btn.textContent = lang==='tr'?'Kaydediliyor...':'Saving...'; btn.disabled = true; }
+  if (btn) { btn.textContent = tx('Kaydediliyor...', 'Saving...'); btn.disabled = true; }
 
   try {
     // Başka biri kullanıyor mu kontrol et
@@ -7809,7 +9736,7 @@ async function changeUsername() {
       { headers: { 'Prefer': '' } }
     );
     if (existing && existing.length > 0) {
-      showToast(lang==='tr'?'Bu kullanıcı adı alınmış!':'Username already taken!');
+      showToast(tx('Bu kullanıcı adı alınmış!', 'Username already taken!'));
       return;
     }
 
@@ -7840,20 +9767,20 @@ async function changeUsername() {
     if (input) input.value = '';
     updateCurrentUsernameDisplay();
 
-    showToast(lang==='tr'?`✓ Kullanıcı adı "${newUsername}" olarak güncellendi!`:`✓ Username updated to "${newUsername}"!`);
+    showToast(tx('✓ Kullanıcı adı "{0}" olarak güncellendi!', '✓ Username updated to "{0}"!', newUsername));
 
   } catch(e) {
-    showToast(lang==='tr'?'Güncelleme başarısız.':'Update failed.');
+    showToast(tx('Güncelleme başarısız.', 'Update failed.'));
     console.warn('[changeUsername]', e);
   } finally {
-    if (btn) { btn.textContent = lang==='tr'?'Kaydet':'Save'; btn.disabled = false; }
+    if (btn) { btn.textContent = tx('Kaydet', 'Save'); btn.disabled = false; }
   }
 }
 
 function updateCurrentUsernameDisplay() {
   const el = document.getElementById('current-username-display');
   if (el && currentProfile) {
-    el.textContent = (lang==='tr'?'Mevcut: ':'Current: ') + currentProfile.username;
+    el.textContent = (tx('Mevcut: ', 'Current: ')) + currentProfile.username;
   }
 }
 
@@ -7877,18 +9804,18 @@ async function openLocationPicker() {
     <div class="location-picker-header">
       <button class="map-close-btn" onclick="closeLocationPicker()">←</button>
       <div style="flex:1;">
-        <div class="location-picker-title">${lang==='tr'?'Konumu Seç':'Pick Location'}</div>
-        <div class="location-picker-subtitle">${lang==='tr'?'Pini sürükle veya haritaya tıkla':'Drag pin or tap map'}</div>
+        <div class="location-picker-title">${tx('Konumu Seç', 'Pick Location')}</div>
+        <div class="location-picker-subtitle">${tx('Pini sürükle veya haritaya tıkla', 'Drag pin or tap map')}</div>
       </div>
     </div>
     <div id="location-picker-map"></div>
     <div class="location-picker-footer">
       <div class="location-picker-addr" id="picker-addr-text">
         <span>📍</span>
-        <span id="picker-addr-label">${lang==='tr'?'Konum alınıyor...':'Getting location...'}</span>
+        <span id="picker-addr-label">${tx('Konum alınıyor...', 'Getting location...')}</span>
       </div>
       <button class="picker-confirm-btn" id="picker-confirm-btn" onclick="confirmPickedLocation()" disabled>
-        ${lang==='tr'?'Bu Konumu Kullan ✓':'Use This Location ✓'}
+        ${tx('Bu Konumu Kullan ✓', 'Use This Location ✓')}
       </button>
     </div>
   `;
@@ -7947,7 +9874,7 @@ async function updatePickerAddress(lat, lon) {
   const label = document.getElementById('picker-addr-label');
   const addrEl = document.getElementById('picker-addr-text');
   const btn = document.getElementById('picker-confirm-btn');
-  if (label) label.textContent = lang==='tr'?'Adres aranıyor...':'Looking up...';
+  if (label) label.textContent = tx('Adres aranıyor...', 'Looking up...');
   if (addrEl) addrEl.classList.add('loading');
   if (btn) btn.disabled = true;
 
@@ -7981,7 +9908,7 @@ function confirmPickedLocation() {
   const input = document.getElementById('input-place-addr');
   if (input && window._pickerResolvedAddr) {
     input.value = window._pickerResolvedAddr;
-    showToast(lang==='tr'?'📍 Konum eklendi!':'📍 Location added!');
+    showToast(tx('📍 Konum eklendi!', '📍 Location added!'));
   }
   // Form için koordinatları işaretle
   window._pickerUsedForForm = true;
@@ -8002,13 +9929,13 @@ async function fillCurrentLocation() {
   const input = document.getElementById('input-place-addr');
 
   if (!navigator.geolocation) {
-    showToast(lang==='tr'?'Tarayıcın konum desteklemiyor.':'Geolocation not supported.');
+    showToast(tx('Tarayıcın konum desteklemiyor.', 'Geolocation not supported.'));
     return;
   }
 
   // Loading durumu
   if (btn) { btn.textContent = '⏳'; btn.style.opacity = '0.6'; btn.disabled = true; }
-  if (status) { status.style.display = 'block'; status.textContent = lang==='tr'?'📡 Konum alınıyor...':'📡 Getting location...'; }
+  if (status) { status.style.display = 'block'; status.textContent = tx('📡 Konum alınıyor...', '📡 Getting location...'); }
 
   navigator.geolocation.getCurrentPosition(
     async (pos) => {
@@ -8033,16 +9960,16 @@ async function fillCurrentLocation() {
 
         if (input) input.value = addr;
         if (status) {
-          status.textContent = `✓ ${lang==='tr'?'Konum alındı':'Location found'} (~${Math.round(accuracy)}m ${lang==='tr'?'hassasiyet':'accuracy'})`;
+          status.textContent = `✓ ${tx('Konum alındı', 'Location found')} (~${Math.round(accuracy)}m ${tx('hassasiyet', 'accuracy')})`;
           status.style.color = '#10b981';
           setTimeout(() => { if (status) status.style.display = 'none'; }, 3000);
         }
-        showToast(lang==='tr'?'📍 Konum eklendi!':'📍 Location added!');
+        showToast(tx('📍 Konum eklendi!', '📍 Location added!'));
 
       } catch(e) {
         // Nominatim hatası — koordinatı direkt yaz
         if (input) input.value = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
-        if (status) { status.textContent = lang==='tr'?'⚠️ Adres çözümlenemedi, koordinat eklendi.':'⚠️ Address lookup failed, coordinates added.'; status.style.color = '#f59e0b'; }
+        if (status) { status.textContent = tx('⚠️ Adres çözümlenemedi, koordinat eklendi.', '⚠️ Address lookup failed, coordinates added.'); status.style.color = '#f59e0b'; }
         console.warn('[GPS reverse geocode]', e);
       } finally {
         if (btn) { btn.textContent = '📍'; btn.style.opacity = '1'; btn.disabled = false; }
@@ -8056,8 +9983,8 @@ async function fillCurrentLocation() {
         3: { tr:'Konum zaman aşımına uğradı.', en:'Location request timed out.' },
       };
       const msg = msgs[err.code] || { tr:'Konum hatası.', en:'Location error.' };
-      if (status) { status.style.display = 'block'; status.textContent = '⚠️ ' + msg[lang]; status.style.color = '#ef4444'; }
-      showToast(msg[lang]);
+      if (status) { status.style.display = 'block'; status.textContent = '⚠️ ' + L(msg); status.style.color = '#ef4444'; }
+      showToast(L(msg));
     },
     { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
   );
@@ -8193,7 +10120,7 @@ function startRealtimeNotifications() {
           if (isSameCity && name) {
             // Şu an aynı şehirdeyse anında göster
             showInAppNotification({
-              title: lang==='tr' ? '📍 Yeni Yer Eklendi!' : '📍 New Place Added!',
+              title: tx('📍 Yeni Yer Eklendi!', '📍 New Place Added!'),
               body: `${emoji} ${name}`,
               action: () => {
                 // Yeni yeri places listesine ekle ve kartlara yansıt
@@ -8231,9 +10158,7 @@ function startRealtimeNotifications() {
             const wasVisited = hasVisitedCity(placeCity);
             if (wasVisited) {
               showInAppNotification({
-                title: lang==='tr'
-                  ? `✈️ Gittiğin ${placeCity}'a yeni yer eklendi!`
-                  : `✈️ New place in ${placeCity} — you've been there!`,
+                title: tx('✈️ Gittiğin {0}\'a yeni yer eklendi!', '✈️ New place in {0} — you\'ve been there!', placeCity),
                 body: `${emoji} ${name}`,
                 quiet: true
               });
@@ -8352,10 +10277,10 @@ async function openNotifScreen() {
   const titleEl = document.getElementById('notif-title');
   const subEl = document.getElementById('notif-sub');
   const t = translations[lang] || translations['en'];
-  if (titleEl) titleEl.textContent = t?.['notif-title'] || (lang==='tr' ? 'Bildirimler' : 'Notifications');
-  if (subEl) subEl.textContent = t?.['notif-sub'] || (lang==='tr' ? 'Son eklenen yerler' : 'Recently added places');
+  if (titleEl) titleEl.textContent = t?.['notif-title'] || (tx('Bildirimler', 'Notifications'));
+  if (subEl) subEl.textContent = t?.['notif-sub'] || (tx('Son eklenen yerler', 'Recently added places'));
   const activeNavEl = document.getElementById('bnav-notif-active');
-  if (activeNavEl) activeNavEl.textContent = t?.['bnav-notif'] || (lang==='tr' ? 'Bildirim' : 'Notifs');
+  if (activeNavEl) activeNavEl.textContent = t?.['bnav-notif'] || (tx('Bildirim', 'Notifs'));
   goTo('screen-notif');
   await loadNotifs();
 }
@@ -8373,7 +10298,7 @@ async function loadNotifs() {
     );
     const places = await res.json();
     if (!Array.isArray(places) || places.length === 0) {
-      list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:13px;">${lang==='tr'?'Henüz yer eklenmemiş':'No places added yet'}</div>`;
+      list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:13px;">${tx('Henüz yer eklenmemiş', 'No places added yet')}</div>`;
       return;
     }
 
@@ -8396,12 +10321,12 @@ function renderNotifs(items) {
     const isRead = notifReadIds.includes(p.id);
     const timeAgo = getTimeAgo(p.created_at);
     // country boşsa popularCities'den bul
-    let country = lang==='tr' ? (p.country_tr||'') : (p.country_en||'');
+    let country = flagToIso(p.flag) ? countryNameFromIso(flagToIso(p.flag), lang) : (lang==='tr' ? (p.country_tr||'') : (p.country_en||''));
     let flag = p.flag || '';
     if (!country || !flag) {
       const pop = popularCities.find(c => c.name.toLowerCase() === (p.city||'').toLowerCase());
       if (pop) {
-        if (!country) country = pop.country[lang] || pop.country.en || '';
+        if (!country) country = countryLabel(pop);
         if (!flag) flag = pop.flag;
       }
     }
@@ -8590,22 +10515,22 @@ function buildCountryOptions() {
     const key = iso || c.country.en || c.name;
     if (!countries[key]) {
       countries[key] = iso
-        ? { tr: countryNameFromIso(iso, 'tr'), en: countryNameFromIso(iso, 'en'), flag: c.flag, cities: [] }
-        : { tr: c.country.tr, en: c.country.en, flag: c.flag, cities: [] };
+        ? { tr: countryNameFromIso(iso, 'tr'), en: countryNameFromIso(iso, 'en'), local: countryNameFromIso(iso, lang), flag: c.flag, cities: [] }
+        : { tr: c.country.tr, en: c.country.en, local: (lang==='tr' ? c.country.tr : c.country.en) || c.name, flag: c.flag, cities: [] };
     }
     if (!countries[key].cities.includes(c.name)) countries[key].cities.push(c.name);
   });
 
   const sorted = Object.keys(countries).sort((a, b) => {
-    const aName = lang==='tr' ? countries[a].tr : countries[a].en;
-    const bName = lang==='tr' ? countries[b].tr : countries[b].en;
+    const aName = countries[a].local;
+    const bName = countries[b].local;
     return aName.localeCompare(bName);
   });
 
-  select.innerHTML = `<option value="">${lang==='tr'?'Ülke seç...':'Select country...'}</option>`;
+  select.innerHTML = `<option value="">${tx('Ülke seç...', 'Select country...')}</option>`;
   sorted.forEach(key => {
     const c = countries[key];
-    const name = lang==='tr' ? c.tr : c.en;
+    const name = c.local;
     const opt = document.createElement('option');
     opt.value = key;
     opt.textContent = `${c.flag} ${name}`;
@@ -8635,7 +10560,7 @@ function onCountryChange() {
   if (!opt || !opt.value) {
     currentCountry = null;
     currentFlag = '';
-    citySelect.innerHTML = `<option value="">${lang==='tr'?'Şehir seç...':'Select city...'}</option>`;
+    citySelect.innerHTML = `<option value="">${tx('Şehir seç...', 'Select city...')}</option>`;
     return;
   }
 
@@ -8643,7 +10568,7 @@ function onCountryChange() {
   currentFlag = opt.dataset.flag;
 
   const cities = JSON.parse(opt.dataset.cities || '[]');
-  citySelect.innerHTML = `<option value="">${lang==='tr'?'Şehir seç...':'Select city...'}</option>`;
+  citySelect.innerHTML = `<option value="">${tx('Şehir seç...', 'Select city...')}</option>`;
   cities.sort().forEach(city => {
     const o = document.createElement('option');
     o.value = city;
@@ -8671,7 +10596,7 @@ function onCityAddChange() {
     const customInput = document.getElementById('input-city-custom');
     if (customInput) customInput.value = '';
     const display = document.getElementById('selected-city-display');
-    if (display) display.textContent = `${currentFlag} ${city} · ${currentCountry?.[lang]||''}`;
+    if (display) display.textContent = `${currentFlag} ${city} · ${currentCountryLabel()}`;
   }
 }
 
@@ -8691,7 +10616,7 @@ function onCustomCityInput(val) {
     currentFlag = cityData.flag;
     updateCurrencyBadge(currentCity);
     const display = document.getElementById('selected-city-display');
-    if (display) display.textContent = `${currentFlag} ${city} · ${currentCountry?.[lang]||''}`;
+    if (display) display.textContent = `${currentFlag} ${city} · ${currentCountryLabel()}`;
     return;
   }
 
@@ -8715,7 +10640,7 @@ function onCustomCityInput(val) {
     if (currentCity !== city) return;
     updateCurrencyBadge(city);
     const display = document.getElementById('selected-city-display');
-    if (display) display.textContent = `${currentFlag} ${city} · ${currentCountry?.[lang]||''}`;
+    if (display) display.textContent = `${currentFlag} ${city} · ${currentCountryLabel()}`;
   }, 800);
 }
 
@@ -8742,8 +10667,8 @@ function updateInviteCodesUI() {
             </div>
             <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">
               ${c.used_by
-                ? (lang==='tr'?'✓ Kullanıldı':'✓ Used')
-                : (lang==='tr'?'Kullanılabilir':'Available')}
+                ? (tx('✓ Kullanıldı', '✓ Used'))
+                : (tx('Kullanılabilir', 'Available'))}
             </div>
           </div>
           ${!c.used_by ? `
@@ -8751,15 +10676,13 @@ function updateInviteCodesUI() {
               font-size:11px;background:var(--navy);color:#fff;
               border:none;border-radius:6px;padding:5px 12px;cursor:pointer;
               font-family:'DM Sans',sans-serif;">
-              ${lang==='tr'?'Kopyala':'Copy'}
+              ${tx('Kopyala', 'Copy')}
             </button>` : `<span style="font-size:16px;">✓</span>`}
         </div>
       `).join('')}
     </div>
     <div class="quota-text" id="quota-text">
-      ${lang==='tr'
-        ? `${used} kişiyi davet ettin · ${remaining} hakkın kaldı`
-        : `You invited ${used} · ${remaining} remaining`}
+      ${tx('{0} kişiyi davet ettin · {1} hakkın kaldı', 'You invited {0} · {1} remaining', used, remaining)}
     </div>
     <div class="quota-bar">
       <div class="quota-fill" style="width:${total > 0 ? (used/total)*100 : 0}%"></div>
@@ -8770,7 +10693,7 @@ function updateInviteCodesUI() {
 function copyInviteCode(code) {
   if (navigator.clipboard) {
     navigator.clipboard.writeText(code).then(() => {
-      showToast(lang==='tr'?`"${code}" kopyalandı!`:`"${code}" copied!`);
+      showToast(tx('"{0}" kopyalandı!', '"{0}" copied!', code));
     });
   } else {
     showToast(code);
@@ -8957,7 +10880,7 @@ function updateCurrencyBadge(cityName) {
   const rateEl = document.getElementById('currency-rate-hint');
   function displayRate(c) {
     if (!(c.rate > 0)) {
-      const msg = lang==='tr' ? 'Kur bilgisi yok — fiyatlar USD' : 'No rate — prices in USD';
+      const msg = tx('Kur bilgisi yok — fiyatlar USD', 'No rate — prices in USD');
       if (badge) badge.title = msg;
       if (rateEl) rateEl.textContent = msg;
       return;
@@ -8999,10 +10922,10 @@ async function renderSavedScreen() {
   if (!content) return;
 
   const lblMap = { 'sf-all': {tr:'Tümü',en:'All'}, 'sf-food': {tr:'🍜 Yemek',en:'🍜 Food'}, 'sf-shopping': {tr:'🛍 Alışveriş',en:'🛍 Shopping'}, 'sf-sight': {tr:'🗺 Gezi',en:'🗺 Sightseeing'} };
-  Object.entries(lblMap).forEach(([id, lbl]) => { const el = document.getElementById(id); if (el) el.textContent = lbl[lang] || lbl.tr; });
+  Object.entries(lblMap).forEach(([id, lbl]) => { const el = document.getElementById(id); if (el) el.textContent = L(lbl); });
 
   if (!savedIds.size) {
-    content.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text-muted);"><div style="font-size:48px;margin-bottom:16px;">🔖</div><div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:8px;">${lang==='tr'?'Henüz kayıtlı yer yok':'No saved places yet'}</div><div style="font-size:13px;">${lang==='tr'?'Beğendiğin yerlerde 🔖 Kaydet\'e bas':'Tap 🔖 Save on places you like'}</div></div>`;
+    content.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text-muted);"><div style="font-size:48px;margin-bottom:16px;">🔖</div><div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:8px;">${tx('Henüz kayıtlı yer yok', 'No saved places yet')}</div><div style="font-size:13px;">${tx('Beğendiğin yerlerde 🔖 Kaydet\'e bas', 'Tap 🔖 Save on places you like')}</div></div>`;
     return;
   }
 
@@ -9034,7 +10957,7 @@ async function renderSavedScreen() {
   }
 
   if (!savedPlaces.length) {
-    content.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-muted);font-size:13px;">${lang==='tr'?'Bu kategoride kayıtlı yer yok':'No saved places in this category'}</div>`;
+    content.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-muted);font-size:13px;">${tx('Bu kategoride kayıtlı yer yok', 'No saved places in this category')}</div>`;
     return;
   }
 
@@ -9042,15 +10965,15 @@ async function renderSavedScreen() {
   content.innerHTML = savedPlaces.map(p => {
     const bg = catBg[p.cat] || '#f0f3f9';
     const stars = p.rating > 0 ? '★'.repeat(Math.round(p.rating)) : '';
-    const catLabel = p.cat==='food'?(lang==='tr'?'Yemek':'Food'):p.cat==='shopping'?(lang==='tr'?'Alışveriş':'Shopping'):(lang==='tr'?'Gezi':'Sightseeing');
-    return `<div class="saved-place-card" onclick="openDetail('${p.id}')"><div class="saved-place-icon" style="background:${bg};">${p.emoji}</div><div class="saved-place-info"><div class="saved-place-name">${p.name}</div><div class="saved-place-meta">${p.city||''} · ${catLabel} · ${p.price}</div></div><div class="saved-place-right">${stars?`<div class="saved-place-rating">${stars}</div>`:''}<button class="saved-remove-btn" onclick="event.stopPropagation();removeSaved('${p.id}')" title="${lang==='tr'?'Kaldır':'Remove'}">🗑</button></div></div>`;
+    const catLabel = p.cat==='food'?(tx('Yemek', 'Food')):p.cat==='shopping'?(tx('Alışveriş', 'Shopping')):(tx('Gezi', 'Sightseeing'));
+    return `<div class="saved-place-card" onclick="openDetail('${p.id}')"><div class="saved-place-icon" style="background:${bg};">${p.emoji}</div><div class="saved-place-info"><div class="saved-place-name">${p.name}</div><div class="saved-place-meta">${p.city||''} · ${catLabel} · ${p.price}</div></div><div class="saved-place-right">${stars?`<div class="saved-place-rating">${stars}</div>`:''}<button class="saved-remove-btn" onclick="event.stopPropagation();removeSaved('${p.id}')" title="${tx('Kaldır', 'Remove')}">🗑</button></div></div>`;
   }).join('');
 }
 
 async function removeSaved(placeId) {
   savedIds.delete(String(placeId));
   persistSavedIds();
-  showToast(lang==='tr' ? 'Kaydedilenlerden çıkarıldı.' : 'Removed from saved.');
+  showToast(tx('Kaydedilenlerden çıkarıldı.', 'Removed from saved.'));
   renderSavedScreen();
   if (currentUser) {
     const token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token') || SUPABASE_KEY;
@@ -9078,7 +11001,7 @@ const catLabels = {
 async function loadMyPlaces() {
   if (!currentUser) {
     document.getElementById('my-places-list').innerHTML =
-      `<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:13px;">${lang==='tr'?'Giriş yapman gerekiyor':'Please sign in'}</div>`;
+      `<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:13px;">${tx('Giriş yapman gerekiyor', 'Please sign in')}</div>`;
     return;
   }
 
@@ -9086,7 +11009,7 @@ async function loadMyPlaces() {
   const countEl = document.getElementById('my-places-count');
   if (!listEl) return;
 
-  listEl.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">⏳ ${lang==='tr'?'Yükleniyor...':'Loading...'}</div>`;
+  listEl.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">⏳ ${tx('Yükleniyor...', 'Loading...')}</div>`;
 
   try {
     const token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token') || SUPABASE_KEY;
@@ -9104,7 +11027,7 @@ async function loadMyPlaces() {
     // Stat sayaçlarını güncelle
     const placeCountEl = document.getElementById('stat-places');
     if (placeCountEl) placeCountEl.textContent = myPlaces.length;
-    if (countEl) countEl.textContent = myPlaces.length > 0 ? `${myPlaces.length} ${lang==='tr'?'yer':'places'}` : '';
+    if (countEl) countEl.textContent = myPlaces.length > 0 ? `${myPlaces.length} ${tx('yer', 'places')}` : '';
 
     // Toplam beğeni
     const totalLikes = myPlaces.reduce((sum, p) => sum + (p.likes || 0), 0);
@@ -9114,8 +11037,8 @@ async function loadMyPlaces() {
     const pendingHtml = myPending.map(p => {
       const cat = catColors[p.cat] || { bg: '#f0f3f9', emoji: p.emoji || '📍' };
       const badge = p.status === 'pending'
-        ? `<span style="font-size:10px;background:#f59e0b;color:#fff;padding:1px 6px;border-radius:4px;">${lang==='tr'?'Onay bekliyor':'In review'}</span>`
-        : `<span style="font-size:10px;background:#9ca3af;color:#fff;padding:1px 6px;border-radius:4px;">${lang==='tr'?'Yayınlanmadı':'Not published'}</span>`;
+        ? `<span style="font-size:10px;background:#f59e0b;color:#fff;padding:1px 6px;border-radius:4px;">${tx('Onay bekliyor', 'In review')}</span>`
+        : `<span style="font-size:10px;background:#9ca3af;color:#fff;padding:1px 6px;border-radius:4px;">${tx('Yayınlanmadı', 'Not published')}</span>`;
       return `
         <div class="place-row-profile" style="opacity:0.75;cursor:default;">
           <div class="place-icon-profile" style="background:${cat.bg};">${p.emoji || cat.emoji}</div>
@@ -9128,14 +11051,14 @@ async function loadMyPlaces() {
 
     if (!myPlaces.length && !myPending.length) {
       listEl.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">
-        📍 ${lang==='tr'?'Henüz yer eklemedin. İlk yerini ekle!':'No places added yet. Add your first one!'}
+        📍 ${tx('Henüz yer eklemedin. İlk yerini ekle!', 'No places added yet. Add your first one!')}
       </div>`;
       return;
     }
 
     listEl.innerHTML = pendingHtml + myPlaces.map(p => {
       const cat = catColors[p.cat] || { bg: '#f0f3f9', emoji: p.emoji || '📍' };
-      const catLabel = catLabels[p.cat] ? catLabels[p.cat][lang] || catLabels[p.cat].tr : '';
+      const catLabel = catLabels[p.cat] ? L(catLabels[p.cat]) : '';
       const stars = p.rating > 0 ? `<span style="color:#f59e0b;font-size:10px;">${'★'.repeat(Math.round(p.rating))}</span> ` : '';
       return `
         <div class="place-row-profile" onclick="openDetail('${p.id}')">
@@ -9150,7 +11073,7 @@ async function loadMyPlaces() {
 
   } catch(e) {
     console.warn('[loadMyPlaces]', e);
-    listEl.innerHTML = `<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:13px;">⚠️ ${lang==='tr'?'Yüklenemedi':'Could not load'}</div>`;
+    listEl.innerHTML = `<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:13px;">⚠️ ${tx('Yüklenemedi', 'Could not load')}</div>`;
   }
 }
 
@@ -9161,11 +11084,11 @@ function renderProfileVisitedCities() {
   const titleEl = document.getElementById('section-visited');
   if (!container) return;
 
-  if (titleEl) titleEl.textContent = lang==='tr' ? 'Gittiğim Şehirler' : "Cities I've Visited";
+  if (titleEl) titleEl.textContent = tx('Gittiğim Şehirler', 'Cities I\'ve Visited');
 
   const cities = getVisitedCities();
   if (!cities.length) {
-    if (emptyEl) emptyEl.textContent = lang==='tr' ? 'Henüz şehir seçmedin' : 'No cities visited yet';
+    if (emptyEl) emptyEl.textContent = tx('Henüz şehir seçmedin', 'No cities visited yet');
     return;
   }
 
@@ -9196,10 +11119,8 @@ function renderVisitedCitiesBar() {
   if (!bar || !list) return;
 
   // Çeviri
-  if (label) label.textContent = lang==='tr' ? '✈️ GİTTİĞİN ŞEHİRLER' : '✈️ CITIES YOU\'VE VISITED';
-  if (hint) hint.textContent = lang==='tr'
-    ? 'Bu şehirlere yeni yer eklenince bildirim alırsın'
-    : 'You\'ll be notified when new places are added';
+  if (label) label.textContent = tx('✈️ GİTTİĞİN ŞEHİRLER', '✈️ CITIES YOU\'VE VISITED');
+  if (hint) hint.textContent = tx('Bu şehirlere yeni yer eklenince bildirim alırsın', 'You\'ll be notified when new places are added');
 
   if (!cities.length) {
     bar.style.display = 'none';
@@ -9217,7 +11138,7 @@ function renderVisitedCitiesBar() {
       transition:background 0.15s;">
       ✈️ ${city}
       <span onclick="removeVisitedCity(event, '${city.replace(/'/g, "\'")}')"
-        style="font-size:10px;opacity:0.5;margin-left:2px;cursor:pointer;" title="${lang==='tr'?'Kaldır':'Remove'}">✕</span>
+        style="font-size:10px;opacity:0.5;margin-left:2px;cursor:pointer;" title="${tx('Kaldır', 'Remove')}">✕</span>
     </span>`).join('');
 }
 
@@ -9236,9 +11157,7 @@ function removeVisitedCity(event, cityName) {
 function showCurrencyInfo() {
   const cur = currentCurrency;
   const usdRate = (1 / cur.rate).toFixed(2);
-  const msg = lang === 'tr'
-    ? `${cur.name.tr} (${cur.code})\n1 USD ≈ ${usdRate} ${cur.symbol}`
-    : `${cur.name.en} (${cur.code})\n1 USD ≈ ${usdRate} ${cur.symbol}`;
+  const msg = tx('{0} ({1})\n1 USD ≈ {2} {3}', '{4} ({1})\n1 USD ≈ {2} {3}', cur.name.tr, cur.code, usdRate, cur.symbol, cur.name.en);
   // Küçük bilgi modal
   showCurrencyModal(cur);
 }
@@ -9250,11 +11169,11 @@ function showCurrencyModal(cur) {
 
   const usdRate = cur.rate > 0 ? (1 / cur.rate).toFixed(cur.rate < 0.01 ? 0 : 1) : '?';
   const examples = [
-    { label: lang==='tr'?'Ucuz yemek':'Budget meal', usd: 15 },
-    { label: lang==='tr'?'Orta restoran':'Mid restaurant', usd: 40 },
-    { label: lang==='tr'?'Pahalı restoran':'Fine dining', usd: 90 },
-    { label: lang==='tr'?'Taksi (5 km)':'Taxi (5 km)', usd: 8 },
-    { label: lang==='tr'?'Kafe kahve':'Café coffee', usd: 5 },
+    { label: tx('Ucuz yemek', 'Budget meal'), usd: 15 },
+    { label: tx('Orta restoran', 'Mid restaurant'), usd: 40 },
+    { label: tx('Pahalı restoran', 'Fine dining'), usd: 90 },
+    { label: tx('Taksi (5 km)', 'Taxi (5 km)'), usd: 8 },
+    { label: tx('Kafe kahve', 'Café coffee'), usd: 5 },
   ];
 
   const rows = examples.map(e =>
@@ -9273,20 +11192,18 @@ function showCurrencyModal(cur) {
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
         <div style="width:42px;height:42px;border-radius:12px;background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.3);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--gold);">${cur.symbol}</div>
         <div>
-          <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text-primary);">${lang==='tr'?cur.name.tr:cur.name.en}</div>
+          <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text-primary);">${currencyDisplayName(cur)}</div>
           <div style="font-size:11px;color:var(--text-muted);">1 USD ≈ ${usdRate} ${cur.symbol} · ${cur.code}</div>
         </div>
       </div>
-      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--text-secondary);margin:16px 0 4px;">${lang==='tr'?'Yaklaşık Fiyat Rehberi':'Approximate Price Guide'}</div>
+      <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--text-secondary);margin:16px 0 4px;">${tx('Yaklaşık Fiyat Rehberi', 'Approximate Price Guide')}</div>
       ${rows}
       <div style="font-size:10px;color:var(--text-muted);margin-top:10px;text-align:center;" id="currency-modal-info">
         ${liveRatesCache
-          ? (lang==='tr'
-              ? '● Canlı kur · ' + new Date(liveRatesFetchedAt).toLocaleTimeString(lang==='tr'?'tr-TR':'en-US', {hour:'2-digit',minute:'2-digit'}) + ' itibarıyla'
-              : '● Live rate · as of ' + new Date(liveRatesFetchedAt).toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'}))
-          : (lang==='tr'?'Kurlar yaklaşık değerdir, değişebilir.':'Rates are approximate and may vary.')}
+          ? tx('● Canlı kur · {0} itibarıyla', '● Live rate · as of {0}', new Date(liveRatesFetchedAt).toLocaleTimeString(appLocale(), {hour:'2-digit',minute:'2-digit'}))
+          : (tx('Kurlar yaklaşık değerdir, değişebilir.', 'Rates are approximate and may vary.'))}
       </div>
-      <button onclick="document.getElementById('currency-modal').remove()" style="width:100%;margin-top:14px;padding:13px;border-radius:14px;background:var(--navy);color:var(--white);font-family:'Syne',sans-serif;font-size:14px;font-weight:600;border:none;cursor:pointer;">${lang==='tr'?'Tamam':'OK'}</button>
+      <button onclick="document.getElementById('currency-modal').remove()" style="width:100%;margin-top:14px;padding:13px;border-radius:14px;background:var(--navy);color:var(--white);font-family:'Syne',sans-serif;font-size:14px;font-weight:600;border:none;cursor:pointer;">${tx('Tamam', 'OK')}</button>
     </div>`;
   modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
   document.getElementById('app').appendChild(modal);
@@ -9321,9 +11238,7 @@ if ('serviceWorker' in navigator) {
 
     navigator.serviceWorker.addEventListener('message', event => {
       if (event.data && event.data.type === 'CITY_CACHED') {
-        showToast(lang === 'tr'
-          ? `${event.data.cityName} çevrimdışı kullanıma hazır ✓`
-          : `${event.data.cityName} ready for offline use ✓`);
+        showToast(tx('{0} çevrimdışı kullanıma hazır ✓', '{0} ready for offline use ✓', event.data.cityName));
       }
       if (event.data?.type === 'NOTIF_CLICK') {
         goTo('screen-home');
@@ -9339,9 +11254,9 @@ if ('serviceWorker' in navigator) {
 // ─── PWA: GÜNCELLEME BANNER ───────────────────────────────────────────────────
 function showUpdateBanner() {
   const t = document.getElementById('toast');
-  t.innerHTML = (lang === 'tr' ? 'Yeni sürüm var! ' : 'Update available! ') +
+  t.innerHTML = (tx('Yeni sürüm var! ', 'Update available! ')) +
     '<span onclick="applyUpdate()" style="text-decoration:underline;cursor:pointer;font-weight:700;">' +
-    (lang === 'tr' ? 'Güncelle' : 'Refresh') + '</span>';
+    (tx('Güncelle', 'Refresh')) + '</span>';
   t.classList.add('show');
 }
 
@@ -9364,7 +11279,7 @@ window.addEventListener('beforeinstallprompt', event => {
 window.addEventListener('appinstalled', () => {
   deferredInstallPrompt = null;
   hideInstallButton();
-  showToast(lang === 'tr' ? '✓ CrewGuide yüklendi!' : '✓ CrewGuide installed!');
+  showToast(tx('✓ CrewGuide yüklendi!', '✓ CrewGuide installed!'));
 });
 
 function showInstallButton() {
@@ -9373,7 +11288,7 @@ function showInstallButton() {
   btn.id = 'pwa-install-btn';
   btn.onclick = triggerInstall;
   btn.style.cssText = 'width:100%;padding:14px;border-radius:16px;background:var(--gold);color:var(--navy);font-family:Syne,sans-serif;font-size:15px;font-weight:600;border:none;cursor:pointer;margin:0 0 12px;';
-  btn.innerHTML = '📲 ' + (lang === 'tr' ? 'Uygulamayı Telefona Yükle' : 'Install App');
+  btn.innerHTML = '📲 ' + (tx('Uygulamayı Telefona Yükle', 'Install App'));
   const profileBody = document.querySelector('#screen-profile-view .profile-body');
   if (profileBody) profileBody.insertBefore(btn, profileBody.firstChild);
   const splashBottom = document.querySelector('.splash-bottom');
@@ -9396,10 +11311,10 @@ function triggerInstall() {
   if (!deferredInstallPrompt) {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     if (isIOS) {
-      showToast(lang === 'tr' ? '📲 Safari\'de "Paylaş" → "Ana Ekrana Ekle"' : '📲 Safari: "Share" → "Add to Home Screen"');
+      showToast(tx('📲 Safari\'de "Paylaş" → "Ana Ekrana Ekle"', '📲 Safari: "Share" → "Add to Home Screen"'));
       return;
     }
-    showToast(lang === 'tr' ? 'Tarayıcı yüklemeyi desteklemiyor.' : 'Browser install not supported.');
+    showToast(tx('Tarayıcı yüklemeyi desteklemiyor.', 'Browser install not supported.'));
     return;
   }
   deferredInstallPrompt.prompt();
@@ -9410,10 +11325,10 @@ function triggerInstall() {
 
 // ─── PWA: ONLINE/OFFLINE DURUM ───────────────────────────────────────────────
 window.addEventListener('online', () => {
-  showToast(lang === 'tr' ? '✓ İnternet bağlantısı geri geldi' : '✓ Back online');
+  showToast(tx('✓ İnternet bağlantısı geri geldi', '✓ Back online'));
 });
 window.addEventListener('offline', () => {
-  showToast(lang === 'tr' ? '📡 Çevrimdışı — cached veriler kullanılıyor' : '📡 Offline — using cached data');
+  showToast(tx('📡 Çevrimdışı — cached veriler kullanılıyor', '📡 Offline — using cached data'));
   const dot = document.getElementById('location-dot');
   if (dot) dot.style.background = '#f59e0b';
 });
