@@ -7451,8 +7451,9 @@ async function translateComment(commentId, btn) {
   }
 
   // Cache'de varsa direkt göster
-  if (commentTranslations[commentId]) {
-    translEl.textContent = commentTranslations[commentId];
+  const trKey = commentId + ':' + lang;   // dil değişince eski dildeki çeviri gösterilmesin
+  if (commentTranslations[trKey]) {
+    translEl.textContent = commentTranslations[trKey];
     translEl.style.display = 'block';
     const spanEl = btn.querySelector('span');
     if (spanEl) spanEl.textContent = tx('Gizle', 'Hide');
@@ -7476,7 +7477,7 @@ async function translateComment(commentId, btn) {
     const translation = data.translation?.trim();
 
     if (translation) {
-      commentTranslations[commentId] = translation;
+      commentTranslations[trKey] = translation;
       translEl.textContent = translation;
       translEl.style.display = 'block';
       if (spanEl) spanEl.textContent = tx('Gizle', 'Hide');
