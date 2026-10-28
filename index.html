@@ -7273,6 +7273,9 @@ const SUPABASE_URL = 'https://nuebqtzeirpyyxtoptlp.supabase.co';
 // ── GOOGLE PLACES ───────────────────────────────────────────────────────────
 // Google anahtarı istemcide TUTULMAZ: açılış saatleri 'places-hours' Edge Function'ı üzerinden,
 // anahtar Supabase Secrets'ta (GOOGLE_PLACES_KEY).
+// Açılış saatleri şimdilik KAPALI (Google faturalandırması açılmadı). Açmak için true yap,
+// Supabase'e geçerli bir GOOGLE_PLACES_KEY kaydet ve 'places-hours'u deploy et.
+const HOURS_ENABLED = false;
 
 // Çalışma saati cache: place_id → { fetched_at, is_open, badge_text, detail_text, weekly }
 const hoursCache = {};
@@ -8518,6 +8521,7 @@ async function fetchPlaceHours(p) {
   // Badge'i gizle, week panelini kapat
   badge.style.display = 'none';
   if (weekEl) { weekEl.classList.remove('visible'); weekEl.innerHTML = ''; }
+  if (!HOURS_ENABLED) return;            // özellik kapalı: saat kutusu gizli kalır
 
   // 1) Önce cache'e bak
   const cacheKey = p.googlePlaceId || p.id;
@@ -8735,6 +8739,7 @@ async function fetchPlaceHours(p) {
   // Badge'i gizle, week panelini kapat
   badge.style.display = 'none';
   if (weekEl) { weekEl.classList.remove('visible'); weekEl.innerHTML = ''; }
+  if (!HOURS_ENABLED) return;            // özellik kapalı: saat kutusu gizli kalır
 
   // 1) Önce cache'e bak
   const cacheKey = p.googlePlaceId || p.id;
