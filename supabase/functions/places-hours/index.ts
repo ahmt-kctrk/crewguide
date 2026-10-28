@@ -32,6 +32,11 @@ serve(async (req) => {
       });
       const sd = await sr.json();
       console.log("Search:", JSON.stringify(sd).slice(0,200));
+      // Google hatası (geçersiz anahtar, API kapalı, kota) "bulunamadı" gibi görünmesin
+      if (!sr.ok || sd.error) {
+        console.error("Google search error:", sr.status, JSON.stringify(sd.error || sd).slice(0, 300));
+        return json({ error: "Google: " + (sd.error?.message || sr.status), google_status: sd.error?.status || sr.status }, 502);
+      }
       if (!sd.places?.[0]?.id) return json({ found: false });
       googlePlaceId = sd.places[0].id;
     }
@@ -49,6 +54,11 @@ serve(async (req) => {
 
     let dd: any = {};
     try { dd = JSON.parse(drText); } catch(e) { return json({ error: "Detail parse: " + (e as Error).message + " raw: " + drText.slice(0,100) }, 500); }
+
+    if (!dr.ok || dd.error) {
+      console.error("Google detail error:", dr.status, JSON.stringify(dd.error || dd).slice(0, 300));
+      return json({ error: "Google: " + (dd.error?.message || dr.status), google_status: dd.error?.status || dr.status }, 502);
+    }
 
     const oh = dd.regularOpeningHours;
     if (!oh) return json({ found: true, google_place_id: googlePlaceId, opening_hours: null });

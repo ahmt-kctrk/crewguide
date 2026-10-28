@@ -7270,10 +7270,9 @@ window.addEventListener('offline', () => {
 
 const SUPABASE_URL = 'https://nuebqtzeirpyyxtoptlp.supabase.co';
 
-// ── GOOGLE PLACES API ────────────────────────────────────────────────────────
-// Kendi API anahtarınızı buraya girin (Places API + Maps JavaScript API aktif olmalı)
-// https://console.cloud.google.com → APIs & Services → Places API (New) etkinleştir
-const GOOGLE_PLACES_KEY = 'AIzaSyCXcfrKl6Vbvw_C4JCyAk2X7Zu3HFbynmE';  // ← Buraya API key girin
+// ── GOOGLE PLACES ───────────────────────────────────────────────────────────
+// Google anahtarı istemcide TUTULMAZ: açılış saatleri 'places-hours' Edge Function'ı üzerinden,
+// anahtar Supabase Secrets'ta (GOOGLE_PLACES_KEY).
 
 // Çalışma saati cache: place_id → { fetched_at, is_open, badge_text, detail_text, weekly }
 const hoursCache = {};
@@ -8539,7 +8538,6 @@ async function fetchPlaceHours(p) {
   }
 
   // 3) API key yoksa sessizce çık
-  if (!GOOGLE_PLACES_KEY) return;
 
   // 4) Google'dan çek
   fetchFromGoogle(p);
@@ -8757,7 +8755,6 @@ async function fetchPlaceHours(p) {
   }
 
   // 3) API key yoksa sessizce çık
-  if (!GOOGLE_PLACES_KEY) return;
 
   // 4) Google'dan çek
   fetchFromGoogle(p);
