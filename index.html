@@ -5730,7 +5730,7 @@ function goTo(id) {
   if (id === 'screen-settings') {
     renderBlockedUsers();
     const adminWrap = document.getElementById('admin-panel-btn-wrap');
-    if (adminWrap) adminWrap.style.display = isAdmin() ? 'block' : 'none';
+    if (adminWrap) adminWrap.style.display = isModerator() ? 'block' : 'none';
   }
 
   if (id === 'screen-home' && !locationDetected) {
@@ -5943,12 +5943,12 @@ function openDetail(id) {
   fetchPlaceHours(p);  // çalışma saati badge
   // Silme butonunu göster/gizle — admin veya yerin sahibi
   const adminActions = document.getElementById('admin-actions');
-  if (adminActions) adminActions.style.display = isAdmin() ? 'block' : 'none';
+  if (adminActions) adminActions.style.display = isModerator() ? 'block' : 'none';
 
   // Düzenle butonu — yerin sahibi veya admin
   const editAction = document.getElementById('edit-place-action');
   if (editAction) {
-    const canEdit = isAdmin() || (currentUser && p.userId === currentUser.id);
+    const canEdit = isModerator() || (currentUser && p.userId === currentUser.id);
     editAction.style.display = canEdit ? 'block' : 'none';
   }
   // Şikayet butonu — giriş yapmış ve yerin sahibi olmayan kullanıcı
@@ -6230,6 +6230,9 @@ function isTrustedContributor() {
   if (isAdmin()) return true;
   return !!(currentProfile && ['admin', 'ambassador'].includes(currentProfile.role));
 }
+// Moderasyon yetkisi (admin + elçi): yer onayı/düzenleme/gizleme, şikayetler, yorum gizleme.
+// Kullanıcı yönetimi, davetler, kalıcı silme ve rol verme SADECE admin.
+function isModerator() { return isTrustedContributor(); }
 
 let isAdultContent = false;
 let showAdultContent = false;
@@ -7810,7 +7813,7 @@ function renderComments(comments) {
           ${(!isOwn && currentUser) ? `
           <button class="comment-mini-btn" onclick="openReportSheet('comment', '${c.id}', '${c.user_id || ''}')">🚩 ${tx('Şikayet et', 'Report')}</button>
           ${c.user_id ? `<button class="comment-mini-btn" data-name="${escapeHtml(c.username)}" onclick="blockUser('${c.user_id}', this.dataset.name)">🚫 ${tx('Engelle', 'Block')}</button>` : ''}
-          ${isAdmin() ? `<button class="comment-mini-btn" style="color:#ef4444;" onclick="adminHideComment('${c.id}')">🙈 Gizle</button>` : ''}` : ''}
+          ${isModerator() ? `<button class="comment-mini-btn" style="color:#ef4444;" onclick="adminHideComment('${c.id}')">🙈 Gizle</button>` : ''}` : ''}
         </div>
         ${isOwn ? `
           <div class="comment-actions">
@@ -9972,7 +9975,7 @@ const REPORT_REASON_TR = { spam:'Spam', offensive:'Saldırgan', harassment:'Taci
 let adminReportGroups = [];
 
 async function refreshAdminReportCount() {
-  if (!isAdmin()) return;
+  if (!isModerator()) return;
   try {
     const rows = await sbFetch('reports?status=eq.open&select=id', { headers: { 'Prefer': '' } });
     const n = (rows || []).length;
@@ -9982,7 +9985,7 @@ async function refreshAdminReportCount() {
 }
 
 async function loadAdminReports() {
-  if (!isAdmin()) return;
+  if (!isModerator()) return;
   const listEl = document.getElementById('admin-reports-list');
   const filter = document.getElementById('admin-report-filter')?.value || 'open';
   if (listEl) listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">⏳ Yükleniyor...</div>';
@@ -10063,17 +10066,18 @@ function renderAdminReports(filter) {
           ${canHide && !t.is_hidden ? `<button class="admin-btn admin-btn-hide" onclick="adminReportAction(${i}, 'hide', this)">🙈 Gizle + kapat</button>` : ''}
           ${canHide && t.is_hidden ? `<button class="admin-btn admin-btn-show" onclick="adminReportAction(${i}, 'unhide', this)">✓ Göster + yoksay</button>` : ''}
           <button class="admin-btn admin-btn-show" onclick="adminReportAction(${i}, 'dismiss', this)">✕ Yoksay</button>
-          ${g.ownerId ? `<button class="admin-btn admin-btn-del" onclick="adminReportAction(${i}, 'delete_user', this)">🗑 Kullanıcıyı sil</button>` : ''}
+          ${g.ownerId && isAdmin() ? `<button class="admin-btn admin-btn-del" onclick="adminReportAction(${i}, 'delete_user', this)">🗑 Kullanıcıyı sil</button>` : ''}
         </div>` : `<div style="font-size:11px;color:var(--text-muted);">Durum: ${g.reports[0].status === 'resolved' ? 'Çözüldü' : 'Yoksayıldı'}</div>`}
       </div>`;
   }).join('');
 }
 
 async function adminReportAction(i, action, btn) {
-  if (!isAdmin()) return;
+  if (!isModerator()) return;
   const g = adminReportGroups[i];
   if (!g) return;
   if (action === 'delete_user') {
+    if (!isAdmin()) return;
     await adminDeleteUser(g.ownerId, g.ownerName);
     action = 'resolve';
   }
@@ -10100,6 +10104,7 @@ async function adminReportAction(i, action, btn) {
 }
 
 function switchAdminTab(tab) {
+  if (tab === 'invites' && !isAdmin()) return;
   document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('admin-tab-' + tab)?.classList.add('active');
   document.getElementById('admin-panel-places').style.display = tab === 'places' ? 'flex' : 'none';
@@ -10220,6 +10225,7 @@ function renderAdminInvites() {
             <div class="invite-user-name">
               ${escapeHtml(u.username || 'İsimsiz')}
               ${u.role === 'admin' ? '<span style="font-size:10px;background:var(--navy);color:#fff;padding:1px 6px;border-radius:4px;margin-left:4px;">ADMIN</span>' : ''}
+              ${u.role === 'ambassador' ? '<span style="font-size:10px;background:var(--gold);color:#fff;padding:1px 6px;border-radius:4px;margin-left:4px;">ELÇİ</span>' : ''}
               ${u.is_disabled ? '<span class="disabled-badge">Devre Dışı</span>' : ''}
             </div>
             <div class="invite-user-meta">
@@ -10230,6 +10236,7 @@ function renderAdminInvites() {
           </div>
           <div style="display:flex;gap:4px;align-items:center;">
             <button class="invite-add-btn" data-id="${u.id}" onclick="adminAddInviteCode(this.dataset.id, this.dataset.name)" data-name="${(u.username||'').replace(/"/g,'&quot;')}">+ Kod Ver</button>
+            ${u.role !== 'admin' && !u.is_disabled ? `<button class="invite-add-btn" data-id="${u.id}" data-name="${escapeAdminHtml(u.username || '')}" data-role="${u.role === 'ambassador' ? 'user' : 'ambassador'}" onclick="adminSetRole(this.dataset.id, this.dataset.name, this.dataset.role, this)">${u.role === 'ambassador' ? '− Elçiliği kaldır' : '🏅 Elçi yap'}</button>` : ''}
             ${u.is_disabled
               ? `<button class="invite-delete-btn" data-id="${u.id}" data-name="${(u.username||'').replace(/"/g,'&quot;')}" onclick="adminEnableUser(this.dataset.id, this.dataset.name)">✓ Aktif Et</button>`
               : `<button class="invite-delete-btn" data-id="${u.id}" data-name="${(u.username||'').replace(/"/g,'&quot;')}" onclick="adminDeleteUser(this.dataset.id, this.dataset.name)">🗑 Sil</button>`
@@ -10239,6 +10246,32 @@ function renderAdminInvites() {
         <div style="padding-left:4px;">${codesHtml}</div>
       </div>`;
   }).join('');
+}
+
+// Elçi yap / elçiliği kaldır (sadece admin; sunucu da sadece admin'e izin verir)
+async function adminSetRole(userId, username, role, btn) {
+  if (!isAdmin()) return;
+  const msg = role === 'ambassador'
+    ? `"${username}" elçi yapılsın mı?\n\nElçi: onaysız yer ekler, her yeri düzenler, önerileri onaylar, şikayetleri yönetir, yorum gizler. Kullanıcı silemez, kalıcı yer silemez, davetleri yönetemez.`
+    : `"${username}" kullanıcısının elçiliği kaldırılsın mı?`;
+  if (!confirm(msg)) return;
+  if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+  try {
+    const rows = await sbFetch(`profiles?id=eq.${encodeURIComponent(userId)}&select=id,role`, {
+      method: 'PATCH',
+      prefer: 'return=representation',
+      body: JSON.stringify({ role })
+    });
+    if (!rows || !rows[0] || rows[0].role !== role) throw new Error('Rol değişmedi (yetki?)');
+    const u = allAdminUsers.find(x => x.id === userId);
+    if (u) u.role = role;
+    showToast(role === 'ambassador' ? `🏅 "${username}" artık elçi` : `"${username}" artık normal kullanıcı`);
+    renderAdminInvites();
+  } catch (e) {
+    console.error('[adminSetRole]', e);
+    showToast('Hata: ' + e.message);
+    if (btn) btn.disabled = false;
+  }
 }
 
 async function adminAddInviteCode(userId, username) {
@@ -10370,7 +10403,10 @@ let allAdminPlaces = [];
 let adminFilteredPlaces = [];
 
 async function loadAdminPlaces() {
-  if (!isAdmin()) { showToast('Yetkisiz!'); goTo('screen-home'); return; }
+  if (!isModerator()) { showToast('Yetkisiz!'); goTo('screen-home'); return; }
+  // Elçi: davet/kullanıcı sekmesi görünmez
+  const invTab = document.getElementById('admin-tab-invites');
+  if (invTab) invTab.style.display = isAdmin() ? '' : 'none';
 
   // İlk açılışta Yerler sekmesini göster
   const placesPanel = document.getElementById('admin-panel-places');
@@ -10411,7 +10447,7 @@ async function loadAdminPlaces() {
     const sel = document.getElementById('admin-city-filter');
     if (sel) {
       sel.innerHTML = '<option value="all">Tüm Şehirler</option>' +
-        cities.map(c => `<option value="${c}">${c}</option>`).join('');
+        cities.map(c => `<option value="${escapeAdminHtml(c)}">${escapeAdminHtml(c)}</option>`).join('');
     }
 
     filterAdminPlaces();
@@ -10487,7 +10523,7 @@ function renderAdminPlaces() {
         <div class="admin-place-body">
           <div class="admin-place-name">${escapeAdminHtml(p.name)} ${hiddenBadge}</div>
           <div class="admin-place-meta">
-            📍 ${p.city || '—'} · ${catLabel} · ${p.price || '$'}<br>
+            📍 ${escapeAdminHtml(p.city || '—')} · ${catLabel} · ${escapeAdminHtml(p.price || '$')}<br>
             ⭐ ${p.rating ? parseFloat(p.rating).toFixed(1) : '—'} (${p.rating_count || 0}) · 📅 ${date}
           </div>
           ${descSnippet}
@@ -10501,7 +10537,7 @@ function renderAdminPlaces() {
             ? `<button class="admin-btn admin-btn-show" onclick="adminToggleHide('${p.id}', false, this)">✓ Göster</button>`
             : `<button class="admin-btn admin-btn-hide" onclick="adminToggleHide('${p.id}', true, this)">🚫 Gizle</button>`
           }
-          <button class="admin-btn admin-btn-del" data-id="${p.id}" data-name="${p.name.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" onclick="adminPermanentDelete(this.dataset.id, this.dataset.name, this)">🗑 Sil</button>
+          ${isAdmin() ? `<button class="admin-btn admin-btn-del" data-id="${escapeAdminHtml(p.id)}" data-name="${escapeAdminHtml(p.name)}" onclick="adminPermanentDelete(this.dataset.id, this.dataset.name, this)">🗑 Sil</button>` : ''}
         </div>
       </div>`;
   }).join('');
@@ -10536,7 +10572,7 @@ function escapeAdminHtml(s) {
 
 // Onay bekleyen öneriyi onayla / reddet
 async function adminReviewPlace(placeId, approve, btn) {
-  if (!isAdmin()) return;
+  if (!isModerator()) return;
   const row = btn?.closest('.admin-place-actions');
   row?.querySelectorAll('button').forEach(b => b.disabled = true);
   if (btn) btn.textContent = '⏳';
@@ -10563,7 +10599,7 @@ async function adminReviewPlace(placeId, approve, btn) {
 }
 
 async function adminToggleHide(placeId, hide, btn) {
-  if (!isAdmin()) return;
+  if (!isModerator()) return;
   if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
 
   try {
@@ -10628,7 +10664,7 @@ Bu işlem geri alınamaz.`);
 async function adminDeletePlace() {
   const p = places.find(x => x.id === currentDetailId);
   const isOwner = currentUser && p && p.userId && currentUser.id === p.userId;
-  if (!isAdmin() && !isOwner) { showToast(tx('Yetkisiz işlem!', 'Unauthorized!')); return; }
+  if (!isModerator() && !isOwner) { showToast(tx('Yetkisiz işlem!', 'Unauthorized!')); return; }
   if (!p) return;
 
   const confirmed = confirm(
@@ -10665,7 +10701,7 @@ async function adminDeletePlace() {
 }
 
 async function adminHideComment(commentId) {
-  if (!isAdmin()) return;
+  if (!isModerator()) return;
   try {
     await sbFetch(`comments?id=eq.${commentId}`, {
       method: 'PATCH',

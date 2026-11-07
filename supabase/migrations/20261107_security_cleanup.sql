@@ -113,3 +113,6 @@ begin
   return new;
 end $$;
 revoke execute on function public.handle_new_user() from public, anon, authenticated;
+
+-- 7) Tabloda "CRW-MASTER" adlı gerçek bir kod satırı da vardı (tek kullanımlık kod gibi çalışıyordu) → sil
+delete from public.invite_codes where code = 'CRW-MASTER' and used_by is null;
