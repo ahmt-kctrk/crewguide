@@ -1243,6 +1243,7 @@
         <div class="privacy-box-text" id="privacy-text">E-posta ve şifren hiçbir zaman başkalarıyla paylaşılmaz. Diğer kullanıcılar yalnızca görünen adını görebilir.</div>
       </div>
       <button class="btn-navy" onclick="createAccount()" id="btn-create-account">Hesap Oluştur →</button>
+      <div style="text-align:center;font-size:11px;color:var(--text-muted);margin-top:10px;line-height:1.5;"><span data-t="Learn how your data is used:">Verilerinin nasıl kullanıldığını öğren:</span> <a href="privacy.html" target="_blank" rel="noopener" onclick="this.href='privacy.html?lang='+(lang==='tr'?'tr':'en')" style="color:var(--gold);font-weight:600;" data-t="Privacy Policy">Gizlilik Politikası</a></div>
     </div>
   </div>
 
@@ -1935,6 +1936,7 @@
       </div>
       <button onclick="disableMyAccount()" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid #fca5a5;background:transparent;font-size:13px;color:#991b1b;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:8px;" data-t="⚠️ Deactivate My Account">⚠️ Hesabımı Devre Dışı Bırak</button>
       <button onclick="deleteMyAccount()" data-t="🗑 Delete My Account Permanently" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid #ef4444;background:#fee2e2;font-size:13px;color:#991b1b;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;margin-bottom:8px;">🗑 Hesabımı Kalıcı Olarak Sil</button>
+      <a href="privacy.html" target="_blank" rel="noopener" onclick="this.href='privacy.html?lang='+(lang==='tr'?'tr':'en')" style="display:block;text-align:center;width:100%;padding:12px;margin-bottom:8px;border-radius:var(--radius);border:1.5px solid var(--border);font-size:13px;color:var(--text-secondary);text-decoration:none;font-family:'DM Sans',sans-serif;box-sizing:border-box;" data-t="🔒 Privacy Policy">🔒 Gizlilik Politikası</a>
       <button onclick="signOut()" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid #fca5a5;background:transparent;font-size:13px;color:#ef4444;cursor:pointer;font-family:'DM Sans',sans-serif;" id="btn-sign-out">🚪 Çıkış Yap</button>
       <div style="height:20px;"></div>
     </div>
@@ -2343,7 +2345,10 @@ var I18N = {
   "🚫 \"{0}\" blocked.": "🚫 „{0}“ blockiert.",
   "🚫 Blocked Users": "🚫 Blockierte Nutzer",
   "🤬 Offensive or hateful": "🤬 Beleidigend oder hasserfüllt",
-  "🛡 Admin Panel": "🛡 Admin-Bereich"
+  "🛡 Admin Panel": "🛡 Admin-Bereich",
+  "Privacy Policy": "Datenschutzerklärung",
+  "🔒 Privacy Policy": "🔒 Datenschutzerklärung",
+  "Learn how your data is used:": "So verwenden wir deine Daten:"
  },
  "fr": {
   "Ask a colleague for an invite code.": "Demande un code d'invitation à un collègue.",
@@ -2652,7 +2657,10 @@ var I18N = {
   "🚫 \"{0}\" blocked.": "🚫 « {0} » bloqué.",
   "🚫 Blocked Users": "🚫 Utilisateurs bloqués",
   "🤬 Offensive or hateful": "🤬 Offensant ou haineux",
-  "🛡 Admin Panel": "🛡 Panneau admin"
+  "🛡 Admin Panel": "🛡 Panneau admin",
+  "Privacy Policy": "Politique de confidentialité",
+  "🔒 Privacy Policy": "🔒 Politique de confidentialité",
+  "Learn how your data is used:": "Comment tes données sont utilisées :"
  },
  "es": {
   "Ask a colleague for an invite code.": "Pide un código de invitación a un compañero.",
@@ -2961,7 +2969,10 @@ var I18N = {
   "🚫 \"{0}\" blocked.": "🚫 «{0}» bloqueado.",
   "🚫 Blocked Users": "🚫 Usuarios bloqueados",
   "🤬 Offensive or hateful": "🤬 Ofensivo o de odio",
-  "🛡 Admin Panel": "🛡 Panel de admin"
+  "🛡 Admin Panel": "🛡 Panel de admin",
+  "Privacy Policy": "Política de privacidad",
+  "🔒 Privacy Policy": "🔒 Política de privacidad",
+  "Learn how your data is used:": "Cómo usamos tus datos:"
  },
  "ar": {
   "Ask a colleague for an invite code.": "اطلب رمز دعوة من أحد زملائك.",
@@ -3270,7 +3281,10 @@ var I18N = {
   "🚫 \"{0}\" blocked.": "🚫 تم حظر \"{0}\".",
   "🚫 Blocked Users": "🚫 المستخدمون المحظورون",
   "🤬 Offensive or hateful": "🤬 مسيء أو يحض على الكراهية",
-  "🛡 Admin Panel": "🛡 لوحة الإدارة"
+  "🛡 Admin Panel": "🛡 لوحة الإدارة",
+  "Privacy Policy": "سياسة الخصوصية",
+  "🔒 Privacy Policy": "🔒 سياسة الخصوصية",
+  "Learn how your data is used:": "تعرّف على كيفية استخدام بياناتك:"
  },
  "ja": {
   "Ask a colleague for an invite code.": "同僚に招待コードをもらってください。",
@@ -3579,7 +3593,10 @@ var I18N = {
   "🚫 \"{0}\" blocked.": "🚫 「{0}」をブロックしました。",
   "🚫 Blocked Users": "🚫 ブロック中のユーザー",
   "🤬 Offensive or hateful": "🤬 攻撃的・差別的",
-  "🛡 Admin Panel": "🛡 管理パネル"
+  "🛡 Admin Panel": "🛡 管理パネル",
+  "Privacy Policy": "プライバシーポリシー",
+  "🔒 Privacy Policy": "🔒 プライバシーポリシー",
+  "Learn how your data is used:": "データの取り扱いについて："
  },
  "ko": {
   "Ask a colleague for an invite code.": "동료에게 초대 코드를 요청하세요.",
@@ -3888,7 +3905,10 @@ var I18N = {
   "🚫 \"{0}\" blocked.": "🚫 '{0}'님을 차단했습니다.",
   "🚫 Blocked Users": "🚫 차단한 사용자",
   "🤬 Offensive or hateful": "🤬 공격적이거나 혐오스러운 내용",
-  "🛡 Admin Panel": "🛡 관리자 패널"
+  "🛡 Admin Panel": "🛡 관리자 패널",
+  "Privacy Policy": "개인정보 처리방침",
+  "🔒 Privacy Policy": "🔒 개인정보 처리방침",
+  "Learn how your data is used:": "데이터 이용 방식 알아보기:"
  },
  "zh": {
   "Ask a colleague for an invite code.": "请向同事索取邀请码。",
@@ -4197,7 +4217,10 @@ var I18N = {
   "🚫 \"{0}\" blocked.": "🚫 已屏蔽“{0}”。",
   "🚫 Blocked Users": "🚫 已屏蔽的用户",
   "🤬 Offensive or hateful": "🤬 冒犯或仇恨言论",
-  "🛡 Admin Panel": "🛡 管理面板"
+  "🛡 Admin Panel": "🛡 管理面板",
+  "Privacy Policy": "隐私政策",
+  "🔒 Privacy Policy": "🔒 隐私政策",
+  "Learn how your data is used:": "了解我们如何使用你的数据："
  }
 };
 function tx(trS, enS, ...args) {

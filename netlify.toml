@@ -1,2 +1,13 @@
 [build]
   publish = "."
+
+# Gizlilik politikası kısa adresleri
+[[redirects]]
+  from = "/gizlilik"
+  to = "/privacy.html"
+  status = 200
+
+[[redirects]]
+  from = "/privacy"
+  to = "/privacy.html"
+  status = 200
