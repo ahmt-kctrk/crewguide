@@ -11,6 +11,7 @@
 
 <!-- PWA: Theme & Status Bar -->
 <meta name="theme-color" content="#0f1729">
+<script>try { if (window.navigator.standalone === true) document.documentElement.classList.add('ios-standalone'); } catch (e) {}</script>
 <meta name="mobile-web-app-capable" content="yes">
 
 <!-- iOS PWA -->
@@ -99,22 +100,17 @@
   .font-display { font-family: 'Syne', sans-serif; }
 
   /* STATUS BAR */
+  /* Ekranın üst boşluğu. Telefonun kendi saat/pil çubuğu zaten görünüyor; burada sahte çubuk yok.
+     iPhone'da ana ekrana eklenen uygulamada sistem çubuğu içeriğin ÜSTÜNE biner (black-translucent),
+     o yüzden orada 44px boşluk bırakılır. */
   .status-bar {
     background: var(--navy);
-    height: 44px;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    padding: 0 20px 8px;
+    height: 12px;
     flex-shrink: 0;
+    position: relative; z-index: 1;
+    box-shadow: 0 1px 0 0 var(--navy);   /* kesirli piksel oranlı ekranlarda alttaki ince açık çizgiyi kapatır */
   }
-  .status-time { color: rgba(255,255,255,0.9); font-size: 12px; font-weight: 500; }
-  .status-icons { display: flex; gap: 5px; align-items: center; }
-  .status-icon { width: 14px; height: 10px; background: rgba(255,255,255,0.7); border-radius: 2px; }
-  .status-icon.signal { width: 12px; clip-path: polygon(0 100%, 33% 60%, 66% 30%, 100% 0, 100% 100%); }
-  .status-icon.battery { width: 18px; height: 9px; border: 1.5px solid rgba(255,255,255,0.7); border-radius: 2px; position: relative; }
-  .status-icon.battery::after { content:''; position:absolute; right:-4px; top:2px; width:3px; height:5px; background:rgba(255,255,255,0.7); border-radius:0 1px 1px 0; }
-  .status-icon.battery::before { content:''; position:absolute; inset:1px 3px 1px 1px; background:rgba(255,255,255,0.7); border-radius:1px; }
+  html.ios-standalone .status-bar { height: 44px; }
 
   /* SPLASH SCREEN */
   #screen-splash {
@@ -1057,12 +1053,9 @@
 
   <!-- SCREEN: CITY SELECT -->
   <div class="screen" id="screen-city">
-    <div class="status-bar">
-      <span class="status-time">09:41</span>
-      <div class="status-icons"><div class="status-icon signal"></div><div class="status-icon battery"></div></div>
-    </div>
+    <div class="status-bar"></div>
     <div class="navy-header">
-      <div class="nav-back" onclick="goTo('screen-home')" id="back-city">← </div>
+      <div class="nav-back" onclick="goTo('screen-home')" id="back-city"></div>
       <div class="header-title font-display" id="city-modal-title" data-t="Select City">Şehir Seç</div>
       <div class="header-sub" id="city-modal-sub" data-t="Use current location or search a city">Mevcut konumun veya başka bir şehir ara</div>
     </div>
@@ -1082,12 +1075,9 @@
 
   <!-- SCREEN: LOGIN -->
   <div class="screen" id="screen-login">
-    <div class="status-bar">
-      <span class="status-time">09:41</span>
-      <div class="status-icons"><div class="status-icon signal"></div><div class="status-icon battery"></div></div>
-    </div>
+    <div class="status-bar"></div>
     <div class="navy-header">
-      <div class="nav-back" onclick="goTo('screen-splash')">← </div>
+      <div class="nav-back" onclick="goTo('screen-splash')"></div>
       <div class="header-title font-display" id="login-title">Giriş Yap</div>
       <div class="header-sub" id="login-sub">CrewGuide hesabına giriş yap</div>
     </div>
@@ -1110,13 +1100,7 @@
 
   <!-- SCREEN: SPLASH -->
   <div class="screen active" id="screen-splash">
-    <div class="status-bar">
-      <span class="status-time">09:41</span>
-      <div class="status-icons">
-        <div class="status-icon signal"></div>
-        <div class="status-icon battery"></div>
-      </div>
-    </div>
+    <div class="status-bar"></div>
     <div class="splash-top">
       <div class="splash-logo">✈️</div>
       <div class="splash-title font-display">CrewGuide</div>
@@ -1167,10 +1151,7 @@
 
   <!-- SCREEN: INVITE -->
   <div class="screen" id="screen-invite">
-    <div class="status-bar">
-      <span class="status-time">09:41</span>
-      <div class="status-icons"><div class="status-icon signal"></div><div class="status-icon battery"></div></div>
-    </div>
+    <div class="status-bar"></div>
     <div class="navy-header">
       <div class="nav-back" onclick="goTo('screen-splash')" id="back-splash"></div>
       <div class="header-title font-display" id="invite-title">Davet Kodu</div>
@@ -1207,10 +1188,7 @@
 
   <!-- SCREEN: PROFILE SETUP -->
   <div class="screen" id="screen-profile">
-    <div class="status-bar">
-      <span class="status-time">09:41</span>
-      <div class="status-icons"><div class="status-icon signal"></div><div class="status-icon battery"></div></div>
-    </div>
+    <div class="status-bar"></div>
     <div class="navy-header">
       <div class="nav-back" onclick="goTo('screen-invite')" id="back-invite"></div>
       <div class="header-title font-display" id="profile-setup-title">Profil Oluştur</div>
@@ -1249,10 +1227,7 @@
 
   <!-- SCREEN: WELCOME -->
   <div class="screen" id="screen-welcome" style="background:var(--navy);">
-    <div class="status-bar">
-      <span class="status-time">09:41</span>
-      <div class="status-icons"><div class="status-icon signal"></div><div class="status-icon battery"></div></div>
-    </div>
+    <div class="status-bar"></div>
     <div class="welcome-body">
       <div class="welcome-emoji">🎉</div>
       <div class="welcome-title font-display" id="welcome-title">Hoş geldin!</div>
@@ -1268,10 +1243,7 @@
 
   <!-- SCREEN: HOME -->
   <div class="screen" id="screen-home">
-    <div class="status-bar">
-      <span class="status-time">09:41</span>
-      <div class="status-icons"><div class="status-icon signal"></div><div class="status-icon battery"></div></div>
-    </div>
+    <div class="status-bar"></div>
     <div class="home-header">
       <div class="home-top">
         <div class="home-logo font-display">CrewGuide</div>
@@ -1523,10 +1495,7 @@
 
   <!-- SCREEN: ADD PLACE -->
   <div class="screen" id="screen-add">
-    <div class="status-bar">
-      <span class="status-time">09:41</span>
-      <div class="status-icons"><div class="status-icon signal"></div><div class="status-icon battery"></div></div>
-    </div>
+    <div class="status-bar"></div>
     <div class="navy-header">
       <div class="nav-back" onclick="goTo('screen-home')" id="back-home-add"></div>
       <div class="header-title font-display" id="add-title">Yeni Yer Ekle</div>
@@ -1648,12 +1617,9 @@
 
   <!-- SCREEN: NOTIFICATIONS -->
   <div class="screen" id="screen-notif">
-    <div class="status-bar">
-      <span class="status-time">09:41</span>
-      <div class="status-icons"><div class="status-icon signal"></div><div class="status-icon battery"></div></div>
-    </div>
+    <div class="status-bar"></div>
     <div class="navy-header">
-      <div class="nav-back" onclick="goTo('screen-home')">← </div>
+      <div class="nav-back" onclick="goTo('screen-home')"></div>
       <div class="header-title font-display" id="notif-title">Bildirimler</div>
       <div class="header-sub" id="notif-sub">Son eklenen yerler</div>
     </div>
@@ -1679,10 +1645,7 @@
 
   <!-- SCREEN: SAVED -->
   <div class="screen" id="screen-saved">
-    <div class="status-bar">
-      <span class="status-time">09:41</span>
-      <div class="status-icons"><div class="status-icon signal"></div><div class="status-icon battery"></div></div>
-    </div>
+    <div class="status-bar"></div>
     <div class="navy-header">
       <div class="nav-back" onclick="goTo('screen-home')" id="back-saved"></div>
       <div class="header-title font-display" id="saved-title">Kayıtlı Yerler</div>
@@ -1711,10 +1674,7 @@
 
   <!-- SCREEN: PROFILE VIEW -->
   <div class="screen" id="screen-profile-view">
-    <div class="status-bar">
-      <span class="status-time">09:41</span>
-      <div class="status-icons"><div class="status-icon signal"></div><div class="status-icon battery"></div></div>
-    </div>
+    <div class="status-bar"></div>
     <div class="profile-hero-section" style="position:relative;">
       <button onclick="goTo('screen-settings')" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.12);border:none;border-radius:50%;width:34px;height:34px;font-size:16px;cursor:pointer;">⚙️</button>
       <div class="profile-avatar">✈️</div>
@@ -1777,12 +1737,9 @@
 
   <!-- SCREEN: SETTINGS -->
   <div class="screen" id="screen-settings">
-    <div class="status-bar">
-      <span class="status-time">09:41</span>
-      <div class="status-icons"><div class="status-icon signal"></div><div class="status-icon battery"></div></div>
-    </div>
+    <div class="status-bar"></div>
     <div class="navy-header" id="settings-header">
-      <div class="nav-back" onclick="goTo('screen-profile-view')">← </div>
+      <div class="nav-back" onclick="goTo('screen-profile-view')"></div>
       <div class="header-title font-display" id="settings-title">Ayarlar</div>
       <div class="header-sub" id="settings-sub">Görünümü kişiselleştir</div>
     </div>
@@ -1942,12 +1899,9 @@
 
   <!-- SCREEN: ADMIN PANELİ -->
   <div class="screen" id="screen-admin">
-    <div class="status-bar">
-      <span class="status-time">09:41</span>
-      <div class="status-icons"><div class="status-icon signal"></div><div class="status-icon battery"></div></div>
-    </div>
+    <div class="status-bar"></div>
     <div class="navy-header">
-      <div class="nav-back" onclick="goTo('screen-settings')">← </div>
+      <div class="nav-back" onclick="goTo('screen-settings')"></div>
       <div class="header-title font-display">Admin Paneli</div>
       <div class="header-sub" id="admin-panel-sub">Tüm yerler</div>
     </div>

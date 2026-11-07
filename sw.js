@@ -1,7 +1,7 @@
 // CrewGuide Service Worker v4.2 — Offline-first + Supabase Cache
-// BUILD: 202611072236
-const STATIC_CACHE = 'crewguide-static-202611072236';
-const DYNAMIC_CACHE = 'crewguide-dynamic-202611072236';
+// BUILD: 202611072254
+const STATIC_CACHE = 'crewguide-static-202611072254';
+const DYNAMIC_CACHE = 'crewguide-dynamic-202611072254';
 const SUPABASE_CACHE = 'crewguide-supabase-202506030001';
 // Harita karoları, fontlar, fotoğraflar — deploy'da SİLİNMEZ (adı sabit), boyutu sınırlı
 const RUNTIME_CACHE = 'crewguide-runtime-v1';
