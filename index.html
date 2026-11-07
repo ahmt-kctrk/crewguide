@@ -8591,8 +8591,6 @@ async function verifyInviteCode() {
       showToast(tx('Geçersiz veya kullanılmış kod!', 'Invalid or used code!'));
       return;
     }
-    if (inputCode === 'CRW-MASTER') sessionStorage.setItem('isMasterInvite', 'true');
-    else sessionStorage.removeItem('isMasterInvite');
     // Kodu sessionStorage'a kaydet
     sessionStorage.setItem('pendingInviteCode', inputCode);
     goTo('screen-profile');
@@ -8646,7 +8644,6 @@ async function createAccount() {
     const userId = authData.user?.id || authData.id;
     const accessToken = authData.access_token;
     if (!userId) throw new Error('User ID alınamadı');
-    sessionStorage.removeItem('isMasterInvite');
     sessionStorage.removeItem('pendingInviteCode');
 
     // E-posta doğrulaması gerekiyor → bilgi ver, giriş ekranına dön
@@ -10249,7 +10246,10 @@ async function adminAddInviteCode(userId, username) {
   const confirmed = confirm(`"${username}" kullanıcısına yeni davet kodu eklensin mi?`);
   if (!confirmed) return;
 
-  const newCode = 'CRW-' + Math.random().toString(36).substring(2,5).toUpperCase() + Math.random().toString(36).substring(2,4).toUpperCase();
+  // 6 karakter, karışmayan harf/rakam, kriptografik rastgele (sunucudaki üretici ile aynı biçim)
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const bytes = crypto.getRandomValues(new Uint8Array(6));
+  const newCode = 'CRW-' + Array.from(bytes, b => alphabet[b % 32]).join('');
 
   try {
     await sbFetch('invite_codes', {
