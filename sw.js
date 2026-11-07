@@ -1,13 +1,31 @@
-// CrewGuide Service Worker v4.1 — Offline-first + Supabase Cache
-// BUILD: 202611071845
-const STATIC_CACHE = 'crewguide-static-202611071845';
-const DYNAMIC_CACHE = 'crewguide-dynamic-202611071845';
+// CrewGuide Service Worker v4.2 — Offline-first + Supabase Cache
+// BUILD: 202611071857
+const STATIC_CACHE = 'crewguide-static-202611071857';
+const DYNAMIC_CACHE = 'crewguide-dynamic-202611071857';
 const SUPABASE_CACHE = 'crewguide-supabase-202506030001';
+// Harita karoları, fontlar, fotoğraflar — deploy'da SİLİNMEZ (adı sabit), boyutu sınırlı
+const RUNTIME_CACHE = 'crewguide-runtime-v1';
+const RUNTIME_MAX_ENTRIES = 800;
+// Yer fotoğrafları (büyük dosyalar) ayrı ve daha küçük sınırla saklanır
+const PHOTO_CACHE = 'crewguide-photos-v1';
+const PHOTO_MAX_ENTRIES = 40;
+// Yavaş bağlantıda (havalimanı wifi'si vb.) bu kadar beklenir, sonra önbellekteki sürüm gösterilir
+const PAGE_TIMEOUT_MS = 4000;
+const API_TIMEOUT_MS = 7000;
 
 const STATIC_ASSETS = [
   './',
   './index.html',
   './manifest.json',
+];
+// Uygulamanın çevrimdışı da çalışması için gereken dış dosyalar (biri inmezse kurulum yine tamamlanır)
+const EXTRA_ASSETS = [
+  './privacy.html',
+  './icons/icon-192.png',
+  './icons/icon-96.png',
+  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+  'https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap',
 ];
 
 // ── INSTALL ──────────────────────────────────────────────────────────────────
@@ -16,7 +34,9 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(STATIC_CACHE)
       // cache:'reload' → tarayıcının HTTP önbelleğini atla, her zaman sunucudaki son sürümü al
-      .then(cache => cache.addAll(STATIC_ASSETS.map(u => new Request(u, { cache: 'reload' }))))
+      .then(cache => cache.addAll(STATIC_ASSETS.map(u => new Request(u, { cache: 'reload' })))
+        .then(() => Promise.allSettled(EXTRA_ASSETS.map(u => cache.add(new Request(u, { cache: 'reload' })))))
+      )
       .then(() => self.skipWaiting())
       .catch(() => self.skipWaiting())
   );
@@ -32,6 +52,8 @@ self.addEventListener('activate', event => {
             k !== STATIC_CACHE &&
             k !== DYNAMIC_CACHE &&
             k !== SUPABASE_CACHE &&
+            k !== RUNTIME_CACHE &&
+            k !== PHOTO_CACHE &&
             !k.startsWith('crewguide-city-')
           )
           .map(k => {
@@ -50,7 +72,13 @@ self.addEventListener('fetch', event => {
   // Supabase GET istekleri — network-first, cache fallback
   if (url.hostname.includes('supabase.co')) {
     if (event.request.method !== 'GET') return;
-    if (url.pathname.startsWith('/auth/')) return;
+    if (url.pathname.startsWith('/auth/') || url.pathname.startsWith('/functions/') || url.pathname.startsWith('/realtime/')) return;
+    // Yer fotoğrafları: bir kez inen fotoğraf çevrimdışı da görünsün
+    if (url.pathname.startsWith('/storage/v1/object/public/')) {
+      event.respondWith(cacheFirst(event.request, PHOTO_CACHE, PHOTO_MAX_ENTRIES));
+      return;
+    }
+    if (!url.pathname.startsWith('/rest/')) return;
     event.respondWith(supabaseNetworkFirst(event.request));
     return;
   }
@@ -77,7 +105,8 @@ self.addEventListener('fetch', event => {
     url.pathname === '/' ||
     url.hostname.includes('fonts.googleapis') ||
     url.hostname.includes('fonts.gstatic') ||
-    url.hostname.includes('unpkg.com')
+    url.hostname.includes('unpkg.com') ||
+    url.hostname.endsWith('tile.openstreetmap.org')
   ) {
     event.respondWith(cacheFirst(event.request));
     return;
@@ -88,49 +117,42 @@ self.addEventListener('fetch', event => {
 });
 
 // ── SUPABASE NETWORK-FIRST ───────────────────────────────────────────────────
+// İnternet varsa taze veri (ve önbelleği güncelle). Yoksa ya da bağlantı çok yavaşsa
+// (API_TIMEOUT_MS) önbellekteki son veriyi göster; ağ cevabı gelince önbellek yine güncellenir.
 async function supabaseNetworkFirst(request) {
   const cache = await caches.open(SUPABASE_CACHE);
 
-  try {
-    const response = await fetch(request.clone());
-
+  const network = fetch(request.clone()).then(async response => {
     if (response.ok) {
       const body = await response.text();
-      // Header'ları tek tek kopyala — spread kullanma (SW uyumsuzluk)
       const headers = new Headers();
-      response.headers.forEach(function(val, key) {
-        headers.set(key, val);
-      });
+      response.headers.forEach(function(val, key) { headers.set(key, val); });
       headers.set('x-sw-cached-at', Date.now().toString());
-
-      const cachedResponse = new Response(body, {
-        status: response.status,
-        statusText: response.statusText,
-        headers: headers,
-      });
-      cache.put(request, cachedResponse);
-
-      return new Response(body, {
-        status: response.status,
-        statusText: response.statusText,
-        headers: response.headers,
-      });
+      try { await cache.put(request, new Response(body, { status: response.status, statusText: response.statusText, headers: headers })); } catch (e) {}
+      return new Response(body, { status: response.status, statusText: response.statusText, headers: response.headers });
     }
-
     return response;
+  });
 
-  } catch (err) {
-    console.log('[SW] Offline — Supabase cache kontrol ediliyor...');
-    const cached = await cache.match(request);
-
-    if (cached) {
-      const cachedAt = parseInt(cached.headers.get('x-sw-cached-at') || '0');
-      const ageMin = Math.round((Date.now() - cachedAt) / 60000);
-      console.log('[SW] Cache hit —', ageMin, 'dakika önce');
-      return cached;
+  const cached = await cache.match(request);
+  if (cached) {
+    const fallback = cached.clone();
+    try {
+      const winner = await Promise.race([network, timeout(API_TIMEOUT_MS)]);
+      if (winner) return winner;
+      console.log('[SW] Yavaş bağlantı — önbellekteki veri gösteriliyor');
+      network.catch(() => {});
+      return fallback;
+    } catch (err) {
+      console.log('[SW] Offline — önbellekteki veri gösteriliyor');
+      return fallback;
     }
+  }
 
-    console.warn('[SW] Cache miss — boş dizi dönülüyor');
+  try {
+    return await network;
+  } catch (err) {
+    console.warn('[SW] Offline ve önbellekte yok — boş dizi dönülüyor');
     return new Response('[]', {
       status: 200,
       headers: { 'Content-Type': 'application/json', 'x-sw-offline': 'true' }
@@ -138,30 +160,75 @@ async function supabaseNetworkFirst(request) {
   }
 }
 
-// ── STRATEJİLER ──────────────────────────────────────────────────────────────
-async function pageNetworkFirst(request) {
+function timeout(ms) {
+  return new Promise(resolve => setTimeout(() => resolve(null), ms));
+}
+
+// Önbellek çok büyümesin: en eski girdileri sil
+async function trimCache(cacheName, maxEntries) {
   try {
-    const response = await fetch(request, { cache: 'no-cache' });
-    if (response.ok) {
+    const cache = await caches.open(cacheName);
+    const keys = await cache.keys();
+    if (keys.length <= maxEntries) return;
+    await Promise.all(keys.slice(0, keys.length - maxEntries).map(k => cache.delete(k)));
+  } catch (e) {}
+}
+
+// ── STRATEJİLER ──────────────────────────────────────────────────────────────
+function isAppShell(url) {
+  return url.origin === self.location.origin && (url.pathname === '/' || url.pathname === '/index.html');
+}
+
+async function pageNetworkFirst(request) {
+  const url = new URL(request.url);
+  const shell = isAppShell(url);
+  const network = fetch(request, { cache: 'no-cache' }).then(async response => {
+    if (response.ok) try {
       const cache = await caches.open(STATIC_CACHE);
-      cache.put('./index.html', response.clone());
-    }
+      if (shell) {
+        // Uygulama sayfası: hem './' hem './index.html' güncel tutulur
+        await cache.put('./index.html', response.clone());
+        await cache.put('./', response.clone());
+      } else {
+        // Diğer sayfalar (ör. gizlilik) kendi adıyla saklanır — uygulama sayfasının yerine GEÇMEZ
+        await cache.put(url.origin + url.pathname, response.clone());
+      }
+    } catch (e) {}
     return response;
+  });
+
+  const cachedPage = async () => {
+    if (shell) return (await caches.match('./index.html')) || (await caches.match('./'));
+    return (await caches.match(request, { ignoreSearch: true })) ||
+           (await caches.match(url.origin + url.pathname)) ||
+           (request.mode === 'navigate' && url.pathname.indexOf('privacy') === -1 && url.pathname.indexOf('gizlilik') === -1
+             ? await caches.match('./index.html') : null);
+  };
+
+  try {
+    const winner = await Promise.race([network, timeout(PAGE_TIMEOUT_MS)]);
+    if (winner) return winner;
+    // Bağlantı çok yavaş — önbellekteki sürümü aç, ağ cevabı arkada önbelleği güncellesin
+    const cached = await cachedPage();
+    if (cached) { network.catch(() => {}); return cached; }
+    return await network;
   } catch {
-    return (await caches.match(request)) ||
-           (await caches.match('./index.html')) ||
-           new Response('Çevrimdışı', { status: 503 });
+    return (await cachedPage()) || new Response('Çevrimdışı', { status: 503 });
   }
 }
 
-async function cacheFirst(request) {
+async function cacheFirst(request, cacheName = RUNTIME_CACHE, maxEntries = RUNTIME_MAX_ENTRIES) {
   const cached = await caches.match(request);
   if (cached) return cached;
   try {
     const response = await fetch(request);
+    // Sadece CORS'lu (ok) cevaplar saklanır; opaque cevaplar tarayıcı kotasını çok şişirir
     if (response.ok) {
-      const cache = await caches.open(DYNAMIC_CACHE);
-      cache.put(request, response.clone());
+      try {
+        const cache = await caches.open(cacheName);
+        await cache.put(request, response.clone());
+        trimCache(cacheName, maxEntries);
+      } catch (e) { /* kota dolu vb. — cevabı yine de döndür */ }
     }
     return response;
   } catch {
@@ -173,8 +240,11 @@ async function networkFirst(request) {
   try {
     const response = await fetch(request);
     if (response.ok) {
-      const cache = await caches.open(DYNAMIC_CACHE);
-      cache.put(request, response.clone());
+      try {
+        const cache = await caches.open(RUNTIME_CACHE);
+        await cache.put(request, response.clone());
+        trimCache(RUNTIME_CACHE, RUNTIME_MAX_ENTRIES);
+      } catch (e) {}
     }
     return response;
   } catch {
@@ -267,7 +337,7 @@ self.addEventListener('message', function(event) {
     caches.delete('crewguide-city-' + cityName).catch(function() {});
   }
 
-  if (type === 'skipWaiting' || type === 'SKIP_WAITING') {
+  if (event.data === 'skipWaiting' || type === 'skipWaiting' || type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 
