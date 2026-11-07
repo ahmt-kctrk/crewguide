@@ -1840,11 +1840,11 @@
       <div style="background:var(--white);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;">
         <div style="padding:14px 16px;border-bottom:1px solid var(--border);">
           <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--text-primary);" id="settings-notif-title">Bildirimler</div>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;" id="settings-notif-sub">Yeni yerler ve yorumlar için</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;" id="settings-notif-sub">Bulunduğun şehre yeni yer eklenince</div>
         </div>
         <div style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between;">
           <span id="notif-status-text" style="font-size:13px;color:var(--text-muted);">⏳ İzin bekleniyor</span>
-          <button onclick="grantNotifPermission()" style="
+          <button onclick="notifSettingsAction()" style="
             padding:7px 16px;border-radius:8px;
             background:var(--navy);color:var(--white);
             font-size:12px;font-family:'Syne',sans-serif;font-weight:600;
@@ -2310,7 +2310,18 @@ var I18N = {
   "📷 Photos cannot be uploaded offline. Once you are online and the place is sent, edit it to add photos.": "📷 Fotos können offline nicht hochgeladen werden. Wenn du online bist und der Ort gesendet wurde, bearbeite ihn, um Fotos hinzuzufügen.",
   "Preparing photos...": "Fotos werden vorbereitet...",
   "{0} too large (max {1} MB)": "{0} ist zu groß (max. {1} MB)",
-  "{0} could not be opened. Please choose a JPEG or PNG photo.": "{0} konnte nicht geöffnet werden. Bitte wähle ein JPEG- oder PNG-Foto."
+  "{0} could not be opened. Please choose a JPEG or PNG photo.": "{0} konnte nicht geöffnet werden. Bitte wähle ein JPEG- oder PNG-Foto.",
+  "On iPhone: in Safari tap Share ⬆️ → \"Add to Home Screen\", then open CrewGuide from the home screen.": "Auf dem iPhone: In Safari auf Teilen ⬆️ → „Zum Home-Bildschirm“ tippen und CrewGuide dann vom Home-Bildschirm öffnen.",
+  "This browser does not support notifications.": "Dieser Browser unterstützt keine Benachrichtigungen.",
+  "Notifications are blocked. Allow them for this site in your browser / phone settings.": "Benachrichtigungen sind blockiert. Erlaube sie für diese Seite in den Browser-/Telefoneinstellungen.",
+  "🔔 Test notification sent — it should arrive in a few seconds.": "🔔 Testbenachrichtigung gesendet — sie sollte in wenigen Sekunden ankommen.",
+  "This device could not be registered. Close and reopen the app, then try again.": "Dieses Gerät konnte nicht registriert werden. Schließe die App, öffne sie erneut und versuche es noch einmal.",
+  "Could not send notification: {0}": "Benachrichtigung konnte nicht gesendet werden: {0}",
+  "Send test": "Test senden",
+  "Allow": "Erlauben",
+  "How to enable?": "Wie aktivieren?",
+  "📱 Add to Home Screen": "📱 Zum Home-Bildschirm",
+  "🚫 Not supported": "🚫 Nicht unterstützt"
  },
  "fr": {
   "Ask a colleague for an invite code.": "Demande un code d'invitation à un collègue.",
@@ -2633,7 +2644,18 @@ var I18N = {
   "📷 Photos cannot be uploaded offline. Once you are online and the place is sent, edit it to add photos.": "📷 Les photos ne peuvent pas être envoyées hors ligne. Une fois en ligne et le lieu envoyé, modifie-le pour ajouter des photos.",
   "Preparing photos...": "Préparation des photos...",
   "{0} too large (max {1} MB)": "{0} est trop volumineux (max {1} Mo)",
-  "{0} could not be opened. Please choose a JPEG or PNG photo.": "Impossible d'ouvrir {0}. Choisis une photo JPEG ou PNG."
+  "{0} could not be opened. Please choose a JPEG or PNG photo.": "Impossible d'ouvrir {0}. Choisis une photo JPEG ou PNG.",
+  "On iPhone: in Safari tap Share ⬆️ → \"Add to Home Screen\", then open CrewGuide from the home screen.": "Sur iPhone : dans Safari, touche Partager ⬆️ → « Sur l'écran d'accueil », puis ouvre CrewGuide depuis l'écran d'accueil.",
+  "This browser does not support notifications.": "Ce navigateur ne prend pas en charge les notifications.",
+  "Notifications are blocked. Allow them for this site in your browser / phone settings.": "Les notifications sont bloquées. Autorise-les pour ce site dans les réglages du navigateur / téléphone.",
+  "🔔 Test notification sent — it should arrive in a few seconds.": "🔔 Notification de test envoyée — elle devrait arriver dans quelques secondes.",
+  "This device could not be registered. Close and reopen the app, then try again.": "Cet appareil n'a pas pu être enregistré. Ferme et rouvre l'app, puis réessaie.",
+  "Could not send notification: {0}": "Impossible d'envoyer la notification : {0}",
+  "Send test": "Envoyer un test",
+  "Allow": "Autoriser",
+  "How to enable?": "Comment activer ?",
+  "📱 Add to Home Screen": "📱 Écran d'accueil",
+  "🚫 Not supported": "🚫 Non pris en charge"
  },
  "es": {
   "Ask a colleague for an invite code.": "Pide un código de invitación a un compañero.",
@@ -2956,7 +2978,18 @@ var I18N = {
   "📷 Photos cannot be uploaded offline. Once you are online and the place is sent, edit it to add photos.": "📷 Las fotos no se pueden subir sin conexión. Cuando vuelvas a estar en línea y se envíe el lugar, edítalo para añadir fotos.",
   "Preparing photos...": "Preparando fotos...",
   "{0} too large (max {1} MB)": "{0} es demasiado grande (máx. {1} MB)",
-  "{0} could not be opened. Please choose a JPEG or PNG photo.": "No se pudo abrir {0}. Elige una foto JPEG o PNG."
+  "{0} could not be opened. Please choose a JPEG or PNG photo.": "No se pudo abrir {0}. Elige una foto JPEG o PNG.",
+  "On iPhone: in Safari tap Share ⬆️ → \"Add to Home Screen\", then open CrewGuide from the home screen.": "En iPhone: en Safari toca Compartir ⬆️ → «Añadir a pantalla de inicio» y abre CrewGuide desde la pantalla de inicio.",
+  "This browser does not support notifications.": "Este navegador no admite notificaciones.",
+  "Notifications are blocked. Allow them for this site in your browser / phone settings.": "Las notificaciones están bloqueadas. Permítelas para este sitio en los ajustes del navegador / teléfono.",
+  "🔔 Test notification sent — it should arrive in a few seconds.": "🔔 Notificación de prueba enviada: debería llegar en unos segundos.",
+  "This device could not be registered. Close and reopen the app, then try again.": "No se pudo registrar este dispositivo. Cierra y vuelve a abrir la app e inténtalo de nuevo.",
+  "Could not send notification: {0}": "No se pudo enviar la notificación: {0}",
+  "Send test": "Enviar prueba",
+  "Allow": "Permitir",
+  "How to enable?": "¿Cómo activar?",
+  "📱 Add to Home Screen": "📱 Pantalla de inicio",
+  "🚫 Not supported": "🚫 No compatible"
  },
  "ar": {
   "Ask a colleague for an invite code.": "اطلب رمز دعوة من أحد زملائك.",
@@ -3279,7 +3312,18 @@ var I18N = {
   "📷 Photos cannot be uploaded offline. Once you are online and the place is sent, edit it to add photos.": "📷 لا يمكن رفع الصور دون اتصال. عند عودة الاتصال وإرسال المكان، عدّله لإضافة الصور.",
   "Preparing photos...": "جارٍ تجهيز الصور...",
   "{0} too large (max {1} MB)": "{0} كبير جدًا (الحد {1} م.ب)",
-  "{0} could not be opened. Please choose a JPEG or PNG photo.": "تعذّر فتح {0}. اختر صورة JPEG أو PNG."
+  "{0} could not be opened. Please choose a JPEG or PNG photo.": "تعذّر فتح {0}. اختر صورة JPEG أو PNG.",
+  "On iPhone: in Safari tap Share ⬆️ → \"Add to Home Screen\", then open CrewGuide from the home screen.": "على iPhone: في Safari اضغط مشاركة ⬆️ ← «إضافة إلى الشاشة الرئيسية»، ثم افتح CrewGuide من الشاشة الرئيسية.",
+  "This browser does not support notifications.": "هذا المتصفح لا يدعم الإشعارات.",
+  "Notifications are blocked. Allow them for this site in your browser / phone settings.": "الإشعارات محظورة. اسمح بها لهذا الموقع من إعدادات المتصفح / الهاتف.",
+  "🔔 Test notification sent — it should arrive in a few seconds.": "🔔 تم إرسال إشعار تجريبي — يجب أن يصل خلال ثوانٍ.",
+  "This device could not be registered. Close and reopen the app, then try again.": "تعذّر تسجيل هذا الجهاز. أغلق التطبيق وافتحه ثم حاول مجددًا.",
+  "Could not send notification: {0}": "تعذّر إرسال الإشعار: {0}",
+  "Send test": "إرسال تجربة",
+  "Allow": "السماح",
+  "How to enable?": "كيف أفعّلها؟",
+  "📱 Add to Home Screen": "📱 أضِف إلى الشاشة الرئيسية",
+  "🚫 Not supported": "🚫 غير مدعوم"
  },
  "ja": {
   "Ask a colleague for an invite code.": "同僚に招待コードをもらってください。",
@@ -3602,7 +3646,18 @@ var I18N = {
   "📷 Photos cannot be uploaded offline. Once you are online and the place is sent, edit it to add photos.": "📷 オフラインでは写真をアップロードできません。オンラインになり場所が送信されたら、編集して写真を追加してください。",
   "Preparing photos...": "写真を準備しています...",
   "{0} too large (max {1} MB)": "{0} は大きすぎます（最大 {1} MB）",
-  "{0} could not be opened. Please choose a JPEG or PNG photo.": "{0} を開けませんでした。JPEG または PNG の写真を選んでください。"
+  "{0} could not be opened. Please choose a JPEG or PNG photo.": "{0} を開けませんでした。JPEG または PNG の写真を選んでください。",
+  "On iPhone: in Safari tap Share ⬆️ → \"Add to Home Screen\", then open CrewGuide from the home screen.": "iPhoneの場合：Safariで共有 ⬆️ →「ホーム画面に追加」をタップし、ホーム画面からCrewGuideを開いてください。",
+  "This browser does not support notifications.": "このブラウザは通知に対応していません。",
+  "Notifications are blocked. Allow them for this site in your browser / phone settings.": "通知がブロックされています。ブラウザ／端末の設定でこのサイトの通知を許可してください。",
+  "🔔 Test notification sent — it should arrive in a few seconds.": "🔔 テスト通知を送信しました。数秒で届きます。",
+  "This device could not be registered. Close and reopen the app, then try again.": "この端末を登録できませんでした。アプリを閉じて開き直し、もう一度お試しください。",
+  "Could not send notification: {0}": "通知を送信できませんでした：{0}",
+  "Send test": "テスト送信",
+  "Allow": "許可する",
+  "How to enable?": "有効にする方法",
+  "📱 Add to Home Screen": "📱 ホーム画面に追加",
+  "🚫 Not supported": "🚫 非対応"
  },
  "ko": {
   "Ask a colleague for an invite code.": "동료에게 초대 코드를 요청하세요.",
@@ -3925,7 +3980,18 @@ var I18N = {
   "📷 Photos cannot be uploaded offline. Once you are online and the place is sent, edit it to add photos.": "📷 오프라인에서는 사진을 올릴 수 없습니다. 온라인이 되어 장소가 전송되면 수정해서 사진을 추가하세요.",
   "Preparing photos...": "사진 준비 중...",
   "{0} too large (max {1} MB)": "{0} 파일이 너무 큽니다(최대 {1} MB)",
-  "{0} could not be opened. Please choose a JPEG or PNG photo.": "{0}을(를) 열 수 없습니다. JPEG 또는 PNG 사진을 선택하세요."
+  "{0} could not be opened. Please choose a JPEG or PNG photo.": "{0}을(를) 열 수 없습니다. JPEG 또는 PNG 사진을 선택하세요.",
+  "On iPhone: in Safari tap Share ⬆️ → \"Add to Home Screen\", then open CrewGuide from the home screen.": "iPhone: Safari에서 공유 ⬆️ → '홈 화면에 추가'를 누른 뒤 홈 화면에서 CrewGuide를 여세요.",
+  "This browser does not support notifications.": "이 브라우저는 알림을 지원하지 않습니다.",
+  "Notifications are blocked. Allow them for this site in your browser / phone settings.": "알림이 차단되어 있습니다. 브라우저/휴대폰 설정에서 이 사이트의 알림을 허용하세요.",
+  "🔔 Test notification sent — it should arrive in a few seconds.": "🔔 테스트 알림을 보냈습니다. 몇 초 안에 도착합니다.",
+  "This device could not be registered. Close and reopen the app, then try again.": "이 기기를 등록하지 못했습니다. 앱을 닫았다가 다시 열고 다시 시도하세요.",
+  "Could not send notification: {0}": "알림을 보내지 못했습니다: {0}",
+  "Send test": "테스트 보내기",
+  "Allow": "허용",
+  "How to enable?": "켜는 방법",
+  "📱 Add to Home Screen": "📱 홈 화면에 추가",
+  "🚫 Not supported": "🚫 지원 안 됨"
  },
  "zh": {
   "Ask a colleague for an invite code.": "请向同事索取邀请码。",
@@ -4248,7 +4314,18 @@ var I18N = {
   "📷 Photos cannot be uploaded offline. Once you are online and the place is sent, edit it to add photos.": "📷 离线时无法上传照片。联网并发送地点后，可编辑该地点添加照片。",
   "Preparing photos...": "正在处理照片...",
   "{0} too large (max {1} MB)": "{0} 太大（最大 {1} MB）",
-  "{0} could not be opened. Please choose a JPEG or PNG photo.": "无法打开 {0}。请选择 JPEG 或 PNG 照片。"
+  "{0} could not be opened. Please choose a JPEG or PNG photo.": "无法打开 {0}。请选择 JPEG 或 PNG 照片。",
+  "On iPhone: in Safari tap Share ⬆️ → \"Add to Home Screen\", then open CrewGuide from the home screen.": "iPhone：在 Safari 中点击分享 ⬆️ →「添加到主屏幕」，然后从主屏幕打开 CrewGuide。",
+  "This browser does not support notifications.": "此浏览器不支持通知。",
+  "Notifications are blocked. Allow them for this site in your browser / phone settings.": "通知已被阻止。请在浏览器 / 手机设置中允许此网站的通知。",
+  "🔔 Test notification sent — it should arrive in a few seconds.": "🔔 已发送测试通知，几秒内应会收到。",
+  "This device could not be registered. Close and reopen the app, then try again.": "无法注册此设备。请关闭并重新打开应用后重试。",
+  "Could not send notification: {0}": "无法发送通知：{0}",
+  "Send test": "发送测试",
+  "Allow": "允许",
+  "How to enable?": "如何开启？",
+  "📱 Add to Home Screen": "📱 添加到主屏幕",
+  "🚫 Not supported": "🚫 不支持"
  }
 };
 function tx(trS, enS, ...args) {
@@ -4398,10 +4475,9 @@ const translations = {
     'btn-sign-in': 'Giriş Yap →',
     'btn-go-register': 'Hesabın yok mu? Kayıt ol',
     'settings-notif-title': 'Bildirimler',
-    'settings-notif-sub': 'Yeni yerler ve yorumlar için',
+    'settings-notif-sub': 'Bulunduğun şehre yeni yer eklenince',
     'notif-title': 'Bildirimler',
     'notif-sub': 'Son eklenen yerler',
-    'btn-notif-text': 'İzin Ver',
     'settings-username-title': 'Kullanıcı Adı',
     'settings-username-sub': 'Diğer kullanıcılara bu ad görünür',
     'btn-save-username-text': 'Kaydet',
@@ -4527,8 +4603,7 @@ const translations = {
     'settings-notif-title': 'Benachrichtigungen',
     'notif-title': 'Benachrichtigungen',
     'notif-sub': 'Zuletzt hinzugefügte Orte',
-    'settings-notif-sub': 'Für neue Orte und Bewertungen',
-    'btn-notif-text': 'Erlauben',
+    'settings-notif-sub': 'Wenn in deiner Stadt ein neuer Ort hinzukommt',
     'settings-username-title': 'Benutzername',
     'settings-username-sub': 'Für andere Nutzer sichtbar',
     'btn-save-username-text': 'Speichern',
@@ -4648,10 +4723,9 @@ const translations = {
     'btn-sign-in': 'Se connecter →',
     'btn-go-register': 'Pas de compte ? S\'inscrire',
     'settings-notif-title': 'Notifications',
-    'settings-notif-sub': 'Pour les nouveaux lieux et avis',
+    'settings-notif-sub': 'Quand un nouveau lieu est ajouté dans ta ville',
     'notif-title': 'Notifications',
     'notif-sub': 'Lieux récemment ajoutés',
-    'btn-notif-text': 'Autoriser',
     'settings-username-title': 'Nom d\'utilisateur',
     'settings-username-sub': 'Visible par les autres',
     'btn-save-username-text': 'Enregistrer',
@@ -4779,8 +4853,7 @@ const translations = {
     'settings-notif-title': 'Notificaciones',
     'notif-title': 'Notificaciones',
     'notif-sub': 'Últimos lugares añadidos',
-    'settings-notif-sub': 'Para nuevos lugares y reseñas',
-    'btn-notif-text': 'Permitir',
+    'settings-notif-sub': 'Cuando se añade un lugar nuevo en tu ciudad',
     'settings-username-title': 'Nombre de usuario',
     'settings-username-sub': 'Visible para otros usuarios',
     'btn-save-username-text': 'Guardar',
@@ -4905,8 +4978,7 @@ const translations = {
     'settings-notif-title': 'الإشعارات',
     'notif-title': 'الإشعارات',
     'notif-sub': 'أحدث الأماكن المضافة',
-    'settings-notif-sub': 'للأماكن والمراجعات الجديدة',
-    'btn-notif-text': 'السماح',
+    'settings-notif-sub': 'عند إضافة مكان جديد في مدينتك',
     'settings-username-title': 'اسم المستخدم',
     'settings-username-sub': 'مرئي للمستخدمين الآخرين',
     'btn-save-username-text': 'حفظ',
@@ -5031,8 +5103,7 @@ const translations = {
     'settings-notif-title': '通知',
     'notif-title': '通知',
     'notif-sub': '最近追加された場所',
-    'settings-notif-sub': '新しい場所やレビューのため',
-    'btn-notif-text': '許可する',
+    'settings-notif-sub': 'いる街に新しいスポットが追加されたとき',
     'settings-username-title': 'ユーザー名',
     'settings-username-sub': '他のユーザーに表示されます',
     'btn-save-username-text': '保存',
@@ -5160,10 +5231,9 @@ const translations = {
     'btn-sign-in': '로그인 →',
     'btn-go-register': '계정 없음? 가입하기',
     'settings-notif-title': '알림',
-    'settings-notif-sub': '새로운 장소 및 리뷰를 위해',
+    'settings-notif-sub': '현재 도시에 새 장소가 추가되면',
     'notif-title': '알림',
     'notif-sub': '최근 추가된 장소',
-    'btn-notif-text': '허용',
     'settings-username-title': '사용자 이름',
     'settings-username-sub': '다른 사용자에게 표시됩니다',
     'btn-save-username-text': '저장',
@@ -5233,10 +5303,9 @@ const translations = {
     'btn-sign-in': '登录 →',
     'btn-go-register': '没有账户？注册',
     'settings-notif-title': '通知',
-    'settings-notif-sub': '新地点和评论',
+    'settings-notif-sub': '所在城市有新地点时',
     'notif-title': '通知',
     'notif-sub': '最近添加的地点',
-    'btn-notif-text': '允许',
     'settings-username-title': '用户名',
     'settings-username-sub': '对其他用户可见',
     'btn-save-username-text': '保存',
@@ -5409,8 +5478,7 @@ const translations = {
     'settings-notif-title': 'Notifications',
     'notif-title': 'Notifications',
     'notif-sub': 'Recently added places',
-    'settings-notif-sub': 'For new places and reviews',
-    'btn-notif-text': 'Allow',
+    'settings-notif-sub': 'When a new place is added in your city',
     'settings-username-title': 'Username',
     'settings-username-sub': 'Visible to other users',
     'btn-save-username-text': 'Save',
@@ -7039,6 +7107,7 @@ async function selectCity(name, country, flag) {
   updateLocationText();
   updateCurrencyBadge(name);
   loadPlaces(name);
+  updatePushCity();
   goTo('screen-home');
 }
 
@@ -7248,7 +7317,7 @@ async function savePushSubscription(sub) {
       return;
     }
 
-    const token = sessionStorage.getItem('sb_access_token');
+    const token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token');
     const payload = {
       user_id:      currentUser.id,
       endpoint:     endpoint,
@@ -7258,7 +7327,8 @@ async function savePushSubscription(sub) {
       lang:         lang,               // bildirim bu dilde gönderilir
       subscription: JSON.stringify(subJson)
     };
-    const post = (body) => fetch(SUPABASE_URL + '/rest/v1/push_subscriptions', {
+    // Kullanıcı başına tek abonelik (user_id benzersiz) → varsa cihaz/şehir/dil güncellenir
+    const post = (body) => fetch(SUPABASE_URL + '/rest/v1/push_subscriptions?on_conflict=user_id', {
       method: 'POST',
       headers: {
         'apikey': SUPABASE_KEY,
@@ -7276,7 +7346,8 @@ async function savePushSubscription(sub) {
       res = await post(rest);
     }
     if (res.ok) {
-      console.log('[Push] Subscription kaydedildi:', endpoint.slice(0, 60) + '...');
+      console.log('[Push] Subscription kaydedildi:', endpoint.slice(0, 60) + '...', currentCity);
+      pushSubscribedCity = currentCity;
     } else {
       const errText = await res.text();
       console.warn('[Push save] hata:', errText);
@@ -7286,8 +7357,21 @@ async function savePushSubscription(sub) {
   }
 }
 
+// Şehir değişince bildirim aboneliğinin şehrini güncelle
+let pushSubscribedCity = null;
+async function updatePushCity() {
+  if (!currentUser || !currentCity || currentCity === pushSubscribedCity) return;
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  try {
+    await sbFetch(`push_subscriptions?user_id=eq.${currentUser.id}`, { method: 'PATCH', body: JSON.stringify({ city: currentCity }) });
+    pushSubscribedCity = currentCity;
+    console.log('[Push] Bildirim şehri:', currentCity);
+  } catch (e) { /* abonelik yoksa sessiz geç */ }
+}
+
 // Dil değişince bildirim aboneliğinin dilini de güncelle
 async function updatePushLang() {
+  try { updateNotifStatus(pushSupportState()); } catch (e) {}   // ayarlardaki buton metni yeni dilde
   if (!currentUser) return;
   try {
     await sbFetch(`push_subscriptions?user_id=eq.${currentUser.id}`, { method: 'PATCH', body: JSON.stringify({ lang }) });
@@ -8111,6 +8195,7 @@ function askNotificationPermission() {
   if (Notification.permission === 'granted') {
     notifPermissionAsked = true;
     updateNotifStatus('granted');
+    subscribePush();   // cihaz, şehir ve dil sunucuda güncel kalsın
     return;
   }
   if (Notification.permission === 'denied') {
@@ -8212,10 +8297,60 @@ function dismissNotifPrompt() {
   }
 }
 
+// iPhone/iPad'de bildirim sadece ana ekrana eklenmiş uygulamada çalışır (iOS 16.4+)
+function isIOSDevice() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+function pushSupportState() {
+  if (!('serviceWorker' in navigator)) return 'unsupported';
+  if (!('Notification' in window) || !('PushManager' in window)) return isIOSDevice() ? 'ios-install' : 'unsupported';
+  return Notification.permission;  // 'default' | 'granted' | 'denied'
+}
+
+async function notifSettingsAction() {
+  const st = pushSupportState();
+  if (st === 'ios-install') {
+    showToast(tx('iPhone\'da bildirim için: Safari\'de Paylaş ⬆️ → "Ana Ekrana Ekle", sonra CrewGuide\'ı ana ekrandan aç.', 'On iPhone: in Safari tap Share ⬆️ → "Add to Home Screen", then open CrewGuide from the home screen.'));
+    return;
+  }
+  if (st === 'unsupported') { showToast(tx('Bu tarayıcı bildirimleri desteklemiyor.', 'This browser does not support notifications.')); return; }
+  if (st === 'denied') {
+    showToast(tx('Bildirimler engellenmiş. Tarayıcı / telefon ayarlarından bu site için bildirimlere izin ver.', 'Notifications are blocked. Allow them for this site in your browser / phone settings.'));
+    return;
+  }
+  if (st === 'default') { grantNotifPermission(); return; }
+  // İzin var → aboneliği tazele ve deneme bildirimi gönder
+  const btnText = document.getElementById('btn-notif-text');
+  if (btnText) btnText.textContent = '⏳';
+  try {
+    await subscribePush();
+    const { ok, data } = await callFunction('send-push', { test: true });
+    if (ok) showToast(tx('🔔 Deneme bildirimi gönderildi — birkaç saniye içinde gelmeli.', '🔔 Test notification sent — it should arrive in a few seconds.'));
+    else if (data?.error === 'no subscription') showToast(tx('Bu cihaz bildirime kaydedilemedi. Uygulamayı kapatıp açıp tekrar dene.', 'This device could not be registered. Close and reopen the app, then try again.'));
+    else showToast(tx('Bildirim gönderilemedi: {0}', 'Could not send notification: {0}', String(data?.results?.[0]?.status || data?.error || '?')));
+    console.log('[Push test]', data);
+  } catch (e) {
+    showToast(tx('Bildirim gönderilemedi: {0}', 'Could not send notification: {0}', e.message));
+  } finally {
+    updateNotifStatus(pushSupportState());
+  }
+}
+
 function updateNotifStatus(status) {
   // Ayarlar ekranına bildirim durumu yansıt
+  const btnText = document.getElementById('btn-notif-text');
+  if (btnText) {
+    btnText.textContent = status === 'granted' ? tx('Test gönder', 'Send test')
+      : status === 'default' ? tx('İzin Ver', 'Allow')
+      : tx('Nasıl açılır?', 'How to enable?');
+  }
   const el = document.getElementById('notif-status-text');
   if (!el) return;
+  if (status === 'ios-install' || status === 'unsupported') {
+    el.textContent = status === 'ios-install' ? tx('📱 Ana ekrana ekle', '📱 Add to Home Screen') : tx('🚫 Desteklenmiyor', '🚫 Not supported');
+    el.style.color = '#f59e0b';
+    return;
+  }
   const labels = {
     granted: { tr:'🔔 Açık', en:'🔔 On', de:'🔔 Ein', fr:'🔔 Activé', es:'🔔 Activado', ar:'🔔 مفعّل', ja:'🔔 オン', ko:'🔔 켜짐', zh:'🔔 开启' },
     denied:  { tr:'🔕 Kapalı', en:'🔕 Off', de:'🔕 Aus', fr:'🔕 Désactivé', es:'🔕 Desactivado', ar:'🔕 معطّل', ja:'🔕 オフ', ko:'🔕 꺼짐', zh:'🔕 关闭' },
@@ -8227,8 +8362,7 @@ function updateNotifStatus(status) {
 }
 
 function checkNotifStatus() {
-  if (!('Notification' in window)) return;
-  updateNotifStatus(Notification.permission);
+  updateNotifStatus(pushSupportState());
   updateCurrentUsernameDisplay();
   // Input placeholder'ını mevcut kullanıcı adıyla doldur
   const input = document.getElementById('settings-username-input');

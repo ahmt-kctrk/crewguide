@@ -1,4 +1,5 @@
-// Supabase Edge Function: send-push v19
+// Supabase Edge Function: send-push v20
+// - { test: true }: giriş yapmış kullanıcının KENDİ cihazına deneme bildirimi; cihaz bazında sonuç döner.
 // - Yer bildirimi (placeId): veritabanı tetikleyicisi yer yayına girince çağırır; her yer için EN FAZLA BİR KEZ
 //   gider (places.push_sent_at atomik işaretlenir). Onay bekleyen veya gizli yerler için bildirim gönderilmez.
 // - placeId olmadan serbest duyuru: sadece admin / şehir elçisi / sunucu (service key).
@@ -8,6 +9,20 @@ import { CORS, getCaller, getKeys } from "../_shared/auth.ts";
 const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY") ?? "";
 const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY") ?? "";
 const VAPID_EMAIL = Deno.env.get("VAPID_EMAIL") ?? "";
+// VAPID "sub" alanı mailto: veya https: ile başlamalı (Apple bunu zorunlu tutar, yoksa 403 BadJwtToken)
+const VAPID_SUB = /^(mailto:|https:)/i.test(VAPID_EMAIL) ? VAPID_EMAIL : `mailto:${VAPID_EMAIL || "admin@crewguide.fyi"}`;
+
+const TEST_MESSAGES: Record<string, string> = {
+  tr: "Bildirimler çalışıyor ✓",
+  en: "Notifications are working ✓",
+  de: "Benachrichtigungen funktionieren ✓",
+  fr: "Les notifications fonctionnent ✓",
+  es: "Las notificaciones funcionan ✓",
+  ar: "الإشعارات تعمل ✓",
+  ja: "通知は正常に動作しています ✓",
+  ko: "알림이 작동합니다 ✓",
+  zh: "通知功能正常 ✓",
+};
 
 // {city} / {place} yer tutucuları
 const MESSAGES: Record<string, string> = {
@@ -40,6 +55,32 @@ Deno.serve(async (req: Request) => {
     const caller = await getCaller(req);
     const { url: SUPABASE_URL, serviceKey: SUPABASE_SERVICE_KEY } = getKeys();
     const body = await req.json().catch(() => ({}));
+    const subHeaders = { "apikey": SUPABASE_SERVICE_KEY, "Authorization": `Bearer ${SUPABASE_SERVICE_KEY}` };
+
+    // Deneme bildirimi: sadece isteyen kullanıcının kendi aboneliğine
+    if (body.test === true) {
+      if (!caller.user) return reply({ ok: false, error: "Giriş gerekli" }, 401);
+      const r = await fetch(
+        `${SUPABASE_URL}/rest/v1/push_subscriptions?user_id=eq.${caller.user.id}&select=endpoint,p256dh,auth,lang,city`,
+        { headers: subHeaders });
+      const mine = await r.json().catch(() => []);
+      if (!Array.isArray(mine) || !mine.length) return reply({ ok: false, error: "no subscription" }, 404);
+      const vapidKey = await importVapidKey();
+      const results = [];
+      for (const s of mine) {
+        const out = await pushOne(s, {
+          title: "✈️ CrewGuide",
+          body: TEST_MESSAGES[(s.lang || "tr").toLowerCase()] || TEST_MESSAGES.en,
+          icon: "/icons/icon-192.png",
+          tag: "crewguide-test",
+          data: { url: "/" },
+        }, vapidKey, SUPABASE_URL, subHeaders);
+        results.push({ host: hostOf(s.endpoint), city: s.city, ...out });
+      }
+      console.log("[send-push] test:", JSON.stringify(results));
+      return reply({ ok: results.some(x => x.ok), results });
+    }
+
     let city = "";
     let placeName = "";
     const placeId = String(body.placeId ?? body.record?.id ?? "").slice(0, 200);
@@ -79,9 +120,10 @@ Deno.serve(async (req: Request) => {
 
     console.log("[send-push] city:", city, "place:", placeName, "by:", caller.role);
 
+    // Şehir eşleşmesi büyük/küçük harf duyarsız (ör. "istanbul" / "Istanbul")
+    const cityQ = encodeURIComponent('"' + city.replace(/["\\]/g, "") + '"');
     const subUrl = (cols: string) =>
-      `${SUPABASE_URL}/rest/v1/push_subscriptions?city=eq.${encodeURIComponent(city)}&select=${cols}`;
-    const subHeaders = { "apikey": SUPABASE_SERVICE_KEY, "Authorization": `Bearer ${SUPABASE_SERVICE_KEY}` };
+      `${SUPABASE_URL}/rest/v1/push_subscriptions?or=(city.eq.${cityQ},city.ilike.${cityQ})&select=${cols}`;
     let res = await fetch(subUrl("endpoint,p256dh,auth,lang"), { headers: subHeaders });
     if (!res.ok) res = await fetch(subUrl("endpoint,p256dh,auth"), { headers: subHeaders }); // lang kolonu yoksa
     const subs = await res.json();
@@ -95,40 +137,14 @@ Deno.serve(async (req: Request) => {
 
     let sent = 0;
     for (const s of subs) {
-      if (!s.endpoint) continue;
-      try {
-        const notification = JSON.stringify({
-          title: "✈️ CrewGuide",
-          body: messageFor(s.lang, city, placeName || "📍"),
-          icon: "/icons/icon-192.png",
-          tag: "new-place-" + (placeId || city),
-          data: { url: "/", placeId, city },
-        });
-        const encrypted = await encryptPayload(notification, s.p256dh, s.auth);
-        const jwt = await makeVapidJwt(s.endpoint, vapidKey);
-        const pushRes = await fetch(s.endpoint, {
-          method: "POST",
-          headers: {
-            "Authorization": `vapid t=${jwt}, k=${VAPID_PUBLIC_KEY}`,
-            "Content-Type": "application/octet-stream",
-            "Content-Encoding": "aes128gcm",
-            "TTL": "86400",
-          },
-          body: encrypted,
-        });
-        console.log("[send-push] status:", pushRes.status);
-        if (pushRes.ok || pushRes.status === 201) sent++;
-        else {
-          console.error("[send-push] error:", await pushRes.text());
-          // Süresi dolmuş abonelikleri temizle
-          if (pushRes.status === 404 || pushRes.status === 410) {
-            await fetch(`${SUPABASE_URL}/rest/v1/push_subscriptions?endpoint=eq.${encodeURIComponent(s.endpoint)}`,
-              { method: "DELETE", headers: subHeaders }).catch(() => {});
-          }
-        }
-      } catch (e) {
-        console.error("[send-push] exception:", String(e));
-      }
+      const out = await pushOne(s, {
+        title: "✈️ CrewGuide",
+        body: messageFor(s.lang, city, placeName || "📍"),
+        icon: "/icons/icon-192.png",
+        tag: "new-place-" + (placeId || city),
+        data: { url: "/", placeId, city },
+      }, vapidKey, SUPABASE_URL, subHeaders);
+      if (out.ok) sent++;
     }
 
     console.log("[send-push] sent:", sent, "/", subs.length);
@@ -139,6 +155,47 @@ Deno.serve(async (req: Request) => {
     return reply({ ok: false, error: String(e) }, 500);
   }
 });
+
+function hostOf(endpoint: string): string {
+  try { return new URL(endpoint).host; } catch { return "?"; }
+}
+
+// Tek bir cihaza gönder. Süresi dolmuş aboneliği (404/410) siler.
+async function pushOne(
+  s: { endpoint?: string; p256dh?: string; auth?: string },
+  notification: Record<string, unknown>,
+  vapidKey: CryptoKey,
+  supabaseUrl: string,
+  subHeaders: Record<string, string>,
+): Promise<{ ok: boolean; status: number; error?: string }> {
+  if (!s.endpoint || !s.p256dh || !s.auth) return { ok: false, status: 0, error: "incomplete subscription" };
+  try {
+    const encrypted = await encryptPayload(JSON.stringify(notification), s.p256dh, s.auth);
+    const jwt = await makeVapidJwt(s.endpoint, vapidKey);
+    const pushRes = await fetch(s.endpoint, {
+      method: "POST",
+      headers: {
+        "Authorization": `vapid t=${jwt}, k=${VAPID_PUBLIC_KEY}`,
+        "Content-Type": "application/octet-stream",
+        "Content-Encoding": "aes128gcm",
+        "TTL": "86400",
+        "Urgency": "normal",
+      },
+      body: encrypted,
+    });
+    if (pushRes.ok) return { ok: true, status: pushRes.status };
+    const text = (await pushRes.text().catch(() => "")).slice(0, 200);
+    console.error("[send-push] error:", hostOf(s.endpoint), pushRes.status, text);
+    if (pushRes.status === 404 || pushRes.status === 410) {
+      await fetch(`${supabaseUrl}/rest/v1/push_subscriptions?endpoint=eq.${encodeURIComponent(s.endpoint)}`,
+        { method: "DELETE", headers: subHeaders }).catch(() => {});
+    }
+    return { ok: false, status: pushRes.status, error: text };
+  } catch (e) {
+    console.error("[send-push] exception:", hostOf(s.endpoint), String(e));
+    return { ok: false, status: 0, error: String(e).slice(0, 200) };
+  }
+}
 
 async function importVapidKey(): Promise<CryptoKey> {
   const rawPrivate = fromB64url(VAPID_PRIVATE_KEY);
@@ -157,7 +214,7 @@ async function makeVapidJwt(endpoint: string, key: CryptoKey): Promise<string> {
   const audience = `${url.protocol}//${url.host}`;
   const exp = Math.floor(Date.now() / 1000) + 43200;
   const h = b64url(JSON.stringify({ typ: "JWT", alg: "ES256" }));
-  const p = b64url(JSON.stringify({ aud: audience, exp, sub: VAPID_EMAIL }));
+  const p = b64url(JSON.stringify({ aud: audience, exp, sub: VAPID_SUB }));
   const sig = await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, key, enc(`${h}.${p}`));
   return `${h}.${p}.${toB64url(new Uint8Array(sig))}`;
 }
