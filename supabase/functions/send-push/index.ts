@@ -1,4 +1,4 @@
-// Supabase Edge Function: send-push v20
+// Supabase Edge Function: send-push v21 (şifreleme düzeltmesi: bildirimler artık çözülebiliyor)
 // - { test: true }: giriş yapmış kullanıcının KENDİ cihazına deneme bildirimi; cihaz bazında sonuç döner.
 // - Yer bildirimi (placeId): veritabanı tetikleyicisi yer yayına girince çağırır; her yer için EN FAZLA BİR KEZ
 //   gider (places.push_sent_at atomik işaretlenir). Onay bekleyen veya gizli yerler için bildirim gönderilmez.
@@ -231,8 +231,10 @@ async function encryptPayload(payload: string, p256dhB64: string, authB64: strin
   const sharedBits = new Uint8Array(await crypto.subtle.deriveBits({ name: "ECDH", public: receiverKey }, ephemeral.privateKey, 256));
 
   const prk = await hkdf(authSecret, sharedBits, concat(enc("WebPush: info\x00"), receiverPublic, ephemeralPublicRaw), 32);
-  const cek = await hkdf(salt, prk, concat(enc("Content-Encoding: aes128gcm\x00"), new Uint8Array([1])), 16);
-  const nonce = await hkdf(salt, prk, concat(enc("Content-Encoding: nonce\x00"), new Uint8Array([1])), 12);
+  // RFC 8188: info = "Content-Encoding: aes128gcm" || 0x00 (sonuna 0x01 EKLENMEZ — HKDF sayacını WebCrypto kendisi ekler).
+  // Eskiden sonuna 0x01 ekleniyordu → tarayıcılar mesajı çözemiyor, bildirim sessizce düşüyordu.
+  const cek = await hkdf(salt, prk, enc("Content-Encoding: aes128gcm\x00"), 16);
+  const nonce = await hkdf(salt, prk, enc("Content-Encoding: nonce\x00"), 12);
 
   const aesKey = await crypto.subtle.importKey("raw", cek, "AES-GCM", false, ["encrypt"]);
   const payloadBytes = concat(enc(payload), new Uint8Array([2]));
