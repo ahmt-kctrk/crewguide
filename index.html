@@ -64,6 +64,15 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
+  /* Telefonda sayfa aşağı çekilince tarayıcının kendiliğinden yenilemesini kapat (yerine ↻ butonu var) */
+  html, body { overscroll-behavior-y: none; }
+  .screen { overscroll-behavior-y: contain; }
+  .home-right { display: flex; align-items: center; gap: 8px; }
+  .home-refresh { width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.08); border: 1.5px solid rgba(255,255,255,0.18); color: rgba(255,255,255,0.85); display: flex; align-items: center; justify-content: center; font-size: 17px; line-height: 1; cursor: pointer; padding: 0; font-family: inherit; }
+  .home-refresh:active { background: rgba(255,255,255,0.16); }
+  .home-refresh.spinning span { display: inline-block; animation: cg-spin 0.8s linear infinite; }
+  @keyframes cg-spin { to { transform: rotate(360deg); } }
+
   body {
     font-family: 'DM Sans', sans-serif;
     background: #e8e4dc;
@@ -1246,7 +1255,10 @@
     <div class="home-header">
       <div class="home-top">
         <div class="home-logo font-display">CrewGuide</div>
-        <div class="home-avatar" onclick="goTo('screen-profile-view')">✈️</div>
+        <div class="home-right">
+          <button class="home-refresh" id="btn-home-refresh" onclick="refreshHome()" aria-label="Yenile" title="Yenile"><span>↻</span></button>
+          <div class="home-avatar" onclick="goTo('screen-profile-view')">✈️</div>
+        </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
         <div class="location-pill" onclick="detectLocation()" id="location-pill" style="margin-bottom:0;flex:1;">
@@ -2321,7 +2333,9 @@ var I18N = {
   "Allow": "Erlauben",
   "How to enable?": "Wie aktivieren?",
   "📱 Add to Home Screen": "📱 Zum Home-Bildschirm",
-  "🚫 Not supported": "🚫 Nicht unterstützt"
+  "🚫 Not supported": "🚫 Nicht unterstützt",
+  "You are offline — showing saved data.": "Du bist offline — gespeicherte Daten werden angezeigt.",
+  "✓ Updated": "✓ Aktualisiert"
  },
  "fr": {
   "Ask a colleague for an invite code.": "Demande un code d'invitation à un collègue.",
@@ -2655,7 +2669,9 @@ var I18N = {
   "Allow": "Autoriser",
   "How to enable?": "Comment activer ?",
   "📱 Add to Home Screen": "📱 Écran d'accueil",
-  "🚫 Not supported": "🚫 Non pris en charge"
+  "🚫 Not supported": "🚫 Non pris en charge",
+  "You are offline — showing saved data.": "Tu es hors ligne — données enregistrées affichées.",
+  "✓ Updated": "✓ Mis à jour"
  },
  "es": {
   "Ask a colleague for an invite code.": "Pide un código de invitación a un compañero.",
@@ -2989,7 +3005,9 @@ var I18N = {
   "Allow": "Permitir",
   "How to enable?": "¿Cómo activar?",
   "📱 Add to Home Screen": "📱 Pantalla de inicio",
-  "🚫 Not supported": "🚫 No compatible"
+  "🚫 Not supported": "🚫 No compatible",
+  "You are offline — showing saved data.": "Estás sin conexión: se muestran los datos guardados.",
+  "✓ Updated": "✓ Actualizado"
  },
  "ar": {
   "Ask a colleague for an invite code.": "اطلب رمز دعوة من أحد زملائك.",
@@ -3323,7 +3341,9 @@ var I18N = {
   "Allow": "السماح",
   "How to enable?": "كيف أفعّلها؟",
   "📱 Add to Home Screen": "📱 أضِف إلى الشاشة الرئيسية",
-  "🚫 Not supported": "🚫 غير مدعوم"
+  "🚫 Not supported": "🚫 غير مدعوم",
+  "You are offline — showing saved data.": "أنت غير متصل — يتم عرض البيانات المحفوظة.",
+  "✓ Updated": "✓ تم التحديث"
  },
  "ja": {
   "Ask a colleague for an invite code.": "同僚に招待コードをもらってください。",
@@ -3657,7 +3677,9 @@ var I18N = {
   "Allow": "許可する",
   "How to enable?": "有効にする方法",
   "📱 Add to Home Screen": "📱 ホーム画面に追加",
-  "🚫 Not supported": "🚫 非対応"
+  "🚫 Not supported": "🚫 非対応",
+  "You are offline — showing saved data.": "オフラインです — 保存済みのデータを表示しています。",
+  "✓ Updated": "✓ 更新しました"
  },
  "ko": {
   "Ask a colleague for an invite code.": "동료에게 초대 코드를 요청하세요.",
@@ -3991,7 +4013,9 @@ var I18N = {
   "Allow": "허용",
   "How to enable?": "켜는 방법",
   "📱 Add to Home Screen": "📱 홈 화면에 추가",
-  "🚫 Not supported": "🚫 지원 안 됨"
+  "🚫 Not supported": "🚫 지원 안 됨",
+  "You are offline — showing saved data.": "오프라인입니다 — 저장된 데이터를 표시합니다.",
+  "✓ Updated": "✓ 업데이트됨"
  },
  "zh": {
   "Ask a colleague for an invite code.": "请向同事索取邀请码。",
@@ -4325,7 +4349,9 @@ var I18N = {
   "Allow": "允许",
   "How to enable?": "如何开启？",
   "📱 Add to Home Screen": "📱 添加到主屏幕",
-  "🚫 Not supported": "🚫 不支持"
+  "🚫 Not supported": "🚫 不支持",
+  "You are offline — showing saved data.": "你已离线 — 正在显示已保存的数据。",
+  "✓ Updated": "✓ 已更新"
  }
 };
 function tx(trS, enS, ...args) {
@@ -7109,6 +7135,32 @@ async function selectCity(name, country, flag) {
   loadPlaces(name);
   updatePushCity();
   goTo('screen-home');
+}
+
+// ↻ butonu: sayfayı baştan yüklemeden yerleri, kurları ve bekleyen kayıtları tazeler
+let homeRefreshing = false;
+async function refreshHome() {
+  if (homeRefreshing) return;
+  homeRefreshing = true;
+  const btn = document.getElementById('btn-home-refresh');
+  if (btn) btn.classList.add('spinning');
+  const started = Date.now();
+  try {
+    if (!navigator.onLine) {
+      showToast(tx('Çevrimdışısın — kayıtlı veriler gösteriliyor.', 'You are offline — showing saved data.'));
+    }
+    await Promise.allSettled([
+      loadPlaces(currentCity),
+      fetchLiveRates().then(() => updateCurrencyBadge(currentCity)),
+      processQueue(),
+    ]);
+    // Yeni uygulama sürümü varsa indirilsin
+    try { (await navigator.serviceWorker?.getRegistration())?.update(); } catch (e) {}
+    if (navigator.onLine) showToast(tx('✓ Güncellendi', '✓ Updated'));
+  } finally {
+    // Dönen ikon en az yarım saniye görünsün
+    setTimeout(() => { if (btn) btn.classList.remove('spinning'); homeRefreshing = false; }, Math.max(0, 500 - (Date.now() - started)));
+  }
 }
 
 async function updateCityCountryInDB(city, countryTr, countryEn, flag) {
