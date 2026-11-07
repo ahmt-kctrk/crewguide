@@ -629,6 +629,10 @@
   .comment-action-btn:hover { background: var(--cream-dark); }
   .comment-action-btn.edit { color: var(--navy); border-color: var(--navy); }
   .comment-action-btn.delete { color: #ef4444; border-color: #fca5a5; }
+  .comment-mini-btn { background:none; border:none; padding:2px 6px; cursor:pointer; font-size:11px; color:var(--text-muted); border-radius:4px; font-family:'DM Sans',sans-serif; }
+  .comment-mini-btn:hover { background: var(--cream-dark); }
+  .report-reason { display:flex; align-items:center; gap:10px; padding:10px 12px; border:1.5px solid var(--border); border-radius:10px; cursor:pointer; font-size:13px; color:var(--text-primary); background:var(--white); }
+  .report-reason.selected { border-color: var(--navy); background: rgba(10,22,40,0.05); font-weight:600; }
 
   /* Düzenleme textarea inline */
   .comment-edit-area {
@@ -1501,6 +1505,10 @@
           ✏️ <span id="edit-place-label" data-t="Edit Place">Yeri Düzenle</span>
         </button>
       </div>
+      <!-- Şikayet / engelle — başkasının eklediği yer -->
+      <div id="report-place-action" style="display:none;margin-top:4px;text-align:center;">
+        <button class="comment-mini-btn" onclick="reportCurrentPlace()" style="font-size:12px;padding:6px 10px;">🚩 <span data-t="Report this place">Bu yeri şikayet et</span></button>
+      </div>
       <!-- Admin silme butonu — sadece admin görebilir -->
       <div id="admin-actions" style="display:none;margin-top:4px;">
         <button onclick="adminDeletePlace()" style="
@@ -1916,6 +1924,11 @@
         </div>
       </div>
 
+      <div class="settings-section" style="margin-bottom:12px;background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--text-primary);" data-t="🚫 Blocked Users">🚫 Engellenen Kullanıcılar</div>
+        <div id="blocked-users-list" style="padding:8px 16px 12px;font-size:12px;color:var(--text-muted);"></div>
+      </div>
+
       <button onclick="resetTheme()" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid var(--border);background:transparent;font-size:13px;color:var(--text-muted);cursor:pointer;font-family:'DM Sans',sans-serif;" id="btn-reset-theme">↺ Varsayılana Sıfırla</button>
       <div id="admin-panel-btn-wrap" style="display:none;">
         <button onclick="goTo('screen-admin')" style="width:100%;padding:14px;border-radius:var(--radius);border:1.5px solid var(--navy);background:var(--navy);font-size:13px;color:#fff;cursor:pointer;font-family:'Syne',sans-serif;font-weight:600;" data-t="🛡 Admin Panel">🛡 Admin Paneli</button>
@@ -1943,6 +1956,7 @@
     <div style="display:flex;border-bottom:2px solid var(--border);flex-shrink:0;background:var(--white);">
       <button class="admin-tab active" id="admin-tab-places" onclick="switchAdminTab('places')">📍 Yerler</button>
       <button class="admin-tab" id="admin-tab-invites" onclick="switchAdminTab('invites')">🎫 Davetler</button>
+      <button class="admin-tab" id="admin-tab-reports" onclick="switchAdminTab('reports')">🚩 Şikayetler <span id="admin-reports-count"></span></button>
     </div>
 
     <!-- Yerler paneli -->
@@ -1973,6 +1987,20 @@
       <div style="text-align:center;padding:40px;color:var(--text-muted);">⏳ Yükleniyor...</div>
     </div>
     </div><!-- /admin-panel-places -->
+
+    <!-- Şikayetler paneli -->
+    <div id="admin-panel-reports" style="display:none;flex:1;overflow-y:auto;padding-bottom:20px;">
+      <div style="padding:10px 16px;display:flex;gap:8px;align-items:center;border-bottom:1px solid var(--border);background:var(--white);">
+        <select id="admin-report-filter" onchange="loadAdminReports()" style="padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:12px;background:var(--white);">
+          <option value="open">Açık şikayetler</option>
+          <option value="closed">Kapatılanlar</option>
+        </select>
+        <div class="admin-stat-chip" id="admin-report-stat">—</div>
+      </div>
+      <div id="admin-reports-list">
+        <div style="text-align:center;padding:40px;color:var(--text-muted);">⏳ Yükleniyor...</div>
+      </div>
+    </div>
 
     <!-- Davetler paneli -->
     <div id="admin-panel-invites" style="display:none;flex:1;overflow-y:auto;padding-bottom:20px;">
@@ -2288,7 +2316,34 @@ var I18N = {
   "The verification link is invalid. Please try again.": "Der Bestätigungslink ist ungültig. Bitte versuche es erneut.",
   "✓ Email verified, welcome!": "✓ E-Mail bestätigt, willkommen!",
   "Your email is not verified yet. Click the link in your inbox.": "Deine E-Mail ist noch nicht bestätigt. Klicke auf den Link in deinem Postfach.",
-  "Your session has expired, please sign in again.": "Deine Sitzung ist abgelaufen, bitte melde dich erneut an."
+  "Your session has expired, please sign in again.": "Deine Sitzung ist abgelaufen, bitte melde dich erneut an.",
+  "Add a short note (optional)": "Kurze Notiz hinzufügen (optional)",
+  "Block": "Blockieren",
+  "Block \"{0}\"?\n\nYou will no longer see their comments or places. You can undo this anytime in Settings.": "„{0}“ blockieren?\n\nDu siehst ihre Kommentare und Orte nicht mehr. Du kannst das jederzeit in den Einstellungen rückgängig machen.",
+  "Could not block, try again.": "Blockieren fehlgeschlagen, versuch es erneut.",
+  "Could not send report, try again.": "Meldung konnte nicht gesendet werden, versuch es erneut.",
+  "Hidden": "Ausgeblendet",
+  "Please choose a reason": "Bitte wähle einen Grund",
+  "Report": "Melden",
+  "Report this comment": "Diesen Kommentar melden",
+  "Report this place": "Diesen Ort melden",
+  "Report this user": "Diesen Nutzer melden",
+  "Send report": "Meldung senden",
+  "Unblock": "Blockierung aufheben",
+  "Unblocked.": "Blockierung aufgehoben.",
+  "You already reported this; it is being reviewed.": "Du hast das bereits gemeldet; es wird geprüft.",
+  "You haven't blocked anyone.": "Du hast niemanden blockiert.",
+  "Your report is anonymous and will be reviewed by our team.": "Deine Meldung ist anonym und wird von unserem Team geprüft.",
+  "✓ Thanks, your report was received. We will review it.": "✓ Danke, deine Meldung ist eingegangen. Wir prüfen sie.",
+  "❌ False or misleading info": "❌ Falsche oder irreführende Info",
+  "💬 Other": "💬 Sonstiges",
+  "📢 Spam or advertising": "📢 Spam oder Werbung",
+  "🔞 Inappropriate content": "🔞 Unangemessener Inhalt",
+  "😠 Harassment or bullying": "😠 Belästigung oder Mobbing",
+  "🚫 \"{0}\" blocked.": "🚫 „{0}“ blockiert.",
+  "🚫 Blocked Users": "🚫 Blockierte Nutzer",
+  "🤬 Offensive or hateful": "🤬 Beleidigend oder hasserfüllt",
+  "🛡 Admin Panel": "🛡 Admin-Bereich"
  },
  "fr": {
   "Ask a colleague for an invite code.": "Demande un code d'invitation à un collègue.",
@@ -2570,7 +2625,34 @@ var I18N = {
   "The verification link is invalid. Please try again.": "Le lien de vérification est invalide. Réessaie.",
   "✓ Email verified, welcome!": "✓ E-mail vérifié, bienvenue !",
   "Your email is not verified yet. Click the link in your inbox.": "Ton e-mail n'est pas encore vérifié. Clique sur le lien dans ta boîte de réception.",
-  "Your session has expired, please sign in again.": "Ta session a expiré, reconnecte-toi."
+  "Your session has expired, please sign in again.": "Ta session a expiré, reconnecte-toi.",
+  "Add a short note (optional)": "Ajoute une courte note (facultatif)",
+  "Block": "Bloquer",
+  "Block \"{0}\"?\n\nYou will no longer see their comments or places. You can undo this anytime in Settings.": "Bloquer « {0} » ?\n\nTu ne verras plus ses commentaires ni ses lieux. Tu peux annuler à tout moment dans les Réglages.",
+  "Could not block, try again.": "Blocage impossible, réessaie.",
+  "Could not send report, try again.": "Impossible d'envoyer le signalement, réessaie.",
+  "Hidden": "Masqué",
+  "Please choose a reason": "Choisis une raison",
+  "Report": "Signaler",
+  "Report this comment": "Signaler ce commentaire",
+  "Report this place": "Signaler ce lieu",
+  "Report this user": "Signaler cet utilisateur",
+  "Send report": "Envoyer le signalement",
+  "Unblock": "Débloquer",
+  "Unblocked.": "Débloqué.",
+  "You already reported this; it is being reviewed.": "Tu as déjà signalé ce contenu ; il est en cours d'examen.",
+  "You haven't blocked anyone.": "Tu n'as bloqué personne.",
+  "Your report is anonymous and will be reviewed by our team.": "Ton signalement est anonyme et sera examiné par notre équipe.",
+  "✓ Thanks, your report was received. We will review it.": "✓ Merci, ton signalement a été reçu. Nous allons l'examiner.",
+  "❌ False or misleading info": "❌ Infos fausses ou trompeuses",
+  "💬 Other": "💬 Autre",
+  "📢 Spam or advertising": "📢 Spam ou publicité",
+  "🔞 Inappropriate content": "🔞 Contenu inapproprié",
+  "😠 Harassment or bullying": "😠 Harcèlement ou intimidation",
+  "🚫 \"{0}\" blocked.": "🚫 « {0} » bloqué.",
+  "🚫 Blocked Users": "🚫 Utilisateurs bloqués",
+  "🤬 Offensive or hateful": "🤬 Offensant ou haineux",
+  "🛡 Admin Panel": "🛡 Panneau admin"
  },
  "es": {
   "Ask a colleague for an invite code.": "Pide un código de invitación a un compañero.",
@@ -2852,7 +2934,34 @@ var I18N = {
   "The verification link is invalid. Please try again.": "El enlace de verificación no es válido. Inténtalo de nuevo.",
   "✓ Email verified, welcome!": "✓ Correo verificado, ¡bienvenido!",
   "Your email is not verified yet. Click the link in your inbox.": "Tu correo aún no está verificado. Haz clic en el enlace de tu bandeja de entrada.",
-  "Your session has expired, please sign in again.": "Tu sesión ha caducado, vuelve a iniciar sesión."
+  "Your session has expired, please sign in again.": "Tu sesión ha caducado, vuelve a iniciar sesión.",
+  "Add a short note (optional)": "Añade una nota breve (opcional)",
+  "Block": "Bloquear",
+  "Block \"{0}\"?\n\nYou will no longer see their comments or places. You can undo this anytime in Settings.": "¿Bloquear a «{0}»?\n\nYa no verás sus comentarios ni sus lugares. Puedes deshacerlo cuando quieras en Ajustes.",
+  "Could not block, try again.": "No se pudo bloquear, inténtalo de nuevo.",
+  "Could not send report, try again.": "No se pudo enviar la denuncia, inténtalo de nuevo.",
+  "Hidden": "Oculto",
+  "Please choose a reason": "Elige un motivo",
+  "Report": "Denunciar",
+  "Report this comment": "Denunciar este comentario",
+  "Report this place": "Denunciar este lugar",
+  "Report this user": "Denunciar a este usuario",
+  "Send report": "Enviar denuncia",
+  "Unblock": "Desbloquear",
+  "Unblocked.": "Desbloqueado.",
+  "You already reported this; it is being reviewed.": "Ya lo denunciaste; se está revisando.",
+  "You haven't blocked anyone.": "No has bloqueado a nadie.",
+  "Your report is anonymous and will be reviewed by our team.": "Tu denuncia es anónima y la revisará nuestro equipo.",
+  "✓ Thanks, your report was received. We will review it.": "✓ Gracias, hemos recibido tu denuncia. La revisaremos.",
+  "❌ False or misleading info": "❌ Información falsa o engañosa",
+  "💬 Other": "💬 Otro",
+  "📢 Spam or advertising": "📢 Spam o publicidad",
+  "🔞 Inappropriate content": "🔞 Contenido inapropiado",
+  "😠 Harassment or bullying": "😠 Acoso o intimidación",
+  "🚫 \"{0}\" blocked.": "🚫 «{0}» bloqueado.",
+  "🚫 Blocked Users": "🚫 Usuarios bloqueados",
+  "🤬 Offensive or hateful": "🤬 Ofensivo o de odio",
+  "🛡 Admin Panel": "🛡 Panel de admin"
  },
  "ar": {
   "Ask a colleague for an invite code.": "اطلب رمز دعوة من أحد زملائك.",
@@ -3134,7 +3243,34 @@ var I18N = {
   "The verification link is invalid. Please try again.": "رابط التحقق غير صالح. حاول مرة أخرى.",
   "✓ Email verified, welcome!": "✓ تم التحقق من بريدك، أهلًا بك!",
   "Your email is not verified yet. Click the link in your inbox.": "لم يتم التحقق من بريدك بعد. اضغط على الرابط في بريدك.",
-  "Your session has expired, please sign in again.": "انتهت جلستك، يرجى تسجيل الدخول مرة أخرى."
+  "Your session has expired, please sign in again.": "انتهت جلستك، يرجى تسجيل الدخول مرة أخرى.",
+  "Add a short note (optional)": "أضف ملاحظة قصيرة (اختياري)",
+  "Block": "حظر",
+  "Block \"{0}\"?\n\nYou will no longer see their comments or places. You can undo this anytime in Settings.": "حظر \"{0}\"؟\n\nلن ترى تعليقاته أو أماكنه بعد الآن. يمكنك التراجع في أي وقت من الإعدادات.",
+  "Could not block, try again.": "تعذّر الحظر، حاول مرة أخرى.",
+  "Could not send report, try again.": "تعذّر إرسال البلاغ، حاول مرة أخرى.",
+  "Hidden": "مخفي",
+  "Please choose a reason": "يرجى اختيار سبب",
+  "Report": "إبلاغ",
+  "Report this comment": "الإبلاغ عن هذا التعليق",
+  "Report this place": "الإبلاغ عن هذا المكان",
+  "Report this user": "الإبلاغ عن هذا المستخدم",
+  "Send report": "إرسال البلاغ",
+  "Unblock": "إلغاء الحظر",
+  "Unblocked.": "تم إلغاء الحظر.",
+  "You already reported this; it is being reviewed.": "لقد أبلغت عن هذا مسبقًا، وهو قيد المراجعة.",
+  "You haven't blocked anyone.": "لم تحظر أحدًا.",
+  "Your report is anonymous and will be reviewed by our team.": "بلاغك مجهول الهوية وسيراجعه فريقنا.",
+  "✓ Thanks, your report was received. We will review it.": "✓ شكرًا، تم استلام بلاغك وسنراجعه.",
+  "❌ False or misleading info": "❌ معلومات خاطئة أو مضللة",
+  "💬 Other": "💬 أخرى",
+  "📢 Spam or advertising": "📢 رسائل مزعجة أو إعلان",
+  "🔞 Inappropriate content": "🔞 محتوى غير لائق",
+  "😠 Harassment or bullying": "😠 تحرش أو تنمر",
+  "🚫 \"{0}\" blocked.": "🚫 تم حظر \"{0}\".",
+  "🚫 Blocked Users": "🚫 المستخدمون المحظورون",
+  "🤬 Offensive or hateful": "🤬 مسيء أو يحض على الكراهية",
+  "🛡 Admin Panel": "🛡 لوحة الإدارة"
  },
  "ja": {
   "Ask a colleague for an invite code.": "同僚に招待コードをもらってください。",
@@ -3416,7 +3552,34 @@ var I18N = {
   "The verification link is invalid. Please try again.": "確認リンクが無効です。もう一度お試しください。",
   "✓ Email verified, welcome!": "✓ メールを確認しました。ようこそ！",
   "Your email is not verified yet. Click the link in your inbox.": "メールがまだ確認されていません。受信箱のリンクをクリックしてください。",
-  "Your session has expired, please sign in again.": "セッションの有効期限が切れました。もう一度ログインしてください。"
+  "Your session has expired, please sign in again.": "セッションの有効期限が切れました。もう一度ログインしてください。",
+  "Add a short note (optional)": "短いメモを追加（任意）",
+  "Block": "ブロック",
+  "Block \"{0}\"?\n\nYou will no longer see their comments or places. You can undo this anytime in Settings.": "「{0}」をブロックしますか？\n\nこのユーザーのコメントやスポットは表示されなくなります。設定からいつでも解除できます。",
+  "Could not block, try again.": "ブロックできませんでした。もう一度お試しください。",
+  "Could not send report, try again.": "報告を送信できませんでした。もう一度お試しください。",
+  "Hidden": "非表示",
+  "Please choose a reason": "理由を選んでください",
+  "Report": "報告",
+  "Report this comment": "このコメントを報告",
+  "Report this place": "このスポットを報告",
+  "Report this user": "このユーザーを報告",
+  "Send report": "報告を送信",
+  "Unblock": "ブロック解除",
+  "Unblocked.": "ブロックを解除しました。",
+  "You already reported this; it is being reviewed.": "すでに報告済みです。確認中です。",
+  "You haven't blocked anyone.": "ブロックしているユーザーはいません。",
+  "Your report is anonymous and will be reviewed by our team.": "報告は匿名で、運営チームが確認します。",
+  "✓ Thanks, your report was received. We will review it.": "✓ ありがとうございます。報告を受け付けました。確認します。",
+  "❌ False or misleading info": "❌ 誤った・誤解を招く情報",
+  "💬 Other": "💬 その他",
+  "📢 Spam or advertising": "📢 スパム・宣伝",
+  "🔞 Inappropriate content": "🔞 不適切な内容",
+  "😠 Harassment or bullying": "😠 嫌がらせ・いじめ",
+  "🚫 \"{0}\" blocked.": "🚫 「{0}」をブロックしました。",
+  "🚫 Blocked Users": "🚫 ブロック中のユーザー",
+  "🤬 Offensive or hateful": "🤬 攻撃的・差別的",
+  "🛡 Admin Panel": "🛡 管理パネル"
  },
  "ko": {
   "Ask a colleague for an invite code.": "동료에게 초대 코드를 요청하세요.",
@@ -3698,7 +3861,34 @@ var I18N = {
   "The verification link is invalid. Please try again.": "인증 링크가 유효하지 않습니다. 다시 시도하세요.",
   "✓ Email verified, welcome!": "✓ 이메일 인증 완료, 환영합니다!",
   "Your email is not verified yet. Click the link in your inbox.": "아직 이메일 인증이 되지 않았습니다. 받은편지함의 링크를 누르세요.",
-  "Your session has expired, please sign in again.": "세션이 만료되었습니다. 다시 로그인하세요."
+  "Your session has expired, please sign in again.": "세션이 만료되었습니다. 다시 로그인하세요.",
+  "Add a short note (optional)": "간단한 메모 추가 (선택)",
+  "Block": "차단",
+  "Block \"{0}\"?\n\nYou will no longer see their comments or places. You can undo this anytime in Settings.": "'{0}'님을 차단할까요?\n\n이 사용자의 댓글과 장소가 더 이상 보이지 않습니다. 설정에서 언제든 해제할 수 있습니다.",
+  "Could not block, try again.": "차단하지 못했습니다. 다시 시도하세요.",
+  "Could not send report, try again.": "신고를 보내지 못했습니다. 다시 시도하세요.",
+  "Hidden": "숨김",
+  "Please choose a reason": "사유를 선택하세요",
+  "Report": "신고",
+  "Report this comment": "이 댓글 신고",
+  "Report this place": "이 장소 신고",
+  "Report this user": "이 사용자 신고",
+  "Send report": "신고 보내기",
+  "Unblock": "차단 해제",
+  "Unblocked.": "차단이 해제되었습니다.",
+  "You already reported this; it is being reviewed.": "이미 신고했습니다. 검토 중입니다.",
+  "You haven't blocked anyone.": "차단한 사용자가 없습니다.",
+  "Your report is anonymous and will be reviewed by our team.": "신고는 익명으로 처리되며 운영팀이 검토합니다.",
+  "✓ Thanks, your report was received. We will review it.": "✓ 감사합니다. 신고가 접수되었으며 검토하겠습니다.",
+  "❌ False or misleading info": "❌ 허위 또는 오해의 소지가 있는 정보",
+  "💬 Other": "💬 기타",
+  "📢 Spam or advertising": "📢 스팸 또는 광고",
+  "🔞 Inappropriate content": "🔞 부적절한 콘텐츠",
+  "😠 Harassment or bullying": "😠 괴롭힘 또는 따돌림",
+  "🚫 \"{0}\" blocked.": "🚫 '{0}'님을 차단했습니다.",
+  "🚫 Blocked Users": "🚫 차단한 사용자",
+  "🤬 Offensive or hateful": "🤬 공격적이거나 혐오스러운 내용",
+  "🛡 Admin Panel": "🛡 관리자 패널"
  },
  "zh": {
   "Ask a colleague for an invite code.": "请向同事索取邀请码。",
@@ -3980,7 +4170,34 @@ var I18N = {
   "The verification link is invalid. Please try again.": "验证链接无效，请重试。",
   "✓ Email verified, welcome!": "✓ 邮箱已验证，欢迎！",
   "Your email is not verified yet. Click the link in your inbox.": "你的邮箱尚未验证，请点击收件箱中的链接。",
-  "Your session has expired, please sign in again.": "会话已过期，请重新登录。"
+  "Your session has expired, please sign in again.": "会话已过期，请重新登录。",
+  "Add a short note (optional)": "添加简短说明（可选）",
+  "Block": "屏蔽",
+  "Block \"{0}\"?\n\nYou will no longer see their comments or places. You can undo this anytime in Settings.": "要屏蔽“{0}”吗？\n\n你将不再看到其评论和地点。可随时在设置中取消。",
+  "Could not block, try again.": "屏蔽失败，请重试。",
+  "Could not send report, try again.": "举报发送失败，请重试。",
+  "Hidden": "已隐藏",
+  "Please choose a reason": "请选择原因",
+  "Report": "举报",
+  "Report this comment": "举报此评论",
+  "Report this place": "举报此地点",
+  "Report this user": "举报此用户",
+  "Send report": "提交举报",
+  "Unblock": "取消屏蔽",
+  "Unblocked.": "已取消屏蔽。",
+  "You already reported this; it is being reviewed.": "你已举报过，正在审核中。",
+  "You haven't blocked anyone.": "你还没有屏蔽任何人。",
+  "Your report is anonymous and will be reviewed by our team.": "你的举报是匿名的，我们的团队会进行审核。",
+  "✓ Thanks, your report was received. We will review it.": "✓ 谢谢，我们已收到你的举报，会尽快审核。",
+  "❌ False or misleading info": "❌ 虚假或误导性信息",
+  "💬 Other": "💬 其他",
+  "📢 Spam or advertising": "📢 垃圾信息或广告",
+  "🔞 Inappropriate content": "🔞 不当内容",
+  "😠 Harassment or bullying": "😠 骚扰或欺凌",
+  "🚫 \"{0}\" blocked.": "🚫 已屏蔽“{0}”。",
+  "🚫 Blocked Users": "🚫 已屏蔽的用户",
+  "🤬 Offensive or hateful": "🤬 冒犯或仇恨言论",
+  "🛡 Admin Panel": "🛡 管理面板"
  }
 };
 function tx(trS, enS, ...args) {
@@ -5327,6 +5544,7 @@ function closeTopOverlay() {
     return true;
   }
   const np = document.getElementById('notif-prompt'); if (np) { np.remove(); return true; }
+  if (document.getElementById('report-sheet')) { closeReportSheet(); return true; }
   return false;
 }
 
@@ -5413,6 +5631,7 @@ function goTo(id) {
 
   // Settings açılınca admin butonunu göster/gizle
   if (id === 'screen-settings') {
+    renderBlockedUsers();
     const adminWrap = document.getElementById('admin-panel-btn-wrap');
     if (adminWrap) adminWrap.style.display = isAdmin() ? 'block' : 'none';
   }
@@ -5495,6 +5714,8 @@ let locationDetected = false;
 function renderCards() {
   const container = document.getElementById('home-content');
   let filtered = currentCat === 'all' ? [...places] : places.filter(p => p.cat === currentCat);
+  // Engellenen kullanıcıların eklediği yerleri gösterme
+  if (blockedUserIds.size) filtered = filtered.filter(p => !p.userId || !blockedUserIds.has(p.userId));
 
   // Metin araması
   const q = (document.getElementById('search-input') ? document.getElementById('search-input').value : '').trim().toLowerCase();
@@ -5548,13 +5769,13 @@ function renderCards() {
   container.innerHTML = filtered.map(p => `
     <div class="place-card" onclick="openDetail('${p.id}')">
       <div class="place-card-img ${p.cat}">
-        <div class="card-badge">${subcatLabel(p.subcat)}</div>
+        <div class="card-badge">${escapeHtml(subcatLabel(p.subcat))}</div>
         ${p.isAdult ? '<div class="card-adult-badge">🔞 +18</div>' : ''}
         <span>${p.emoji}</span>
       </div>
       <div class="place-card-body">
-        <div class="place-card-name">${p.name}</div>
-        <div class="place-card-meta">${p.addr}</div>
+        <div class="place-card-name">${escapeHtml(p.name)}</div>
+        <div class="place-card-meta">${escapeHtml(p.addr)}</div>
         <div class="place-card-row">
           <span class="price-tag" title="${getPriceRangeLocal(p.price, currentCurrency)} ${currentCurrency.code}">
             ${p.price} · <span style="color:var(--gold);font-weight:600;">${getPriceRangeLocal(p.price, currentCurrency)}</span>
@@ -5634,6 +5855,9 @@ function openDetail(id) {
     const canEdit = isAdmin() || (currentUser && p.userId === currentUser.id);
     editAction.style.display = canEdit ? 'block' : 'none';
   }
+  // Şikayet butonu — giriş yapmış ve yerin sahibi olmayan kullanıcı
+  const reportAction = document.getElementById('report-place-action');
+  if (reportAction) reportAction.style.display = (currentUser && p.userId !== currentUser.id) ? 'block' : 'none';
   goTo('screen-detail');
 }
 
@@ -7459,6 +7683,15 @@ function renderComments(comments) {
   }
 
   const myUserId = currentUser ? currentUser.id : null;
+  // Engellenen kullanıcıların yorumlarını gösterme
+  comments = comments.filter(c => !c.user_id || !blockedUserIds.has(c.user_id));
+  if (!comments.length) {
+    listEl.innerHTML = '<div class="comment-empty">💬 ' + (tx('Henüz yorum yok. İlk yorumu sen yaz!', 'No comments yet. Be the first!')) + '</div>';
+    const box = document.getElementById('comment-input-box');
+    const section = listEl.parentNode;
+    if (box && section) section.appendChild(box);
+    return;
+  }
 
   listEl.innerHTML = comments.map(c => {
     const stars = c.stars ? '★'.repeat(c.stars) + '☆'.repeat(5 - c.stars) : '';
@@ -7468,22 +7701,27 @@ function renderComments(comments) {
     return `
       <div class="comment-card" id="comment-card-${c.id}">
         <div class="comment-top">
-          <div class="comment-user">${c.username}${isOwn ? ' <span style="font-size:10px;color:var(--gold);font-weight:400;">(sen)</span>' : ''}</div>
+          <div class="comment-user">${escapeHtml(c.username)}${isOwn ? ' <span style="font-size:10px;color:var(--gold);font-weight:400;">(sen)</span>' : ''}</div>
           <div class="comment-meta">
             ${stars ? `<span class="comment-stars">${stars}</span>` : ''}
             <span class="comment-date">${date}</span>
           </div>
         </div>
-        <div class="comment-text" id="comment-text-${c.id}">${c.text}</div>
+        <div class="comment-text" id="comment-text-${c.id}">${escapeHtml(c.text)}</div>
         <div id="comment-translation-${c.id}" style="display:none;margin-top:6px;padding:6px 8px;background:rgba(201,168,76,0.08);border-radius:8px;border-left:2px solid var(--gold);font-size:11px;color:var(--text-secondary);line-height:1.5;"></div>
         <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
           <button onclick="translateComment('${c.id}', this)" style="background:none;border:none;padding:2px 6px;cursor:pointer;font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:3px;border-radius:4px;transition:background 0.15s;" onmouseover="this.style.background='var(--cream-dark)'" onmouseout="this.style.background='none'">
             🌐 <span>${tx('Çevir', 'Translate')}</span>
           </button>
+          ${c.is_hidden ? `<span style="font-size:10px;background:#9ca3af;color:#fff;padding:1px 6px;border-radius:4px;">${tx('Gizlendi', 'Hidden')}</span>` : ''}
+          ${(!isOwn && currentUser) ? `
+          <button class="comment-mini-btn" onclick="openReportSheet('comment', '${c.id}', '${c.user_id || ''}')">🚩 ${tx('Şikayet et', 'Report')}</button>
+          ${c.user_id ? `<button class="comment-mini-btn" data-name="${escapeHtml(c.username)}" onclick="blockUser('${c.user_id}', this.dataset.name)">🚫 ${tx('Engelle', 'Block')}</button>` : ''}
+          ${isAdmin() ? `<button class="comment-mini-btn" style="color:#ef4444;" onclick="adminHideComment('${c.id}')">🙈 Gizle</button>` : ''}` : ''}
         </div>
         ${isOwn ? `
           <div class="comment-actions">
-            <button class="comment-action-btn edit" onclick="startEditComment('${c.id}', '${c.text.replace(/'/g, "\'")}')">
+            <button class="comment-action-btn edit" onclick="startEditComment('${c.id}', this.closest('.comment-card').querySelector('.comment-text').dataset.original || this.closest('.comment-card').querySelector('.comment-text').textContent)">
               ✏️ ${tx('Düzenle', 'Edit')}
             </button>
             <button class="comment-action-btn delete" onclick="deleteComment('${c.id}')">
@@ -8416,6 +8654,7 @@ async function loadProfile(userId, token) {
     }
 
     updateInviteCodesUI();
+    loadBlockedUsers();
   } catch(e) {
     console.warn('[loadProfile]', e);
   }
@@ -8441,6 +8680,7 @@ async function signOut() {
   localStorage.removeItem('sb_profile');
   currentUser = null;
   currentProfile = null;
+  blockedUserIds = new Set(); blockedUsers = [];
   goTo('screen-splash');
 }
 
@@ -9143,7 +9383,7 @@ function showMapModal(p, lat, lon) {
     <div class="map-modal-header">
       <button class="map-close-btn" onclick="closeMapModal()">←</button>
       <div>
-        <div class="map-modal-title">${p.name}</div>
+        <div class="map-modal-title">${escapeHtml(p.name)}</div>
         <div class="map-modal-addr">📍 ${p.addr}</div>
       </div>
     </div>
@@ -9186,7 +9426,7 @@ function showMapModal(p, lat, lon) {
 
     L.marker([lat, lon], { icon: markerIcon })
       .addTo(leafletMap)
-      .bindPopup(`<b>${p.name}</b><br><small>${p.addr}</small>`, {
+      .bindPopup(`<b>${escapeHtml(p.name)}</b><br><small>${escapeHtml(p.addr)}</small>`, {
         closeButton: false, maxWidth: 200
       })
       .openPopup();
@@ -9366,13 +9606,316 @@ function resetFilters() {
 
 // ── ADMİN FONKSİYONLARI ──────────────────────────────────────────────────────
 // ── ADMİN SEKME YÖNETİMİ ────────────────────────────────────────────────────
+// ── GÜVENLİ METİN ────────────────────────────────────────────────────────────
+// Kullanıcının yazdığı her şey HTML'e eklenmeden önce kaçırılır (XSS koruması)
+function escapeHtml(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ── ŞİKAYET ─────────────────────────────────────────────────────────────────
+const REPORT_REASONS = [
+  { key: 'spam',          tr: '📢 Spam veya reklam',           en: '📢 Spam or advertising' },
+  { key: 'offensive',     tr: '🤬 Saldırgan veya nefret içerikli', en: '🤬 Offensive or hateful' },
+  { key: 'harassment',    tr: '😠 Taciz veya zorbalık',         en: '😠 Harassment or bullying' },
+  { key: 'inappropriate', tr: '🔞 Uygunsuz içerik',             en: '🔞 Inappropriate content' },
+  { key: 'inaccurate',    tr: '❌ Yanlış veya yanıltıcı bilgi',  en: '❌ False or misleading info' },
+  { key: 'other',         tr: '💬 Diğer',                       en: '💬 Other' },
+];
+let _report = null;
+
+function reportCurrentPlace() {
+  const p = places.find(x => x.id === currentDetailId);
+  if (!p) return;
+  openReportSheet('place', p.id, p.userId || '');
+}
+
+function openReportSheet(targetType, targetId, targetUserId) {
+  if (!currentUser) { showToast(tx('Lütfen giriş yap!', 'Please sign in!')); return; }
+  _report = { targetType, targetId, targetUserId: targetUserId || null, reason: null };
+  document.getElementById('report-sheet')?.remove();
+  const title = targetType === 'place' ? tx('Bu yeri şikayet et', 'Report this place')
+              : targetType === 'comment' ? tx('Bu yorumu şikayet et', 'Report this comment')
+              : tx('Bu kullanıcıyı şikayet et', 'Report this user');
+  const el = document.createElement('div');
+  el.id = 'report-sheet';
+  el.style.cssText = 'position:absolute;inset:0;background:rgba(0,0,0,0.5);z-index:160;display:flex;align-items:flex-end;justify-content:center;';
+  el.onclick = (e) => { if (e.target === el) closeReportSheet(); };
+  el.innerHTML = `
+    <div style="background:var(--cream);border-radius:24px 24px 0 0;padding:20px;width:100%;max-height:85vh;overflow-y:auto;">
+      <div style="width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px;"></div>
+      <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text-primary);margin-bottom:4px;">🚩 ${title}</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">${tx('Şikayetin gizli tutulur ve ekibimiz tarafından incelenir.', 'Your report is anonymous and will be reviewed by our team.')}</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${REPORT_REASONS.map(r => `<div class="report-reason" data-key="${r.key}" onclick="selectReportReason(this)">${L(r)}</div>`).join('')}
+      </div>
+      <textarea id="report-details" maxlength="500" placeholder="${tx('İstersen kısa bir açıklama ekle (isteğe bağlı)', 'Add a short note (optional)')}"
+        style="width:100%;margin-top:12px;min-height:70px;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--white);color:var(--text-primary);resize:vertical;box-sizing:border-box;"></textarea>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button onclick="closeReportSheet()" style="flex:1;padding:12px;border-radius:12px;border:1.5px solid var(--border);background:transparent;font-size:13px;cursor:pointer;color:var(--text-secondary);">${tx('İptal', 'Cancel')}</button>
+        <button id="btn-report-send" onclick="submitReport()" style="flex:2;padding:12px;border-radius:12px;border:none;background:#ef4444;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">${tx('Şikayeti gönder', 'Send report')}</button>
+      </div>
+    </div>`;
+  (document.querySelector('.screen.active') || document.body).appendChild(el);
+}
+
+function selectReportReason(el) {
+  document.querySelectorAll('#report-sheet .report-reason').forEach(x => x.classList.remove('selected'));
+  el.classList.add('selected');
+  if (_report) _report.reason = el.dataset.key;
+}
+
+function closeReportSheet() {
+  document.getElementById('report-sheet')?.remove();
+  _report = null;
+}
+
+async function submitReport() {
+  if (!_report) return;
+  if (!_report.reason) { showToast(tx('Lütfen bir sebep seç', 'Please choose a reason')); return; }
+  const btn = document.getElementById('btn-report-send');
+  if (btn) { btn.disabled = true; btn.textContent = tx('Gönderiliyor...', 'Sending...'); }
+  const details = (document.getElementById('report-details')?.value || '').trim().slice(0, 500);
+  try {
+    await sbFetch('reports', {
+      method: 'POST',
+      body: JSON.stringify({
+        reporter_id: currentUser.id,
+        target_type: _report.targetType,
+        target_id: String(_report.targetId),
+        target_user_id: _report.targetUserId || null,
+        reason: _report.reason,
+        details: details || null
+      })
+    });
+    closeReportSheet();
+    showToast(tx('✓ Teşekkürler, şikayetin alındı. İnceleyeceğiz.', '✓ Thanks, your report was received. We will review it.'));
+  } catch(e) {
+    const msg = String(e.message || '');
+    if (msg.includes('23505') || msg.includes('duplicate')) {
+      closeReportSheet();
+      showToast(tx('Bunu zaten şikayet ettin, inceleniyor.', 'You already reported this; it is being reviewed.'));
+    } else {
+      console.warn('[submitReport]', e);
+      showToast(tx('Şikayet gönderilemedi, tekrar dene.', 'Could not send report, try again.'));
+      if (btn) { btn.disabled = false; btn.textContent = tx('Şikayeti gönder', 'Send report'); }
+    }
+  }
+}
+
+// ── ENGELLEME ───────────────────────────────────────────────────────────────
+var blockedUserIds = new Set();
+var blockedUsers = [];   // [{ id, username }]
+
+async function loadBlockedUsers() {
+  if (!currentUser) { blockedUserIds = new Set(); blockedUsers = []; return; }
+  try {
+    const rows = await sbFetch(`blocks?blocker_id=eq.${currentUser.id}&select=blocked_id`, { headers: { 'Prefer': '' } });
+    const ids = (rows || []).map(r => r.blocked_id);
+    blockedUserIds = new Set(ids);
+    blockedUsers = ids.map(id => ({ id, username: '' }));
+    if (ids.length) {
+      const profs = await sbFetch(`profiles?id=in.(${ids.join(',')})&select=id,username`, { headers: { 'Prefer': '' } });
+      (profs || []).forEach(pr => { const b = blockedUsers.find(x => x.id === pr.id); if (b) b.username = pr.username; });
+    }
+    renderCards();
+  } catch(e) {
+    console.warn('[loadBlockedUsers]', e);   // tablo yoksa (migration çalışmadıysa) sessiz geç
+  }
+}
+
+async function blockUser(userId, username) {
+  if (!currentUser || !userId || userId === currentUser.id) return;
+  const ok = confirm(tx(
+    '"{0}" engellensin mi?\n\nBu kişinin yorumlarını ve eklediği yerleri artık görmeyeceksin. İstediğin zaman Ayarlar\'dan kaldırabilirsin.',
+    'Block "{0}"?\n\nYou will no longer see their comments or places. You can undo this anytime in Settings.',
+    username || '—'));
+  if (!ok) return;
+  try {
+    await sbFetch('blocks', { method: 'POST', body: JSON.stringify({ blocker_id: currentUser.id, blocked_id: userId }) });
+  } catch(e) {
+    if (!String(e.message).includes('23505') && !String(e.message).includes('duplicate')) {
+      console.warn('[blockUser]', e);
+      showToast(tx('Engellenemedi, tekrar dene.', 'Could not block, try again.'));
+      return;
+    }
+  }
+  blockedUserIds.add(userId);
+  if (!blockedUsers.find(b => b.id === userId)) blockedUsers.push({ id: userId, username: username || '' });
+  showToast(tx('🚫 "{0}" engellendi.', '🚫 "{0}" blocked.', username || '—'));
+  renderCards();
+  if (commentPlaceId) loadComments(commentPlaceId);
+}
+
+async function unblockUser(userId) {
+  if (!currentUser) return;
+  try {
+    await sbFetch(`blocks?blocker_id=eq.${currentUser.id}&blocked_id=eq.${userId}`, { method: 'DELETE' });
+    blockedUserIds.delete(userId);
+    blockedUsers = blockedUsers.filter(b => b.id !== userId);
+    renderBlockedUsers();
+    renderCards();
+    showToast(tx('Engel kaldırıldı.', 'Unblocked.'));
+  } catch(e) {
+    console.warn('[unblockUser]', e);
+    showToast(tx('İşlem başarısız', 'Operation failed'));
+  }
+}
+
+function renderBlockedUsers() {
+  const el = document.getElementById('blocked-users-list');
+  if (!el) return;
+  if (!blockedUsers.length) {
+    el.textContent = tx('Engellediğin kimse yok.', "You haven't blocked anyone.");
+    return;
+  }
+  el.innerHTML = blockedUsers.map(b => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+      <span style="font-size:13px;color:var(--text-primary);">${escapeHtml(b.username || '—')}</span>
+      <button class="comment-mini-btn" style="border:1px solid var(--border);" onclick="unblockUser('${b.id}')">${tx('Engeli kaldır', 'Unblock')}</button>
+    </div>`).join('');
+}
+
+// ── ADMİN: ŞİKAYETLER ───────────────────────────────────────────────────────
+const REPORT_REASON_TR = { spam:'Spam', offensive:'Saldırgan', harassment:'Taciz', inappropriate:'Uygunsuz', inaccurate:'Yanlış bilgi', other:'Diğer' };
+let adminReportGroups = [];
+
+async function refreshAdminReportCount() {
+  if (!isAdmin()) return;
+  try {
+    const rows = await sbFetch('reports?status=eq.open&select=id', { headers: { 'Prefer': '' } });
+    const n = (rows || []).length;
+    const el = document.getElementById('admin-reports-count');
+    if (el) el.textContent = n ? `(${n})` : '';
+  } catch(e) {}
+}
+
+async function loadAdminReports() {
+  if (!isAdmin()) return;
+  const listEl = document.getElementById('admin-reports-list');
+  const filter = document.getElementById('admin-report-filter')?.value || 'open';
+  if (listEl) listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">⏳ Yükleniyor...</div>';
+  try {
+    const statusQ = filter === 'open' ? 'status=eq.open' : 'status=in.(resolved,dismissed)';
+    const reports = await sbFetch(`reports?${statusQ}&order=created_at.desc&limit=200&select=*`, { headers: { 'Prefer': '' } }) || [];
+
+    // Hedeflere göre grupla
+    const groups = {};
+    reports.forEach(r => {
+      const k = r.target_type + ':' + r.target_id;
+      (groups[k] = groups[k] || { type: r.target_type, id: r.target_id, ownerId: r.target_user_id, reports: [] }).reports.push(r);
+    });
+    adminReportGroups = Object.values(groups).sort((a, b) => b.reports.length - a.reports.length);
+
+    // Hedef içerikleri ve kullanıcı adlarını getir
+    const placeIds = adminReportGroups.filter(g => g.type === 'place').map(g => g.id);
+    const commentIds = adminReportGroups.filter(g => g.type === 'comment').map(g => g.id);
+    const userIds = new Set();
+    reports.forEach(r => { if (r.reporter_id) userIds.add(r.reporter_id); if (r.target_user_id) userIds.add(r.target_user_id); });
+    adminReportGroups.filter(g => g.type === 'user').forEach(g => userIds.add(g.id));
+    const q = ids => ids.map(x => `"${String(x).replace(/"/g, '')}"`).join(',');
+    const [pl, cm, pr] = await Promise.all([
+      placeIds.length ? sbFetch(`places?id=in.(${q(placeIds)})&select=id,name,city,is_hidden,user_id`, { headers: { 'Prefer': '' } }) : [],
+      commentIds.length ? sbFetch(`comments?id=in.(${q(commentIds)})&select=id,text,username,place_id,is_hidden,user_id`, { headers: { 'Prefer': '' } }) : [],
+      userIds.size ? sbFetch(`profiles?id=in.(${[...userIds].join(',')})&select=id,username,is_disabled`, { headers: { 'Prefer': '' } }) : []
+    ]);
+    const byId = arr => Object.fromEntries((arr || []).map(x => [String(x.id), x]));
+    const P = byId(pl), C = byId(cm), U = byId(pr);
+    adminReportGroups.forEach(g => {
+      g.target = g.type === 'place' ? P[g.id] : g.type === 'comment' ? C[g.id] : U[g.id];
+      g.ownerId = g.ownerId || g.target?.user_id || (g.type === 'user' ? g.id : null);
+      g.ownerName = U[g.ownerId]?.username || g.target?.username || '—';
+      g.reporters = g.reports.map(r => U[r.reporter_id]?.username || '—');
+    });
+    renderAdminReports(filter);
+    refreshAdminReportCount();
+  } catch(e) {
+    console.error('[loadAdminReports]', e);
+    if (listEl) listEl.innerHTML = `<div style="text-align:center;padding:40px;color:#ef4444;">⚠️ Yüklenemedi: ${escapeHtml(e.message)}<br><small>Şikayet tablosu için SQL migration çalıştırıldı mı?</small></div>`;
+  }
+}
+
+function renderAdminReports(filter) {
+  const listEl = document.getElementById('admin-reports-list');
+  const stat = document.getElementById('admin-report-stat');
+  if (stat) stat.textContent = `${adminReportGroups.length} içerik · ${adminReportGroups.reduce((n, g) => n + g.reports.length, 0)} şikayet`;
+  if (!listEl) return;
+  if (!adminReportGroups.length) {
+    listEl.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);">${filter === 'open' ? '✓ Açık şikayet yok' : 'Kayıt yok'}</div>`;
+    return;
+  }
+  listEl.innerHTML = adminReportGroups.map((g, i) => {
+    const t = g.target;
+    const typeLabel = g.type === 'place' ? '📍 Yer' : g.type === 'comment' ? '💬 Yorum' : '👤 Kullanıcı';
+    const title = g.type === 'place' ? (t ? `${escapeHtml(t.name)} · ${escapeHtml(t.city || '')}` : '(silinmiş yer)')
+                : g.type === 'comment' ? (t ? `“${escapeHtml((t.text || '').slice(0, 160))}”` : '(silinmiş yorum)')
+                : escapeHtml(t?.username || '(silinmiş kullanıcı)');
+    const hiddenBadge = t && t.is_hidden ? '<span class="admin-hidden-badge">GİZLİ</span>' : '';
+    const reasons = {};
+    g.reports.forEach(r => { reasons[r.reason] = (reasons[r.reason] || 0) + 1; });
+    const reasonTxt = Object.entries(reasons).map(([k, n]) => `${REPORT_REASON_TR[k] || k}${n > 1 ? ' ×' + n : ''}`).join(', ');
+    const notes = g.reports.filter(r => r.details).map(r => `<div style="font-size:11px;color:var(--text-secondary);margin-top:3px;">• ${escapeHtml(r.details)}</div>`).join('');
+    const date = new Date(g.reports[0].created_at).toLocaleDateString('tr-TR', { day:'numeric', month:'short' });
+    const canHide = (g.type === 'place' || g.type === 'comment') && t;
+    return `
+      <div class="admin-place-row" style="flex-direction:column;gap:6px;">
+        <div style="display:flex;justify-content:space-between;gap:8px;width:100%;">
+          <div style="font-size:11px;font-weight:700;color:#ef4444;">${typeLabel} · ${g.reports.length} şikayet ${hiddenBadge}</div>
+          <div style="font-size:11px;color:var(--text-muted);">📅 ${date}</div>
+        </div>
+        <div style="font-size:13px;font-weight:600;color:var(--text-primary);">${title}</div>
+        <div style="font-size:11px;color:var(--text-muted);">Sahibi: <b>${escapeHtml(g.ownerName)}</b> · Sebep: ${escapeHtml(reasonTxt)}<br>Şikayet eden: ${g.reporters.map(escapeHtml).join(', ')}</div>
+        ${notes}
+        ${filter === 'open' ? `
+        <div class="admin-place-actions" style="flex-direction:row;flex-wrap:wrap;">
+          ${g.type === 'place' && t ? `<button class="admin-btn admin-btn-view" onclick="adminViewPlace('${escapeHtml(g.id)}')">👁 Gör</button>` : ''}
+          ${canHide && !t.is_hidden ? `<button class="admin-btn admin-btn-hide" onclick="adminReportAction(${i}, 'hide', this)">🙈 Gizle + kapat</button>` : ''}
+          ${canHide && t.is_hidden ? `<button class="admin-btn admin-btn-show" onclick="adminReportAction(${i}, 'unhide', this)">✓ Göster + yoksay</button>` : ''}
+          <button class="admin-btn admin-btn-show" onclick="adminReportAction(${i}, 'dismiss', this)">✕ Yoksay</button>
+          ${g.ownerId ? `<button class="admin-btn admin-btn-del" onclick="adminReportAction(${i}, 'delete_user', this)">🗑 Kullanıcıyı sil</button>` : ''}
+        </div>` : `<div style="font-size:11px;color:var(--text-muted);">Durum: ${g.reports[0].status === 'resolved' ? 'Çözüldü' : 'Yoksayıldı'}</div>`}
+      </div>`;
+  }).join('');
+}
+
+async function adminReportAction(i, action, btn) {
+  if (!isAdmin()) return;
+  const g = adminReportGroups[i];
+  if (!g) return;
+  if (action === 'delete_user') {
+    await adminDeleteUser(g.ownerId, g.ownerName);
+    action = 'resolve';
+  }
+  if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+  try {
+    if (action === 'hide' || action === 'unhide') {
+      const hide = action === 'hide';
+      const table = g.type === 'place' ? 'places' : 'comments';
+      await sbFetch(`${table}?id=eq.${encodeURIComponent(g.id)}`, { method: 'PATCH', body: JSON.stringify({ is_hidden: hide }) });
+    }
+    const newStatus = (action === 'hide' || action === 'resolve') ? 'resolved' : 'dismissed';
+    const ids = g.reports.map(r => r.id).join(',');
+    await sbFetch(`reports?id=in.(${ids})`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: newStatus, resolved_at: new Date().toISOString(), resolved_by: currentUser.id })
+    });
+    showToast(newStatus === 'resolved' ? '✓ Şikayet kapatıldı' : '✓ Şikayet yoksayıldı');
+    loadAdminReports();
+  } catch(e) {
+    console.error('[adminReportAction]', e);
+    showToast('Hata: ' + e.message);
+    if (btn) btn.disabled = false;
+  }
+}
+
 function switchAdminTab(tab) {
   document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('admin-tab-' + tab)?.classList.add('active');
   document.getElementById('admin-panel-places').style.display = tab === 'places' ? 'flex' : 'none';
   document.getElementById('admin-panel-places').style.flexDirection = 'column';
   document.getElementById('admin-panel-invites').style.display = tab === 'invites' ? 'block' : 'none';
+  document.getElementById('admin-panel-reports').style.display = tab === 'reports' ? 'block' : 'none';
   if (tab === 'invites' && !allAdminUsers.length) loadAdminInvites();
+  if (tab === 'reports') loadAdminReports();
 }
 
 // ── ADMİN DAVET YÖNETİMİ ─────────────────────────────────────────────────────
@@ -9483,7 +10026,7 @@ function renderAdminInvites() {
         <div class="invite-user-header">
           <div>
             <div class="invite-user-name">
-              ${u.username || 'İsimsiz'}
+              ${escapeHtml(u.username || 'İsimsiz')}
               ${u.role === 'admin' ? '<span style="font-size:10px;background:var(--navy);color:#fff;padding:1px 6px;border-radius:4px;margin-left:4px;">ADMIN</span>' : ''}
               ${u.is_disabled ? '<span class="disabled-badge">Devre Dışı</span>' : ''}
             </div>
@@ -9639,8 +10182,11 @@ async function loadAdminPlaces() {
   const invitesPanel = document.getElementById('admin-panel-invites');
   if (placesPanel) { placesPanel.style.display = 'flex'; placesPanel.style.flexDirection = 'column'; }
   if (invitesPanel) invitesPanel.style.display = 'none';
+  const reportsPanel = document.getElementById('admin-panel-reports');
+  if (reportsPanel) reportsPanel.style.display = 'none';
   document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('admin-tab-places')?.classList.add('active');
+  refreshAdminReportCount();
 
   const listEl = document.getElementById('admin-list');
   if (listEl) listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">⏳ Yükleniyor...</div>';
@@ -9928,7 +10474,7 @@ async function adminHideComment(commentId) {
   try {
     await sbFetch(`comments?id=eq.${commentId}`, {
       method: 'PATCH',
-      body: JSON.stringify({ text: '[Bu yorum kaldırılmıştır.]' })
+      body: JSON.stringify({ is_hidden: true })
     });
     await loadComments(commentPlaceId);
     showToast(tx('Yorum kaldırıldı.', 'Comment removed.'));
@@ -10567,8 +11113,8 @@ function renderNotifs(items) {
       position:relative;">
       <div style="font-size:28px;flex-shrink:0;">${p.emoji||'📍'}</div>
       <div style="flex:1;min-width:0;">
-        <div style="font-size:13px;font-weight:600;color:var(--text-primary);font-family:'Syne',sans-serif;">${p.name||''}</div>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${flag} ${p.city||''} ${country && country !== p.city ? '· ' + country : ''}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--text-primary);font-family:'Syne',sans-serif;">${escapeHtml(p.name||'')}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${flag} ${escapeHtml(p.city||'')} ${country && country !== p.city ? '· ' + country : ''}</div>
         <div style="font-size:11px;color:var(--text-muted);margin-top:1px;">${timeAgo}</div>
       </div>
       ${!isRead ? `<div style="width:8px;height:8px;border-radius:50%;background:var(--gold);flex-shrink:0;"></div>` : ''}
@@ -11194,7 +11740,7 @@ async function renderSavedScreen() {
     const bg = catBg[p.cat] || '#f0f3f9';
     const stars = p.rating > 0 ? '★'.repeat(Math.round(p.rating)) : '';
     const catLabel = p.cat==='food'?(tx('Yemek', 'Food')):p.cat==='shopping'?(tx('Alışveriş', 'Shopping')):(tx('Gezi', 'Sightseeing'));
-    return `<div class="saved-place-card" onclick="openDetail('${p.id}')"><div class="saved-place-icon" style="background:${bg};">${p.emoji}</div><div class="saved-place-info"><div class="saved-place-name">${p.name}</div><div class="saved-place-meta">${p.city||''} · ${catLabel} · ${p.price}</div></div><div class="saved-place-right">${stars?`<div class="saved-place-rating">${stars}</div>`:''}<button class="saved-remove-btn" onclick="event.stopPropagation();removeSaved('${p.id}')" title="${tx('Kaldır', 'Remove')}">🗑</button></div></div>`;
+    return `<div class="saved-place-card" onclick="openDetail('${p.id}')"><div class="saved-place-icon" style="background:${bg};">${p.emoji}</div><div class="saved-place-info"><div class="saved-place-name">${escapeHtml(p.name)}</div><div class="saved-place-meta">${escapeHtml(p.city||'')} · ${catLabel} · ${p.price}</div></div><div class="saved-place-right">${stars?`<div class="saved-place-rating">${stars}</div>`:''}<button class="saved-remove-btn" onclick="event.stopPropagation();removeSaved('${p.id}')" title="${tx('Kaldır', 'Remove')}">🗑</button></div></div>`;
   }).join('');
 }
 
@@ -11292,7 +11838,7 @@ async function loadMyPlaces() {
         <div class="place-row-profile" onclick="openDetail('${p.id}')">
           <div class="place-icon-profile" style="background:${cat.bg};">${p.emoji || cat.emoji}</div>
           <div class="place-row-info">
-            <div class="place-row-name">${p.name}</div>
+            <div class="place-row-name">${escapeHtml(p.name)}</div>
             <div class="place-row-meta">${p.city || ''} · ${catLabel}</div>
           </div>
           <div class="place-row-likes">${stars}♥ ${p.likes || 0}</div>
