@@ -2348,7 +2348,8 @@ var I18N = {
   "🛡 Admin Panel": "🛡 Admin-Bereich",
   "Privacy Policy": "Datenschutzerklärung",
   "🔒 Privacy Policy": "🔒 Datenschutzerklärung",
-  "Learn how your data is used:": "So verwenden wir deine Daten:"
+  "Learn how your data is used:": "So verwenden wir deine Daten:",
+  "This email address can't be used to sign up. Please use your personal email.": "Mit dieser E-Mail-Adresse ist keine Registrierung möglich. Bitte verwende deine private E-Mail-Adresse."
  },
  "fr": {
   "Ask a colleague for an invite code.": "Demande un code d'invitation à un collègue.",
@@ -2660,7 +2661,8 @@ var I18N = {
   "🛡 Admin Panel": "🛡 Panneau admin",
   "Privacy Policy": "Politique de confidentialité",
   "🔒 Privacy Policy": "🔒 Politique de confidentialité",
-  "Learn how your data is used:": "Comment tes données sont utilisées :"
+  "Learn how your data is used:": "Comment tes données sont utilisées :",
+  "This email address can't be used to sign up. Please use your personal email.": "Cette adresse e-mail ne peut pas être utilisée pour l'inscription. Utilise ton adresse e-mail personnelle."
  },
  "es": {
   "Ask a colleague for an invite code.": "Pide un código de invitación a un compañero.",
@@ -2972,7 +2974,8 @@ var I18N = {
   "🛡 Admin Panel": "🛡 Panel de admin",
   "Privacy Policy": "Política de privacidad",
   "🔒 Privacy Policy": "🔒 Política de privacidad",
-  "Learn how your data is used:": "Cómo usamos tus datos:"
+  "Learn how your data is used:": "Cómo usamos tus datos:",
+  "This email address can't be used to sign up. Please use your personal email.": "No es posible registrarse con esta dirección de correo. Usa tu correo personal."
  },
  "ar": {
   "Ask a colleague for an invite code.": "اطلب رمز دعوة من أحد زملائك.",
@@ -3284,7 +3287,8 @@ var I18N = {
   "🛡 Admin Panel": "🛡 لوحة الإدارة",
   "Privacy Policy": "سياسة الخصوصية",
   "🔒 Privacy Policy": "🔒 سياسة الخصوصية",
-  "Learn how your data is used:": "تعرّف على كيفية استخدام بياناتك:"
+  "Learn how your data is used:": "تعرّف على كيفية استخدام بياناتك:",
+  "This email address can't be used to sign up. Please use your personal email.": "لا يمكن التسجيل بهذا البريد الإلكتروني. يُرجى استخدام بريدك الإلكتروني الشخصي."
  },
  "ja": {
   "Ask a colleague for an invite code.": "同僚に招待コードをもらってください。",
@@ -3596,7 +3600,8 @@ var I18N = {
   "🛡 Admin Panel": "🛡 管理パネル",
   "Privacy Policy": "プライバシーポリシー",
   "🔒 Privacy Policy": "🔒 プライバシーポリシー",
-  "Learn how your data is used:": "データの取り扱いについて："
+  "Learn how your data is used:": "データの取り扱いについて：",
+  "This email address can't be used to sign up. Please use your personal email.": "このメールアドレスでは登録できません。個人のメールアドレスを使用してください。"
  },
  "ko": {
   "Ask a colleague for an invite code.": "동료에게 초대 코드를 요청하세요.",
@@ -3908,7 +3913,8 @@ var I18N = {
   "🛡 Admin Panel": "🛡 관리자 패널",
   "Privacy Policy": "개인정보 처리방침",
   "🔒 Privacy Policy": "🔒 개인정보 처리방침",
-  "Learn how your data is used:": "데이터 이용 방식 알아보기:"
+  "Learn how your data is used:": "데이터 이용 방식 알아보기:",
+  "This email address can't be used to sign up. Please use your personal email.": "이 이메일 주소로는 가입할 수 없습니다. 개인 이메일을 사용해 주세요."
  },
  "zh": {
   "Ask a colleague for an invite code.": "请向同事索取邀请码。",
@@ -4220,7 +4226,8 @@ var I18N = {
   "🛡 Admin Panel": "🛡 管理面板",
   "Privacy Policy": "隐私政策",
   "🔒 Privacy Policy": "🔒 隐私政策",
-  "Learn how your data is used:": "了解我们如何使用你的数据："
+  "Learn how your data is used:": "了解我们如何使用你的数据：",
+  "This email address can't be used to sign up. Please use your personal email.": "无法使用此邮箱注册。请使用你的个人邮箱。"
  }
 };
 function tx(trS, enS, ...args) {
@@ -8464,6 +8471,13 @@ async function verifyInviteCode() {
 }
 
 // Kayıt ol
+// Bu alan adlarıyla kayıt yapılamaz (sunucuda da cg_email_blocked() ile engellenir — ikisi aynı tutulmalı)
+const BLOCKED_EMAIL_DOMAINS = ['thy.com'];
+function isBlockedEmail(email) {
+  const d = String(email || '').trim().toLowerCase().split('@').pop();
+  return BLOCKED_EMAIL_DOMAINS.some(b => d === b || d.endsWith('.' + b));
+}
+
 async function createAccount() {
   const username = document.getElementById('input-displayname').value.trim();
   const email    = document.getElementById('input-email').value.trim();
@@ -8473,6 +8487,7 @@ async function createAccount() {
 
   if (!username) { showToast(tx('Görünen ad gerekli!', 'Display name required!')); return; }
   if (!email)    { showToast(tx('E-posta gerekli!', 'Email required!')); return; }
+  if (isBlockedEmail(email)) { showToast(tx('Bu e-posta adresiyle kayıt olunamaz. Lütfen kişisel e-postanı kullan.', "This email address can't be used to sign up. Please use your personal email.")); return; }
   if (password.length < 6) { showToast(tx('Şifre en az 6 karakter!', 'Password must be 6+ chars!')); return; }
 
   const btn = document.getElementById('btn-create-account');
@@ -8518,6 +8533,8 @@ async function createAccount() {
     const msg = e.message || '';
     if (msg.includes('already registered') || msg.includes('already been registered')) {
       showToast(tx('Bu e-posta zaten kayıtlı!', 'Email already registered!'));
+    } else if (msg.includes('EMAIL_DOMAIN_BLOCKED')) {
+      showToast(tx('Bu e-posta adresiyle kayıt olunamaz. Lütfen kişisel e-postanı kullan.', "This email address can't be used to sign up. Please use your personal email."));
     } else if (msg.includes('INVITE_INVALID') || msg.includes('Database error saving new user')) {
       // Sunucu davet kodunu reddetti (bu arada başkası kullanmış olabilir)
       showToast(tx('Davet kodu geçersiz veya kullanılmış. Lütfen başka bir kod gir.', 'Invite code is invalid or already used. Please enter another code.'));
