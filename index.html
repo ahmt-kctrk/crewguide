@@ -1379,7 +1379,6 @@
         <div class="filter-option-grid" id="filter-sort-opts">
           <button class="filter-opt-btn selected" data-val="default" onclick="toggleFilterOpt(this,'sort')" data-t="Default">Varsayılan</button>
           <button class="filter-opt-btn" data-val="rating" onclick="toggleFilterOpt(this,'sort')" data-t="Highest Rated">En Yüksek Puan</button>
-          <button class="filter-opt-btn" data-val="likes" onclick="toggleFilterOpt(this,'sort')" data-t="Most Liked">En Çok Beğenilen</button>
           <button class="filter-opt-btn" data-val="newest" onclick="toggleFilterOpt(this,'sort')" data-t="Newest">En Yeni</button>
         </div>
       </div>
@@ -1492,7 +1491,6 @@
         </div>
       </div>
       <div class="detail-actions">
-        <button class="action-btn" id="btn-like" onclick="toggleLike()">♥ <span id="like-label">Beğen</span></button>
         <button class="action-btn" id="btn-save-detail" onclick="toggleSave()">🔖 <span id="save-label">Kaydet</span></button>
         <button class="action-btn primary" id="btn-comment" onclick="scrollToCommentInput()">💬 <span id="comment-label">Yorum</span></button>
       </div>
@@ -1724,7 +1722,7 @@
       <div class="profile-since" id="profile-since">Üye · Mart 2025</div>
       <div class="profile-stats">
         <div class="p-stat"><div class="p-stat-num" id="stat-places">12</div><div class="p-stat-label" id="stat-places-label">Eklenen yer</div></div>
-        <div class="p-stat"><div class="p-stat-num" id="stat-likes">—</div><div class="p-stat-label" id="stat-likes-label">Beğeni aldı</div></div>
+        <div class="p-stat"><div class="p-stat-num" id="stat-likes">—</div><div class="p-stat-label" id="stat-likes-label">Aldığı puan</div></div>
         <div class="p-stat"><div class="p-stat-num">1/3</div><div class="p-stat-label" id="stat-invite-label">Davet</div></div>
       </div>
     </div>
@@ -2349,7 +2347,10 @@ var I18N = {
   "Privacy Policy": "Datenschutzerklärung",
   "🔒 Privacy Policy": "🔒 Datenschutzerklärung",
   "Learn how your data is used:": "So verwenden wir deine Daten:",
-  "This email address can't be used to sign up. Please use your personal email.": "Mit dieser E-Mail-Adresse ist keine Registrierung möglich. Bitte verwende deine private E-Mail-Adresse."
+  "This email address can't be used to sign up. Please use your personal email.": "Mit dieser E-Mail-Adresse ist keine Registrierung möglich. Bitte verwende deine private E-Mail-Adresse.",
+  "Sign in to rate.": "Melde dich an, um zu bewerten.",
+  "Could not save your rating, please try again.": "Bewertung konnte nicht gespeichert werden, bitte versuche es erneut.",
+  "Rating saved, it will be sent when you are back online.": "Bewertung gespeichert, sie wird gesendet, sobald du wieder online bist."
  },
  "fr": {
   "Ask a colleague for an invite code.": "Demande un code d'invitation à un collègue.",
@@ -2662,7 +2663,10 @@ var I18N = {
   "Privacy Policy": "Politique de confidentialité",
   "🔒 Privacy Policy": "🔒 Politique de confidentialité",
   "Learn how your data is used:": "Comment tes données sont utilisées :",
-  "This email address can't be used to sign up. Please use your personal email.": "Cette adresse e-mail ne peut pas être utilisée pour l'inscription. Utilise ton adresse e-mail personnelle."
+  "This email address can't be used to sign up. Please use your personal email.": "Cette adresse e-mail ne peut pas être utilisée pour l'inscription. Utilise ton adresse e-mail personnelle.",
+  "Sign in to rate.": "Connecte-toi pour noter.",
+  "Could not save your rating, please try again.": "Impossible d'enregistrer ta note, réessaie.",
+  "Rating saved, it will be sent when you are back online.": "Note enregistrée, elle sera envoyée dès que tu seras en ligne."
  },
  "es": {
   "Ask a colleague for an invite code.": "Pide un código de invitación a un compañero.",
@@ -2975,7 +2979,10 @@ var I18N = {
   "Privacy Policy": "Política de privacidad",
   "🔒 Privacy Policy": "🔒 Política de privacidad",
   "Learn how your data is used:": "Cómo usamos tus datos:",
-  "This email address can't be used to sign up. Please use your personal email.": "No es posible registrarse con esta dirección de correo. Usa tu correo personal."
+  "This email address can't be used to sign up. Please use your personal email.": "No es posible registrarse con esta dirección de correo. Usa tu correo personal.",
+  "Sign in to rate.": "Inicia sesión para calificar.",
+  "Could not save your rating, please try again.": "No se pudo guardar tu calificación, inténtalo de nuevo.",
+  "Rating saved, it will be sent when you are back online.": "Calificación guardada; se enviará cuando vuelvas a estar en línea."
  },
  "ar": {
   "Ask a colleague for an invite code.": "اطلب رمز دعوة من أحد زملائك.",
@@ -3288,7 +3295,10 @@ var I18N = {
   "Privacy Policy": "سياسة الخصوصية",
   "🔒 Privacy Policy": "🔒 سياسة الخصوصية",
   "Learn how your data is used:": "تعرّف على كيفية استخدام بياناتك:",
-  "This email address can't be used to sign up. Please use your personal email.": "لا يمكن التسجيل بهذا البريد الإلكتروني. يُرجى استخدام بريدك الإلكتروني الشخصي."
+  "This email address can't be used to sign up. Please use your personal email.": "لا يمكن التسجيل بهذا البريد الإلكتروني. يُرجى استخدام بريدك الإلكتروني الشخصي.",
+  "Sign in to rate.": "سجّل الدخول للتقييم.",
+  "Could not save your rating, please try again.": "تعذّر حفظ تقييمك، حاول مرة أخرى.",
+  "Rating saved, it will be sent when you are back online.": "تم حفظ التقييم، وسيُرسل عند عودة الاتصال."
  },
  "ja": {
   "Ask a colleague for an invite code.": "同僚に招待コードをもらってください。",
@@ -3601,7 +3611,10 @@ var I18N = {
   "Privacy Policy": "プライバシーポリシー",
   "🔒 Privacy Policy": "🔒 プライバシーポリシー",
   "Learn how your data is used:": "データの取り扱いについて：",
-  "This email address can't be used to sign up. Please use your personal email.": "このメールアドレスでは登録できません。個人のメールアドレスを使用してください。"
+  "This email address can't be used to sign up. Please use your personal email.": "このメールアドレスでは登録できません。個人のメールアドレスを使用してください。",
+  "Sign in to rate.": "評価するにはログインしてください。",
+  "Could not save your rating, please try again.": "評価を保存できませんでした。もう一度お試しください。",
+  "Rating saved, it will be sent when you are back online.": "評価を保存しました。オンラインに戻ったら送信されます。"
  },
  "ko": {
   "Ask a colleague for an invite code.": "동료에게 초대 코드를 요청하세요.",
@@ -3914,7 +3927,10 @@ var I18N = {
   "Privacy Policy": "개인정보 처리방침",
   "🔒 Privacy Policy": "🔒 개인정보 처리방침",
   "Learn how your data is used:": "데이터 이용 방식 알아보기:",
-  "This email address can't be used to sign up. Please use your personal email.": "이 이메일 주소로는 가입할 수 없습니다. 개인 이메일을 사용해 주세요."
+  "This email address can't be used to sign up. Please use your personal email.": "이 이메일 주소로는 가입할 수 없습니다. 개인 이메일을 사용해 주세요.",
+  "Sign in to rate.": "평가하려면 로그인하세요.",
+  "Could not save your rating, please try again.": "평가를 저장하지 못했습니다. 다시 시도해 주세요.",
+  "Rating saved, it will be sent when you are back online.": "평가가 저장되었습니다. 온라인이 되면 전송됩니다."
  },
  "zh": {
   "Ask a colleague for an invite code.": "请向同事索取邀请码。",
@@ -4227,7 +4243,10 @@ var I18N = {
   "Privacy Policy": "隐私政策",
   "🔒 Privacy Policy": "🔒 隐私政策",
   "Learn how your data is used:": "了解我们如何使用你的数据：",
-  "This email address can't be used to sign up. Please use your personal email.": "无法使用此邮箱注册。请使用你的个人邮箱。"
+  "This email address can't be used to sign up. Please use your personal email.": "无法使用此邮箱注册。请使用你的个人邮箱。",
+  "Sign in to rate.": "登录后即可评分。",
+  "Could not save your rating, please try again.": "无法保存评分，请重试。",
+  "Rating saved, it will be sent when you are back online.": "评分已保存，联网后将自动发送。"
  }
 };
 function tx(trS, enS, ...args) {
@@ -4282,7 +4301,6 @@ function applyStaticTx() {
 }
 let currentCat = 'all';
 let selectedMainCat = 'food';
-let liked = false;
 let saved = false;
 
 // ── KAYITLI YERLER ────────────────────────────────────────────────────────────
@@ -4427,7 +4445,7 @@ const translations = {
     'saved-empty': 'Henüz kayıtlı yer yok. Beğendiğin yerleri kaydet!',
     'profile-since': 'Üye · Mart 2025',
     'stat-places-label': 'Eklenen yer',
-    'stat-likes-label': 'Beğeni aldı',
+    'stat-likes-label': 'Aldığı puan',
     'stat-invite-label': 'Davet',
     'section-invite': 'Davet Kodum',
     'quota-text': '1 kişiyi davet ettin · 2 hakkın kaldı',
@@ -4555,7 +4573,7 @@ const translations = {
     'saved-empty': 'Noch keine gespeicherten Orte.',
     'profile-since': 'Mitglied seit März 2025',
     'stat-places-label': 'Orte hinzugefügt',
-    'stat-likes-label': 'Likes erhalten',
+    'stat-likes-label': 'Bewertungen erhalten',
     'stat-invite-label': 'Einladungen',
     'section-invite': 'Mein Einladungscode',
     'quota-text': '1 Person eingeladen · 2 übrig',
@@ -4693,7 +4711,7 @@ const translations = {
     'location-text': 'Localisation',
     'privacy-text': 'Confidentialité',
     'stat-places-label': 'lieux',
-    'stat-likes-label': 'j\'aime',
+    'stat-likes-label': 'notes reçues',
     'stat-invite-label': 'invitations',
     'profile-since': 'Membre depuis',
     'city1-meta': 'Corée du Sud',
@@ -4809,7 +4827,7 @@ const translations = {
     'saved-empty': 'Aún no hay lugares guardados.',
     'profile-since': 'Miembro desde marzo 2025',
     'stat-places-label': 'Lugares añadidos',
-    'stat-likes-label': 'Me gusta recibidos',
+    'stat-likes-label': 'Valoraciones recibidas',
     'stat-invite-label': 'Invitaciones',
     'section-invite': 'Mi código de invitación',
     'quota-text': '1 persona invitada · 2 restantes',
@@ -4936,7 +4954,7 @@ const translations = {
     'saved-empty': 'لا توجد أماكن محفوظة بعد.',
     'profile-since': 'عضو منذ مارس 2025',
     'stat-places-label': 'أماكن مضافة',
-    'stat-likes-label': 'إعجابات مستلمة',
+    'stat-likes-label': 'تقييمات مستلمة',
     'stat-invite-label': 'دعوات',
     'section-invite': 'رمز دعوتي',
     'quota-text': 'دعوت شخصاً · 2 متبقية',
@@ -5063,7 +5081,7 @@ const translations = {
     'saved-empty': 'まだ保存された場所はありません。',
     'profile-since': '2025年3月より会員',
     'stat-places-label': '追加した場所',
-    'stat-likes-label': 'いいね数',
+    'stat-likes-label': '評価数',
     'stat-invite-label': '招待',
     'section-invite': '私の招待コード',
     'quota-text': '1人を招待済み · 残り2回',
@@ -5190,7 +5208,7 @@ const translations = {
     'saved-empty': '아직 저장된 장소가 없습니다.',
     'profile-since': '2025년 3월부터 회원',
     'stat-places-label': '추가한 장소',
-    'stat-likes-label': '받은 좋아요',
+    'stat-likes-label': '받은 평가',
     'stat-invite-label': '초대',
     'section-invite': '나의 초대 코드',
     'quota-text': '1명 초대함 · 2번 남음',
@@ -5317,7 +5335,7 @@ const translations = {
     'saved-empty': '还没有保存的地点。',
     'profile-since': '2025年3月起成为会员',
     'stat-places-label': '添加的地点',
-    'stat-likes-label': '收到的喜欢',
+    'stat-likes-label': '收到的评分',
     'stat-invite-label': '邀请',
     'section-invite': '我的邀请码',
     'quota-text': '已邀请1人 · 剩余2次',
@@ -5444,7 +5462,7 @@ const translations = {
     'saved-empty': 'No saved places yet. Save the places you like!',
     'profile-since': 'Member · March 2025',
     'stat-places-label': 'Places added',
-    'stat-likes-label': 'Likes received',
+    'stat-likes-label': 'Ratings received',
     'stat-invite-label': 'Invites',
     'section-invite': 'My Invite Code',
     'quota-text': 'You invited 1 person · 2 remaining',
@@ -5777,8 +5795,6 @@ function renderCards() {
   if (activeFilters && activeFilters.sort) {
     if (activeFilters.sort === 'rating') {
       filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-    } else if (activeFilters.sort === 'likes') {
-      filtered.sort((a, b) => (b.likes || 0) - (a.likes || 0));
     } else if (activeFilters.sort === 'newest') {
       filtered.reverse();
     }
@@ -5811,7 +5827,7 @@ function renderCards() {
             ${p.price} · <span style="color:var(--gold);font-weight:600;">${getPriceRangeLocal(p.price, currentCurrency)}</span>
           </span>
           <span class="likes-tag">
-            ${p.rating > 0 ? `<span class="card-stars">${'★'.repeat(Math.round(p.rating))}${'☆'.repeat(5-Math.round(p.rating))}</span><span class="card-rating-num">${p.rating.toFixed(1)}</span>` : `<span class="heart">♥</span> ${p.likes}`}
+            ${p.rating > 0 ? `<span class="card-stars">${'★'.repeat(Math.round(p.rating))}${'☆'.repeat(5-Math.round(p.rating))}</span><span class="card-rating-num">${p.rating.toFixed(1)}</span>` : ''}
           </span>
         </div>
       </div>
@@ -5845,6 +5861,7 @@ function openDetail(id) {
     `${p.price} ${L(p.priceName)} <span style="color:#92400e;font-weight:700;">· ${localAmt} ${currentCurrency.code}</span>`;
   document.getElementById('detail-desc').textContent = L(p.desc);
   renderRatingBar(p);
+  loadPlaceRatings(p).then(() => { if (currentDetailId === p.id) renderRatingBar(p); });
   // Yorum input başlığını ve placeholder'ı güncelle
   commentPlaceId = p.id;
   commentStar = 0;
@@ -5913,6 +5930,7 @@ function renderRatingBar(p) {
     }
   }
   document.getElementById('btn-rate').textContent = userRatedAlready ? tx('Güncelle', 'Update') : tx('Oyla', 'Rate');
+  document.getElementById('btn-rate').style.background = '';
   document.getElementById('rating-count').textContent = count > 0
     ? `${count} ${tx('değerlendirme', 'ratings')}`
     : (tx('Henüz puan yok', 'No ratings yet'));
@@ -5998,96 +6016,90 @@ async function submitRating() {
   }
   const p = places.find(x => x.id === currentDetailId);
   if (!p) return;
+  if (!currentUser) { showToast(tx('Puan vermek için giriş yap.', 'Sign in to rate.')); return; }
 
-  // Buton'u devre dışı bırak
+  const stars = pendingRating;
+  const ratingPayload = { place_id: p.id, user_id: currentUser.id, stars };
   const btn = document.getElementById('btn-rate');
   if (btn) { btn.disabled = true; btn.textContent = '...'; }
 
+  // Ortalama ve oy sayısı sunucuda (ratings tetikleyicisi) hesaplanır; istemci sadece kendi oyunu yazar.
+  let queued = false;
   try {
-    const token = sessionStorage.getItem('sb_access_token');
-    const headers = {
-      'apikey': SUPABASE_KEY,
-      'Authorization': 'Bearer ' + (token || SUPABASE_KEY),
-      'Content-Type': 'application/json',
-      'Prefer': 'return=minimal'
-    };
-
-    // Supabase: ratings tablosuna upsert (user_id + place_id kombinasyonu unique)
-    const userId = currentUser ? currentUser.id : null;
-    if (userId) {
-      const ratingPayload = { place_id: p.id, user_id: userId, stars: pendingRating };
-      if (navigator.onLine) {
-        try {
-          await fetch(`${SUPABASE_URL}/rest/v1/ratings`, {
-            method: 'POST',
-            headers: { ...headers, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-            body: JSON.stringify(ratingPayload)
-          });
-        } catch(e) {
-          await addToQueue('rating_upsert', ratingPayload);
-          await updateQueueBadge();
-        }
-      } else {
-        await addToQueue('rating_upsert', ratingPayload);
-        await updateQueueBadge();
-      }
+    if (!navigator.onLine) throw new TypeError('offline');
+    const token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token') || SUPABASE_KEY;
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/ratings?on_conflict=place_id,user_id`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates,return=minimal'
+      },
+      body: JSON.stringify(ratingPayload)
+    });
+    if (res.status === 401) { handleSessionExpired(); return; }
+    if (!res.ok) {
+      console.warn('[submitRating]', res.status, await res.text().catch(() => ''));
+      showToast(tx('Puan kaydedilemedi, tekrar dene.', 'Could not save your rating, please try again.'));
+      return;
     }
-
-    // Supabase: places tablosundaki rating ve rating_count güncelle
-    // Basit yaklaşım: tüm ratingleri çek, ortalama hesapla, güncelle
-    const ratingsResp = await fetch(
-      `${SUPABASE_URL}/rest/v1/ratings?place_id=eq.${encodeURIComponent(p.id)}&select=stars`,
-      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + (token || SUPABASE_KEY) } }
-    );
-    if (ratingsResp.ok) {
-      const ratingRows = await ratingsResp.json();
-      if (ratingRows && ratingRows.length > 0) {
-        const count = ratingRows.length;
-        const total = ratingRows.reduce((s, r) => s + r.stars, 0);
-        const avg = Math.round((total / count) * 10) / 10;
-
-        await fetch(`${SUPABASE_URL}/rest/v1/places?id=eq.${p.id}`, {
-          method: 'PATCH',
-          headers,
-          body: JSON.stringify({ rating: avg, rating_count: count })
-        });
-
-        // Local state güncelle
-        p.ratingCount = count;
-        p.rating = avg;
-        // Dağılımı da güncelle
-        const dist = {1:0,2:0,3:0,4:0,5:0};
-        ratingRows.forEach(r => { dist[r.stars] = (dist[r.stars]||0)+1; });
-        p.ratings = dist;
-      }
-    }
-  } catch(e) {
-    console.warn('[submitRating Supabase]', e);
-    // Supabase başarısız olsa bile local güncelle
-    const prev = p.userRating || 0;
-    if (prev > 0 && p.ratings[prev] > 0) { p.ratings[prev]--; p.ratingCount--; }
-    p.ratings[pendingRating] = (p.ratings[pendingRating] || 0) + 1;
-    p.ratingCount++;
-    let total = 0, count = 0;
-    [1,2,3,4,5].forEach(s => { total += s*(p.ratings[s]||0); count+=(p.ratings[s]||0); });
-    p.rating = count > 0 ? Math.round((total/count)*10)/10 : 0;
+  } catch (e) {
+    // Bağlantı yok → kuyruğa al, internet gelince gönderilir
+    console.warn('[submitRating] kuyruğa alındı', e);
+    await addToQueue('rating_upsert', ratingPayload);
+    await updateQueueBadge();
+    queued = true;
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = tx('Oyla', 'Rate'); }
   }
 
-  p.userRating = pendingRating;
+  if (queued) {
+    // Yerel tahmini güncelleme (sunucuya gidince gerçek değerle düzelir)
+    if (!p.ratings) p.ratings = {1:0,2:0,3:0,4:0,5:0};
+    const prev = p.userRating || 0;
+    if (prev > 0 && p.ratings[prev] > 0) { p.ratings[prev]--; p.ratingCount = Math.max(0, (p.ratingCount || 0) - 1); }
+    p.ratings[stars] = (p.ratings[stars] || 0) + 1;
+    p.ratingCount = (p.ratingCount || 0) + 1;
+    let total = 0, count = 0;
+    [1,2,3,4,5].forEach(n => { total += n * (p.ratings[n] || 0); count += (p.ratings[n] || 0); });
+    p.rating = count > 0 ? Math.round((total / count) * 10) / 10 : 0;
+    p.userRating = stars;
+  } else {
+    await loadPlaceRatings(p);
+    p.userRating = stars;
+  }
+
   renderRatingBar(p);
-  updateStarInput(pendingRating, true);
   renderCards();
-  showToast(tx('{0} yıldız verdin! ★', 'You rated {0} stars! ★', pendingRating));
+  showToast(queued
+    ? tx('Puanın kaydedildi, internet gelince gönderilecek.', 'Rating saved, it will be sent when you are back online.')
+    : tx('{0} yıldız verdin! ★', 'You rated {0} stars! ★', stars));
 }
 
-function toggleLike() {
-  liked = !liked;
-  const btn = document.getElementById('btn-like');
-  btn.style.color = liked ? '#ef4444' : '';
-  btn.style.borderColor = liked ? '#fca5a5' : '';
-  document.getElementById('like-label').textContent = liked ? (tx('Beğenildi', 'Liked')) : (tx('Beğen', 'Like'));
+// Yerin oylarını yükle: dağılım, ortalama, sayı ve kullanıcının kendi puanı
+async function loadPlaceRatings(p) {
+  if (!p || !currentUser) return;
+  try {
+    const token = sessionStorage.getItem('sb_access_token') || localStorage.getItem('sb_access_token') || SUPABASE_KEY;
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/ratings?place_id=eq.${encodeURIComponent(p.id)}&select=stars,user_id`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + token }
+    });
+    if (!res.ok) return;
+    const rows = await res.json();
+    const dist = {1:0,2:0,3:0,4:0,5:0};
+    let total = 0, count = 0, mine = 0;
+    rows.forEach(r => {
+      if (r.stars >= 1 && r.stars <= 5) { dist[r.stars]++; total += r.stars; count++; }
+      if (r.user_id === currentUser.id) mine = r.stars;
+    });
+    p.ratings = dist;
+    p.ratingCount = count;
+    p.rating = count > 0 ? Math.round((total / count) * 10) / 10 : 0;
+    p.userRating = mine;
+  } catch (e) {
+    console.warn('[loadPlaceRatings]', e);
+  }
 }
 
 async function toggleSave() {
@@ -7519,7 +7531,7 @@ async function processQueueItem(item) {
   }
 
   if (item.type === 'rating_upsert') {
-    const res = await fetch(SUPABASE_URL + '/rest/v1/ratings', {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/ratings?on_conflict=place_id,user_id', {
       method: 'POST',
       headers: { ...headers, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify(item.payload)
@@ -10333,7 +10345,7 @@ function renderAdminPlaces() {
           <div class="admin-place-name">${escapeAdminHtml(p.name)} ${hiddenBadge}</div>
           <div class="admin-place-meta">
             📍 ${p.city || '—'} · ${catLabel} · ${p.price || '$'}<br>
-            ♥ ${p.likes || 0} · ⭐ ${p.rating ? parseFloat(p.rating).toFixed(1) : '—'} · 📅 ${date}
+            ⭐ ${p.rating ? parseFloat(p.rating).toFixed(1) : '—'} (${p.rating_count || 0}) · 📅 ${date}
           </div>
           ${descSnippet}
         </div>
@@ -11843,10 +11855,10 @@ async function loadMyPlaces() {
     if (placeCountEl) placeCountEl.textContent = myPlaces.length;
     if (countEl) countEl.textContent = myPlaces.length > 0 ? `${myPlaces.length} ${tx('yer', 'places')}` : '';
 
-    // Toplam beğeni
-    const totalLikes = myPlaces.reduce((sum, p) => sum + (p.likes || 0), 0);
+    // Yerlerine verilen toplam oy
+    const totalRatings = myPlaces.reduce((sum, p) => sum + (p.rating_count || 0), 0);
     const likesEl = document.getElementById('stat-likes');
-    if (likesEl) likesEl.textContent = totalLikes;
+    if (likesEl) likesEl.textContent = totalRatings;
 
     const pendingHtml = myPending.map(p => {
       const cat = catColors[p.cat] || { bg: '#f0f3f9', emoji: p.emoji || '📍' };
@@ -11881,7 +11893,7 @@ async function loadMyPlaces() {
             <div class="place-row-name">${escapeHtml(p.name)}</div>
             <div class="place-row-meta">${p.city || ''} · ${catLabel}</div>
           </div>
-          <div class="place-row-likes">${stars}♥ ${p.likes || 0}</div>
+          <div class="place-row-likes">${stars}${p.rating > 0 ? parseFloat(p.rating).toFixed(1) : ''}</div>
         </div>`;
     }).join('');
 
