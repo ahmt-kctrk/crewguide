@@ -79,14 +79,19 @@
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    min-height: 100vh;
+    /* Uygulama tam olarak GÖRÜNEN ekran kadar: 100vh telefonda adres çubuğunun arkasını da sayar
+       ve alttaki menü ekranın dışına taşar. dvh = görünen yükseklik (desteklemeyen tarayıcıda vh). */
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
     padding: 0;
   }
 
   #app {
     width: 100%;
     max-width: 430px;
-    min-height: 100vh;
+    height: 100vh;
+    height: 100dvh;
     background: var(--cream);
     position: relative;
     overflow: hidden;
