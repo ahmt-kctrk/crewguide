@@ -1,6 +1,7 @@
-// Supabase Edge Function: send-push v18
-// - Sadece admin / şehir elçisi / sunucu (service key) çağırabilir → bildirim spam'i engellenir.
-// - Onay bekleyen veya gizli yerler için bildirim gönderilmez.
+// Supabase Edge Function: send-push v19
+// - Yer bildirimi (placeId): veritabanı tetikleyicisi yer yayına girince çağırır; her yer için EN FAZLA BİR KEZ
+//   gider (places.push_sent_at atomik işaretlenir). Onay bekleyen veya gizli yerler için bildirim gönderilmez.
+// - placeId olmadan serbest duyuru: sadece admin / şehir elçisi / sunucu (service key).
 // - Bildirim metni her abonenin kendi dilinde (push_subscriptions.lang).
 import { CORS, getCaller, getKeys } from "../_shared/auth.ts";
 
@@ -37,42 +38,44 @@ Deno.serve(async (req: Request) => {
 
   try {
     const caller = await getCaller(req);
-    if (!caller.isTrusted) {
-      return reply({ ok: false, error: "Yetkisiz" }, 403);
-    }
-
     const { url: SUPABASE_URL, serviceKey: SUPABASE_SERVICE_KEY } = getKeys();
     const body = await req.json().catch(() => ({}));
     let city = "";
     let placeName = "";
-    let placeId = "";
+    const placeId = String(body.placeId ?? body.record?.id ?? "").slice(0, 200);
 
-    if (body.type === "INSERT" && body.record) {
-      // DB webhook: sadece yayında olan yerler için bildir
-      if (body.record.is_hidden || body.record.status === "pending") {
-        return reply({ ok: true, sent: 0, msg: "not published" });
-      }
-      city = body.record.city ?? "";
-      placeName = body.record.name ?? "";
-      placeId = body.record.id ?? "";
-    } else if (body.city) {
-      city = String(body.city).slice(0, 100);
-      placeName = String(body.name ?? "").slice(0, 120);
-      placeId = String(body.placeId ?? "");
-    }
-    if (!city) return reply({ ok: false, error: "city gerekli" }, 400);
-
-    // Yer kimliği verildiyse gerçekten yayında olduğunu doğrula
     if (placeId) {
+      // Yer bildirimi: herkes tetikleyebilir ama her yer için EN FAZLA BİR KEZ gider.
+      // Yer yayında değilse ya da daha önce bildirildiyse hiçbir şey olmaz (atomik işaretleme).
       const pr = await fetch(
-        `${SUPABASE_URL}/rest/v1/places?id=eq.${encodeURIComponent(placeId)}&select=name,city,is_hidden`,
-        { headers: { "apikey": SUPABASE_SERVICE_KEY, "Authorization": `Bearer ${SUPABASE_SERVICE_KEY}` } }
+        `${SUPABASE_URL}/rest/v1/places?id=eq.${encodeURIComponent(placeId)}&push_sent_at=is.null&status=eq.approved&or=(is_hidden.is.null,is_hidden.eq.false)&select=name,city`,
+        {
+          method: "PATCH",
+          headers: {
+            "apikey": SUPABASE_SERVICE_KEY,
+            "Authorization": `Bearer ${SUPABASE_SERVICE_KEY}`,
+            "Content-Type": "application/json",
+            "Prefer": "return=representation",
+          },
+          body: JSON.stringify({ push_sent_at: new Date().toISOString() }),
+        }
       );
       const rows = await pr.json().catch(() => []);
       const row = Array.isArray(rows) ? rows[0] : null;
-      if (row?.is_hidden) return reply({ ok: true, sent: 0, msg: "not published" });
-      if (row) { city = row.city || city; placeName = row.name || placeName; }
+      if (!pr.ok) {
+        console.error("[send-push] place update failed:", pr.status, JSON.stringify(rows).slice(0, 200));
+        return reply({ ok: false, error: "place check failed" }, 500);
+      }
+      if (!row) return reply({ ok: true, sent: 0, msg: "already sent or not published" });
+      city = row.city || "";
+      placeName = row.name || "";
+    } else {
+      // Yer kimliği olmayan serbest duyuru: sadece admin / şehir elçisi / sunucu
+      if (!caller.isTrusted) return reply({ ok: false, error: "Yetkisiz" }, 403);
+      city = String(body.city ?? "").slice(0, 100);
+      placeName = String(body.name ?? "").slice(0, 120);
     }
+    if (!city) return reply({ ok: false, error: "city gerekli" }, 400);
 
     console.log("[send-push] city:", city, "place:", placeName, "by:", caller.role);
 
